@@ -10,6 +10,7 @@ namespace Floofbot
     {
         private DiscordSocketClient _client;
         private CommandHandler _handler;
+        private BotDatabase _botDatabase;
 
         static void Main(string[] args)
         {
@@ -44,7 +45,9 @@ namespace Floofbot
                 Console.WriteLine($"{DateTime.Now.ToString("[MM/dd/yyyy HH:mm]")} {message.Source}: {message.Message}");
                 return Task.CompletedTask;
             };
+            _botDatabase = new BotDatabase();
             _handler = new CommandHandler(_client);
+
             await Task.Delay(-1);
         }
     }

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 
-namespace Floofbot.Modules
+namespace Floofbot
 {
     public class Utilities : ModuleBase<SocketCommandContext>
     {
@@ -40,12 +40,12 @@ namespace Floofbot.Modules
 
             string infostring = $"👥 **User info for:** {user.Mention}\n";
             infostring += 
-                 $"         **Username** : {user.Username}#{user.Discriminator}\n" +
-                 $"         **Nickname** : {user.Nickname ?? user.Username}\n" +
-                 $"               **ID** : {user.Id}\n" +
+                 $"**Username** : {user.Username}#{user.Discriminator}\n" +
+                 $"**Nickname** : {user.Nickname ?? user.Username}\n" +
+                 $"**ID** : {user.Id}\n" +
                  $"**Discord Join Date** : {user.CreatedAt:MM/dd/yyyy} \n" +
-                 $"  **Guild Join Date** : {user.JoinedAt?.ToString("MM/dd/yyyy")}\n" +
-                 $"           **Status** : {user.Status}\n";
+                 $"**Guild Join Date** : {user.JoinedAt?.ToString("MM/dd/yyyy")}\n" +
+                 $"**Status** : {user.Status}\n";
 
             EmbedBuilder builder = new EmbedBuilder {
                 ThumbnailUrl = avatar,
@@ -58,14 +58,14 @@ namespace Floofbot.Modules
 
         [Command("avatar")]
         [RequireContext(ContextType.Guild)]
-        public async Task Avatar([Remainder] IGuildUser usr = null)
+        public async Task Avatar([Remainder] IGuildUser user = null)
         {
-            if (usr == null)
-                usr = (IGuildUser)Context.User;
+            if (user == null)
+                user = (IGuildUser)Context.User;
 
-            var avatarUrl = usr.GetAvatarUrl(ImageFormat.Auto, 512);
+            var avatarUrl = user.GetAvatarUrl(ImageFormat.Auto, 512);
             EmbedBuilder builder = new EmbedBuilder() {
-                Description = $"🖼️ **Avatar for:** { usr.Mention}\n",
+                Description = $"🖼️ **Avatar for:** {user.Mention}\n",
                 ImageUrl = avatarUrl,
                 Color = Color.Magenta
 
