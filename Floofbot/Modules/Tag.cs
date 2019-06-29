@@ -187,7 +187,7 @@ namespace Floofbot
                             isImage = (
                                ext == "jpg" ||
                                ext == "png" ||
-                               ext == "jpeg" |
+                               ext == "jpeg" ||
                                ext == "webp" ||
                                ext == "gifv" ||
                                ext == "gif" ||
