@@ -26,7 +26,19 @@ namespace Floofbot.Services
 	                `TagID`	TEXT,
 	                `UserID`	TEXT,
 	                `Content`	TEXT,
-	            PRIMARY KEY(`TagID`));";
+	            PRIMARY KEY(`TagID`));
+
+                CREATE TABLE 'Warnings' (
+	                'Id'	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	                'DateAdded'	TEXT,
+	                'Forgiven'	INTEGER NOT NULL,
+	                'ForgivenBy'	TEXT,
+	                'GuildId'	INTEGER NOT NULL,
+	                'Moderator'	TEXT,
+	                'Reason'	TEXT,
+	                'UserId'	INTEGER NOT NULL);"
+
+;
                 SqliteCommand command = new SqliteCommand(sql, dbConnection);
                 dbConnection.Open();
                 command.ExecuteNonQuery();
