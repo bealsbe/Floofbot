@@ -172,6 +172,17 @@ namespace Floofbot.Modules
             dbConnection.Close();
         }
 
+        // rfurry Discord Rules Gate
+        [Command("ireadtherules")]
+        public async Task getaccess()
+        {
+            if (Context.Guild.Id == 225980129799700481) {
+                ulong roleID = 494149550622375936;
+                var user = (IGuildUser)Context.User;
+                await user.AddRoleAsync(Context.Guild.GetRole(roleID));
+            }
+        }
+
         private IUser resolveUser(string input)
         {
             IUser user = null;
