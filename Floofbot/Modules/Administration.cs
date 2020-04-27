@@ -40,7 +40,7 @@ namespace Floofbot.Modules
                 builder.Color = Color.DarkOrange;
                 builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
                 builder.AddField("User ID", badUser.Id);
-                builder.AddField("Moderator",$"{Context.User.Username}#{Context.User.Discriminator}");
+                builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             }
             catch {
@@ -55,7 +55,7 @@ namespace Floofbot.Modules
         [Command("warn")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task warnUser(string user,string reason)
+        public async Task warnUser(string user, string reason)
         {
             IUser badUser = null;
             EmbedBuilder builder = new EmbedBuilder();
@@ -98,6 +98,61 @@ namespace Floofbot.Modules
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+
+        [Command("warnlog")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task warnlog(string user)
+        {
+            IUser badUser = null;
+            EmbedBuilder builder = new EmbedBuilder();
+
+            try {
+                badUser = resolveUser(user);
+            }
+            catch {
+                await Context.Channel.SendMessageAsync($"Could not find user \"{user}\"");
+                return;
+            }
+
+            string sql = @"SELECT DateAdded,Moderator,Reason FROM Warnings
+                 WHERE UserID = $UserId AND $GuildId = $GuildId ORDER BY Id desc";
+            SqliteCommand command = new SqliteCommand(sql, dbConnection);
+            command.Parameters.Add(new SqliteParameter("$UserId", badUser.Id.ToString()));
+            command.Parameters.Add(new SqliteParameter("$GuildId", Context.Guild.Id.ToString())); // you are not forgiven for your sins
+
+            dbConnection.Open();
+            var results = command.ExecuteReader();
+
+            if (results.HasRows) {
+                builder = new EmbedBuilder();
+                builder.Title = $"Warnings for {badUser.Username}#{badUser.Discriminator}";
+                builder.Color = Color.DarkOrange;
+
+                //discord embeds have a limit of 25 fields.  Shows the most recent 25.
+                int warningCount = 0;
+
+                while (results.Read()) {
+                    var warning = new {
+                        DateAdded = results.GetValue(results.GetOrdinal("DateAdded")).ToString(),
+                        Moderator = results.GetValue(results.GetOrdinal("Moderator")).ToString(),
+                        Reason = results.GetValue(results.GetOrdinal("Reason")).ToString(),
+                    };
+
+                    builder.AddField($"**{warningCount+1}**.  {DateTime.Parse(warning.DateAdded).ToString("MMMM dd yyyy")} by {warning.Moderator}", $"```{warning.Reason}```");
+                    warningCount++;
+
+                    //if wer reach more then 25 warnings for a user then we are doing something wrong
+                    if (warningCount > 24)
+                        break;
+                }
+            }
+            else {
+                await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings!");
+            }
+            dbConnection.Close();
+            await Context.Channel.SendMessageAsync("",false,builder.Build());
         }
 
         private IUser resolveUser(string input)
