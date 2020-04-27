@@ -22,32 +22,28 @@ namespace Floofbot.Modules
         public async Task YeetUser(string input, [Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(input);
+            if(badUser == null) {
+               await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{input}\"");
+               return;
+            }
+
+            //sends message to user
             EmbedBuilder builder = new EmbedBuilder();
+            builder.Title = "⚖️ Ban Notification";
+            builder.Description = $"You have been banned from {Context.Guild.Name}";
+            builder.AddField("Reason", reason);
+            builder.Color = Color.DarkOrange;
+            await badUser.SendMessageAsync("", false, builder.Build());
 
-            try {
-                //sends message to user
-                builder.Title = "⚖️ Ban Notification";
-                builder.Description = $"You have been banned from {Context.Guild.Name}";
-                builder.AddField("Reason", reason);
-                builder.Color = Color.DarkOrange;
-                await badUser.SendMessageAsync("", false, builder.Build());
+            //bans the user
+            await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
 
-                //bans the user
-                await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
-
-                builder = new EmbedBuilder();
-                builder.Title = (":shield: User Banned");
-                builder.Color = Color.DarkOrange;
-                builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
-                builder.AddField("User ID", badUser.Id);
-                builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
-
-            }
-            catch {
-                builder = new EmbedBuilder();
-                builder.Description = $"could not find user \"{input}\"";
-                builder.Color = Color.Red;
-            }
+            builder = new EmbedBuilder();
+            builder.Title = (":shield: User Banned");
+            builder.Color = Color.DarkOrange;
+            builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            builder.AddField("User ID", badUser.Id);
+            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
@@ -57,13 +53,9 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task warnUser(string user, string reason)
         {
-            IUser badUser = null;
-            EmbedBuilder builder = new EmbedBuilder();
-            try {
-                badUser = resolveUser(user);
-            }
-            catch {
-                await Context.Channel.SendMessageAsync($"Could not find user \"{user}\"");
+            IUser badUser = resolveUser(user);
+            if(badUser == null) {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                 return;
             }
 
@@ -83,8 +75,8 @@ namespace Floofbot.Modules
             command.ExecuteScalar();
             dbConnection.Close();
 
-
             //sends message to user
+            EmbedBuilder builder = new EmbedBuilder();
             builder.Title = "⚖️ Warn Notification";
             builder.Description = $"You have recieved a warning in {Context.Guild.Name}";
             builder.AddField("Reason", reason);
@@ -105,14 +97,9 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task warnlog(string user)
         {
-            IUser badUser = null;
-            EmbedBuilder builder = new EmbedBuilder();
-
-            try {
-                badUser = resolveUser(user);
-            }
-            catch {
-                await Context.Channel.SendMessageAsync($"Could not find user \"{user}\"");
+            IUser badUser = resolveUser(user);
+            if (badUser == null) {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                 return;
             }
 
@@ -125,8 +112,8 @@ namespace Floofbot.Modules
             dbConnection.Open();
             var results = command.ExecuteReader();
 
+            EmbedBuilder builder = new EmbedBuilder();
             if (results.HasRows) {
-                builder = new EmbedBuilder();
                 builder.Title = $"Warnings for {badUser.Username}#{badUser.Discriminator}";
                 builder.Color = Color.DarkOrange;
 
@@ -140,19 +127,19 @@ namespace Floofbot.Modules
                         Reason = results.GetValue(results.GetOrdinal("Reason")).ToString(),
                     };
 
-                    builder.AddField($"**{warningCount+1}**.  {DateTime.Parse(warning.DateAdded).ToString("MMMM dd yyyy")} by {warning.Moderator}", $"```{warning.Reason}```");
+                    builder.AddField($"**{warningCount + 1}**.  {DateTime.Parse(warning.DateAdded).ToString("MMMM dd yyyy")} by {warning.Moderator}", $"```{warning.Reason}```");
                     warningCount++;
 
-                    //if wer reach more then 25 warnings for a user then we are doing something wrong
+                    //if we reach more then 25 warnings for a user then we are doing something wrong
                     if (warningCount > 24)
                         break;
                 }
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
             else {
                 await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings!");
             }
             dbConnection.Close();
-            await Context.Channel.SendMessageAsync("",false,builder.Build());
         }
 
         private IUser resolveUser(string input)
