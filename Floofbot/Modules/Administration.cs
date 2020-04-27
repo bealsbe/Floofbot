@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Data.Sqlite;
+using System.Linq;
 
 namespace Floofbot.Modules
 {
@@ -47,7 +48,6 @@ namespace Floofbot.Modules
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
-
         [Command("kick")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
@@ -137,7 +137,7 @@ namespace Floofbot.Modules
                  WHERE UserID = $UserId AND $GuildId = $GuildId ORDER BY Id desc";
             SqliteCommand command = new SqliteCommand(sql, dbConnection);
             command.Parameters.Add(new SqliteParameter("$UserId", badUser.Id.ToString()));
-            command.Parameters.Add(new SqliteParameter("$GuildId", Context.Guild.Id.ToString())); // you are not forgiven for your sins
+            command.Parameters.Add(new SqliteParameter("$GuildId", Context.Guild.Id.ToString()));
 
             dbConnection.Open();
             var results = command.ExecuteReader();
@@ -170,6 +170,56 @@ namespace Floofbot.Modules
                 await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings!");
             }
             dbConnection.Close();
+        }
+
+
+        [Command("lock")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task ChannelLock()
+        {
+            try {
+                IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                EmbedBuilder builder = new EmbedBuilder {
+                    Description = $"🔒  <#{textChannel.Id}> Locked",
+                    Color = Color.Orange,
+
+                };
+                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages)) {
+                    var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                    await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                }
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            catch {
+                await Context.Channel.SendMessageAsync("Something went wrong!");
+            }
+        }
+
+        [Command("unlock")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+
+        public async Task ChannelUnLock()
+        {
+            try {
+                IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                EmbedBuilder builder = new EmbedBuilder {
+                    Description = $"🔓  <#{textChannel.Id}> Unlocked",
+                    Color = Color.DarkGreen,
+
+                };
+                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages)) {
+                    var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    if (role.Name != "nadeko-mute" && role.Name != "Muted")
+                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                }
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            catch {
+                await Context.Channel.SendMessageAsync("Something went wrong!");
+            }
         }
 
         // rfurry Discord Rules Gate
