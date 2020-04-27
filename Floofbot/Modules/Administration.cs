@@ -48,6 +48,36 @@ namespace Floofbot.Modules
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
+        [Command("kick")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
+        public async Task kickUser(string user, [Remainder]string reason = "No Reason Provided")
+        {
+            IUser badUser = resolveUser(user);
+            if (badUser == null) {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
+                return;
+            }
+
+            //sends message to user
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.Title = "🥾 Kick Notification";
+            builder.Description = $"You have been Kicked from {Context.Guild.Name}";
+            builder.AddField("Reason", reason);
+            builder.Color = Color.DarkOrange;
+            await badUser.SendMessageAsync("", false, builder.Build());
+
+            //kicks users
+            await Context.Guild.GetUser(badUser.Id).KickAsync(reason);
+            builder = new EmbedBuilder();
+            builder.Title = ("🥾 User Kicked");
+            builder.Color = Color.DarkOrange;
+            builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been kicked from {Context.Guild.Name}";
+            builder.AddField("User ID", badUser.Id);
+            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+
         [Command("warn")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
