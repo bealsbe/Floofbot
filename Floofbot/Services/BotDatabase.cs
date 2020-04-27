@@ -33,10 +33,10 @@ namespace Floofbot.Services
 	                'DateAdded'	TEXT,
 	                'Forgiven'	INTEGER NOT NULL,
 	                'ForgivenBy'	TEXT,
-	                'GuildId'	INTEGER NOT NULL,
+	                'GuildId'	TEXT NOT NULL,
 	                'Moderator'	TEXT,
 	                'Reason'	TEXT,
-	                'UserId'	INTEGER NOT NULL);"
+	                'UserId'	TEXT NOT NULL);"
 
 ;
                 SqliteCommand command = new SqliteCommand(sql, dbConnection);
