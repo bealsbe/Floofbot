@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Discord;
 using System.Threading.Tasks;
 using Discord.Commands;
@@ -13,8 +13,6 @@ namespace Floofbot.Modules
 {
     public class Logging
     {
-        private DiscordSocketClient client;
-
         [Group("logger")]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireContext(ContextType.Guild)]
@@ -34,7 +32,16 @@ namespace Floofbot.Modules
                 string sqlCreateStructure = @"
                         CREATE TABLE IF NOT EXISTS Logger(
                             'ServerID' INTEGER DEFAULT 0 NOT NULL,
-                            'ChannelID' INTEGER DEFAULT 0 NOT NULL,
+                            'MessageUpdatedChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'MessageDeletedChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'UserBannedChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'UserUnbannedChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'UserJoinedChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'UserLeftChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'MemberUpdatesChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'UserKickedChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'UserMutedChannel' INTEGER DEFAULT 0 NOT NULL,
+                            'UserUnmutedChannel' INTEGER DEFAULT 0 NOT NULL,
                             'IsOn' INT DEFAULT 0 NOT NULL)
                       ";
                 using (SqliteCommand cmdCreateStructure = new SqliteCommand(sqlCreateStructure, dbConnection))
@@ -43,8 +50,7 @@ namespace Floofbot.Modules
                 }
             }
 
-            [Command("setchannel")]
-            public async Task channel(Discord.IChannel channel)
+            public async Task CheckServer(ulong ServerId)
             {
                 // checks if server exists in database and adds if not
                 string sqlInsertServer = @"
@@ -56,9 +62,15 @@ namespace Floofbot.Modules
                                           ";
                 using (SqliteCommand cmdInsertServer = new SqliteCommand(sqlInsertServer, dbConnection))
                 {
-                    cmdInsertServer.Parameters.Add(new SqliteParameter("$ServerID", Context.Guild.Id));
+                    cmdInsertServer.Parameters.Add(new SqliteParameter("$ServerID", ServerId));
                     cmdInsertServer.ExecuteNonQuery();
                 }
+            }
+
+            [Command("setchannel")]
+            public async Task Channel(Discord.IChannel channel)
+            {
+                await CheckServer(Context.Guild.Id);
 
                 // set channel
                 string sqlUpdateChannel = @"UPDATE Logger SET ChannelID = $ChannelID WHERE ServerID = $ServerID";
@@ -72,21 +84,10 @@ namespace Floofbot.Modules
             }
 
             [Command("toggle")]
-            public async Task toggle()
+            public async Task Toggle()
             {
-                // checks if server exists in database and adds if not
-                string sqlInsertServer = @"
-                                            INSERT INTO Logger(ServerID, ChannelID, IsOn)
-                                            SELECT * FROM (SELECT $ServerID, 0, 0) AS tmp
-                                            WHERE NOT EXISTS (
-                                                              SELECT * FROM Logger WHERE ServerID = $ServerID
-                                                              ) LIMIT 1;
-                                          ";
-                using (SqliteCommand cmdInsertServer = new SqliteCommand(sqlInsertServer, dbConnection))
-                {
-                    cmdInsertServer.Parameters.Add(new SqliteParameter("$ServerID", Context.Guild.Id));
-                    cmdInsertServer.ExecuteNonQuery();
-                }
+
+                await CheckServer(Context.Guild.Id);
 
                 // try toggling
                 try
@@ -101,12 +102,6 @@ namespace Floofbot.Modules
                             while (result.Read())
                             {
                                 long bEnabled = (long)result["IsOn"];
-                                long channelId = (long)result["ChannelID"];
-                                if (channelId == 0) // they havent set channel yet :(
-                                {
-                                    await Context.Channel.SendMessageAsync("You haven't set your channel yet! Run ``logger setchannel <channel>``.");
-                                    return;
-                                }
                                 if (bEnabled == 0)
                                 {
                                     string sqlToggleStatus = @"UPDATE Logger SET IsOn = 1 WHERE ServerID = $ServerID";
@@ -152,37 +147,147 @@ namespace Floofbot.Modules
         // events handling
         public class EventHandlingService{
 
-            protected async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
+            SqliteConnection dbConnection;
+            public EventHandlingService()
             {
-                // If the message was not in the cache, downloading it will result in getting a copy of after.
-                var message = await before.GetOrDownloadAsync();
-                Console.WriteLine($"{message} -> {after}");
+                dbConnection = new SqliteConnection(new SqliteConnectionStringBuilder
+                {
+                    DataSource = "botdata.db"
+                }.ToString());
+                dbConnection.Open();
             }
-            protected async Task MessageDeleted(Cacheable<IMessage, ulong> before, ISocketMessageChannel channel)
+            public Discord.IGuildChannel GetChannel(string tableName, Discord.IGuild guild)
+            {
+                // gets a channel based on the tablename (the type of logger)
+                string sqlGetChannel = @"SELECT $TableName FROM Logger WHERE ServerID = $ServerID LIMIT 1"; // check state
+                using (SqliteCommand command = new SqliteCommand(sqlGetChannel, dbConnection))
+                {
+                    command.Parameters.Add(new SqliteParameter("$TableName", tableName));
+                    using (SqliteDataReader result = command.ExecuteReader())
+                    {
+                        while (result.Read())
+                        {
+                            if (result.HasRows)
+                            {
+                                ulong channelID = (ulong)result[tableName];
+                                if (channelID == 0)
+                                    return null; // they have not set a logger channel
+                                // get channel object
+                                Discord.IGuildChannel textChannel = (Discord.IGuildChannel)guild.GetChannelAsync(Convert.ToUInt64(channelID));
+                                return textChannel;
+                            }
+                            else
+                            {
+                                // channel entry not there? Incorrect cast? 
+                                Console.Write($"Tried to log {tableName} but could not find the associated database entry!");
+                                return null;
+                            }
+
+                        }
+                        return null;
+                    }
+                }
+            }
+            public bool IsToggled(IGuild guild)
+            {
+                // check if the logger is toggled on in this server
+                // check the status of logger
+                string sqlCheckStatus = @"SELECT IsOn FROM Logger WHERE ServerID = $ServerID LIMIT 1"; // check state
+                using (SqliteCommand command = new SqliteCommand(sqlCheckStatus, dbConnection))
+                {
+                    command.Parameters.Add(new SqliteParameter("$ServerID", guild.Id));
+                    using (SqliteDataReader result = command.ExecuteReader())
+                    {
+                        while (result.Read())
+                        {
+                            long bEnabled = (long)result["IsOn"];
+                            if (bEnabled == 0)
+                                return false;
+                            else if (bEnabled == 1)
+                                return true;
+                            else
+                                return false;
+                        }
+                        return false;
+                    }
+                }
+            }
+
+            public async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel channel)
+            {
+                // handle here
+            }
+            public async Task MessageDeleted(Cacheable<IMessage, ulong> before, ISocketMessageChannel channel)
             {
                 var message = await before.GetOrDownloadAsync();
                 Console.WriteLine($"deleted message: {message}");
             }
-            protected async Task UserBanned(IUser user, IGuild guild)
+            public async Task UserBanned(IUser user, IGuild guild)
             {
-                // handle here
-            }
-            protected async Task UserUnbanned(IUser user, IGuild guild)
-            {
-                // handle here
-            }
-            protected async Task UserJoined(IGuildUser user)
-            {
+                // check toggle - if off then return
+                // get channel - if false then return
+                 var embed = new EmbedBuilder()
+                 .WithTitle($"🔨 User Banned | {user.Username}")
+                 .WithColor(Color.Red)
+                 .WithDescription($"{user.Username} | ({user.Id})")
+                 .WithFooter(DateTime.Now.ToString());
 
+                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                     embed.WithThumbnailUrl(user.GetAvatarUrl());
             }
-            protected async Task UserLeft(IGuildUser user)
+            public async Task UserUnbanned(IUser user, IGuild guild)
+            {
+                var embed = new EmbedBuilder()
+                .WithTitle($"♻️ User Unbanned | {user.Username}")
+                .WithColor(Color.Gold)
+                .WithDescription($"{user.Username} | ({user.Id})")
+                .WithFooter(DateTime.Now.ToString());
+
+                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                    embed.WithThumbnailUrl(user.GetAvatarUrl());
+            }
+            public async Task UserJoined(IGuildUser user)
+            {
+                 var embed = new EmbedBuilder()
+                .WithTitle($"✅ User Joined | {user.Username}")
+                .WithColor(Color.Green)
+                .WithDescription($"{user.Username} | ({user.Id})")
+                .AddField("Joined Server", user.JoinedAt)
+                .AddField("Joined Discord", user.CreatedAt)
+                .WithFooter(DateTime.Now.ToString());
+
+                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                    embed.WithThumbnailUrl(user.GetAvatarUrl());
+            }
+            public async Task UserLeft(IGuildUser user)
+            {
+                var embed = new EmbedBuilder()
+                .WithTitle($"❎ User Left | {user.Username}")
+                .WithColor(Color.Red)
+                .WithDescription($"{user.Username} | ({user.Id})")
+                .WithFooter(DateTime.Now.ToString());
+
+                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                    embed.WithThumbnailUrl(user.GetAvatarUrl());
+            }
+            public async Task GuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
             {
                 // handle here
             }
-            protected async Task GuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
+            public async Task UserKicked(IUser user, IUser kicker)
             {
                 // handle here
             }
+            public async Task UserMuted(IUser user, IUser muter)
+            {
+                // handle here
+            }
+            public async Task UserUnmuted(IUser user, IUser unmuter)
+            {
+                // handle here
+            }
+
+
 
         }
     }
