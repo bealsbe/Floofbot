@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.Data.Sqlite;
 using System.Data.Common;
 using Discord.WebSocket;
+using Serilog;
 
 namespace Floofbot.Modules
 {
@@ -179,7 +180,7 @@ namespace Floofbot.Modules
                             else
                             {
                                 // channel entry not there? Incorrect cast? 
-                                Console.Write($"Tried to log {tableName} but could not find the associated database entry!");
+                                Log.Error("Tried to log {tableName} but could not find the associated database entry", tableName);
                                 return null;
                             }
 
@@ -220,7 +221,7 @@ namespace Floofbot.Modules
             public async Task MessageDeleted(Cacheable<IMessage, ulong> before, ISocketMessageChannel channel)
             {
                 var message = await before.GetOrDownloadAsync();
-                Console.WriteLine($"deleted message: {message}");
+                Log.Information("Deleted message: {message}", message);
             }
             public async Task UserBanned(IUser user, IGuild guild)
             {

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Floofbot.Services
 {
@@ -35,7 +36,7 @@ namespace Floofbot.Services
                 var result = await _service.ExecuteAsync(context, argPos, _services);
 
                 if (!result.IsSuccess && result.Error != CommandError.UnknownCommand) {
-                    Console.WriteLine(result.ErrorReason);
+                    Log.Error(result.ErrorReason);
                 }
             }
         }
