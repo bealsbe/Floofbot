@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Serilog;
-using Serilog.Sinks.File;
+using Floofbot.Handlers;
 
 namespace Floofbot
 {
