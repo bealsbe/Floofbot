@@ -3,6 +3,8 @@ using Floofbot.Services;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Serilog;
+using Serilog.Sinks.File;
 
 namespace Floofbot
 {
@@ -12,9 +14,12 @@ namespace Floofbot
         private CommandHandler _handler;
         private BotDatabase _botDatabase;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            string token = "";
+            InitialiseLogger();
+
+            // TODO: Replace console input with env variable import
+            string token;
             if (!(args.Length == 1)) {
                 Console.WriteLine("Enter Bot Token");
                 token = Console.ReadLine();
@@ -22,7 +27,21 @@ namespace Floofbot
             else {
                 token = args[0];
             }
-            new Program().MainAsync(token).GetAwaiter().GetResult();
+            await new Program().MainAsync(token);
+        }
+
+        private static void InitialiseLogger()
+        {
+            // Initialise the logger. Outputs Debug+ to console and Info+ to file
+            string logTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fffzzz}] - {Level:u3}: {Message:lj}{NewLine}";
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File("FloofLog.log",
+                    restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information,
+                    rollOnFileSizeLimit: true,
+                    outputTemplate: logTemplate)
+                .WriteTo.Console(outputTemplate: logTemplate)
+                .CreateLogger();
         }
 
         public async Task MainAsync(string token)
@@ -36,13 +55,14 @@ namespace Floofbot
                 await _client.StartAsync();
             }
             catch (Exception ex) {
-                Console.WriteLine(ex.Message + "\nPress any key to exit");
+                Log.Error(ex.Message);
+                Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
                 Environment.Exit(1);
             };
-            _client.Log += (LogMessage message) =>
+            _client.Log += (LogMessage msg) =>
             {
-                Console.WriteLine($"{DateTime.Now.ToString("[MM/dd/yyyy HH:mm]")} {message.Source}: {message.Message}");
+                Log.Information("{Source}: {Message}", msg.Source, msg.Message);
                 return Task.CompletedTask;
             };
             _botDatabase = new BotDatabase();
