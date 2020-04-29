@@ -135,26 +135,14 @@ namespace Floofbot.Modules
             {
                 _floofDb = floofDb;
             }
-            public async Task<ITextChannel> GetChannel(string eventName, Discord.IGuild guild)
+            public async Task<ITextChannel> GetChannel(Discord.IGuild guild, string eventName = null)
             {
                 // TODO: Find a better algorithm for this. Hardcoding event names is :(
 
-                var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
+                if (eventName == null)
+                    return null;
 
-                var validEvents = new List<string> {
-                            "MessageUpdatedChannel",
-                            "MessageDeletedChannel",
-                            "UserBannedChannel",
-                            "UserUnbannedChannel",
-                            "UserJoinedChannel",
-                            "UserLeftChannel",
-                            "MemberUpdatesChannel",
-                            "UserKickedChannel",
-                            "UserMutedChannel",
-                            "UserUnmutedChannel"
-                            };
-                if (validEvents.Contains(eventName))
-                {
+                var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
                     ulong logChannel;
                     switch (eventName)
                     {
@@ -194,8 +182,6 @@ namespace Floofbot.Modules
                     }
                     var textChannel = await guild.GetTextChannelAsync(logChannel);
                     return textChannel;
-                }
-                return null;
             }
             public bool IsToggled(IGuild guild)
             {
@@ -233,7 +219,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(channel.Guild)) == false) // not toggled on
                         return;
 
-                    Discord.ITextChannel logChannel = await GetChannel("MessageEditedChannel", channel.Guild);
+                    Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageEditedChannel");
                     if (channel == null)
                         return;
 
@@ -274,7 +260,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(channel.Guild)) == false) // not toggled on
                         return;
 
-                    Discord.ITextChannel logChannel = await GetChannel("MessageDeletedChannel", channel.Guild);
+                    Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageDeletedChannel");
                     if (channel == null)
                         return;
 
@@ -310,7 +296,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(channel.Guild)) == false) // not toggled on
                         return;
 
-                    Discord.ITextChannel logChannel = await GetChannel("MessageDeletedChannel", channel.Guild);
+                    Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageDeletedChannel");
                     if (channel == null)
                         return;
 
@@ -341,7 +327,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(guild)) == false)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel("UserBannedChannel", guild);
+                    Discord.ITextChannel channel = await GetChannel(guild, "UserBannedChannel");
                     if (channel == null)
                         return;
 
@@ -370,7 +356,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(guild)) == false)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel("UserBannedChannel", guild);
+                    Discord.ITextChannel channel = await GetChannel(guild, "UserBannedChannel");
                     if (channel == null)
                         return;
 
@@ -401,7 +387,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(guild)) == false)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel("UserUnbannedChannel", guild);
+                    Discord.ITextChannel channel = await GetChannel(guild, "UserUnbannedChannel");
                     if (channel == null)
                         return;
 
@@ -429,7 +415,7 @@ namespace Floofbot.Modules
                 {
                     if ((IsToggled(user.Guild)) == false)
                         return;
-                    Discord.ITextChannel channel = await GetChannel("UserJoinedChannel", user.Guild);
+                    Discord.ITextChannel channel = await GetChannel(user.Guild, "UserJoinedChannel");
                     if (channel == null)
                         return;
 
@@ -458,7 +444,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(user.Guild)) == false)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel("UserLeftChannel", user.Guild);
+                    Discord.ITextChannel channel = await GetChannel(user.Guild, "UserLeftChannel");
                     if (channel == null)
                         return;
 
@@ -491,7 +477,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(user.Guild) == false)) // turned off
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel("MemberUpdatesChannel", user.Guild);
+                    Discord.ITextChannel channel = await GetChannel(user.Guild, "MemberUpdatesChannel");
                     if (channel == null) // no log channel set
                         return;
 
@@ -549,7 +535,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(guild)) == false)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel("UserKickedChannel", guild);
+                    Discord.ITextChannel channel = await GetChannel(guild, "UserKickedChannel");
                     if (channel == null)
                         return;
 
@@ -578,7 +564,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(guild)) == false)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel("UserMutedChannel", guild);
+                    Discord.ITextChannel channel = await GetChannel(guild, "UserMutedChannel");
 
                     if (channel == null)
                         return;
@@ -609,7 +595,7 @@ namespace Floofbot.Modules
                     if ((IsToggled(guild)) == false)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel("UserUnmutedChannel", guild);
+                    Discord.ITextChannel channel = await GetChannel(guild, "UserUnmutedChannel");
 
                     if (channel == null)
                         return;
