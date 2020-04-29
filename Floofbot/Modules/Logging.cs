@@ -446,7 +446,7 @@ namespace Floofbot.Modules
                     {
                         embed.WithTitle($"👥 Username Changed | {user.Username}")
                             .WithColor(Color.Purple)
-                            .WithDescription($"{after.Id} | ``{before.Id}``")
+                            .WithDescription($"{user.Mention} | ``{user.Id}``")
                             .AddField("Old Username", user.Username)
                             .AddField("New Name", user.Username)
                             .WithFooter(DateTime.Now.ToString());
@@ -456,7 +456,7 @@ namespace Floofbot.Modules
                     {
                         embed.WithTitle($"👥 Nickname Changed | {user.Username}")
                             .WithColor(Color.Purple)
-                            .WithDescription($"{user.Nickname} | ``{user.Id}``")
+                            .WithDescription($"{user.Mention} | ``{user.Id}``")
                             .AddField("Old Nickname", before.Nickname)
                             .AddField("New Nickname", user.Nickname)
                             .WithFooter(DateTime.Now.ToString());
@@ -466,7 +466,7 @@ namespace Floofbot.Modules
                     {
                         embed.WithTitle($"🖼️ Avatar Changed | {user.Username}")
                         .WithColor(Color.Purple)
-                        .WithDescription($"{before.Id} | ``{before.Id}``")
+                        .WithDescription($"{user.Mention} | ``{user.Id}``")
                         .WithFooter(DateTime.Now.ToString());
                         if (Uri.IsWellFormedUriString(before.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(before.GetAvatarUrl());
