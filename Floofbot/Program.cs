@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using Floofbot.Services;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Serilog;
-using Serilog.Sinks.File;
+using Floofbot.Handlers;
 using Floofbot.Modules;
 
 namespace Floofbot
