@@ -115,11 +115,6 @@ namespace Floofbot.Modules
                         ServerConfig.IsOn = false;
                         await Context.Channel.SendMessageAsync("Logger Disabled!");
                     }
-                    else // should never happen, but incase it does, reset the value
-                    {
-                        await Context.Channel.SendMessageAsync("Unable to toggle logger. Try again");
-                        ServerConfig.IsOn = false;
-                    }
                     _floofDB.SaveChanges();
                 }
                 catch (Exception ex)
