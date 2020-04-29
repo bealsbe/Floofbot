@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using Floofbot.Services;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Serilog;
 using Floofbot.Handlers;
+using Floofbot.Modules;
 
 namespace Floofbot
 {
@@ -20,11 +21,13 @@ namespace Floofbot
 
             // TODO: Replace console input with env variable import
             string token;
-            if (!(args.Length == 1)) {
+            if (!(args.Length == 1))
+            {
                 Console.WriteLine("Enter Bot Token");
                 token = Console.ReadLine();
             }
-            else {
+            else
+            {
                 token = args[0];
             }
             await new Program().MainAsync(token);
@@ -47,14 +50,28 @@ namespace Floofbot
         public async Task MainAsync(string token)
         {
             _client = new DiscordSocketClient(
-                  new DiscordSocketConfig() {
-                      LogLevel = LogSeverity.Info
+                  new DiscordSocketConfig()
+                  {
+                      LogLevel = LogSeverity.Info,
+                      MessageCacheSize = 100
                   });
-            try {
+            try
+            {
                 await _client.LoginAsync(TokenType.Bot, token);
                 await _client.StartAsync();
+
+                Logging.EventHandlingService eventService = new Logging.EventHandlingService();
+                _client.MessageUpdated += eventService.MessageUpdated;
+                _client.MessageDeleted += eventService.MessageDeleted;
+                _client.UserBanned += eventService.UserBanned;
+                _client.UserUnbanned += eventService.UserUnbanned;
+                _client.UserJoined += eventService.UserJoined;
+                _client.UserLeft += eventService.UserLeft;
+                _client.GuildMemberUpdated += eventService.GuildMemberUpdated;
+
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Log.Error(ex.Message);
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
