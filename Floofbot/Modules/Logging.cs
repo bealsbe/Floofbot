@@ -191,13 +191,7 @@ namespace Floofbot.Modules
                 if (ServerConfig == null) // no entry in DB for server - not configured
                     return false;
 
-                bool bEnabled = ServerConfig.IsOn;
-                if (!bEnabled)
-                    return false;
-                else if (bEnabled)
-                    return true;
-                else
-                    return false;
+                return ServerConfig.IsOn;
             }
 
             public async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel chan)
