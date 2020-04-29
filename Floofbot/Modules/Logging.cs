@@ -482,7 +482,6 @@ namespace Floofbot.Modules
                 catch (Exception ex)
                 {
                     Log.Error("Error with the guild member updated event handler: " + ex);
-                    Console.Write(ex);
                     return;
                 }
 
