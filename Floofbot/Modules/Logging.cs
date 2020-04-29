@@ -8,6 +8,11 @@ using System.Text;
 using Microsoft.Data.Sqlite;
 using System.Data.Common;
 using Discord.WebSocket;
+using Floofbot.Services.Repository;
+using Floofbot.Services.Repository.Models;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using System.Linq;
 
 namespace Floofbot.Modules
 {
@@ -18,63 +23,36 @@ namespace Floofbot.Modules
         [RequireContext(ContextType.Guild)]
         public class LoggerCommands : ModuleBase<SocketCommandContext>
         {
-            SqliteConnection dbConnection;
+          
+            private FloofDataContext _floofDB;
 
-            public LoggerCommands()
+            public LoggerCommands(FloofDataContext floofDB)
             {
-                dbConnection = new SqliteConnection(new SqliteConnectionStringBuilder
-                {
-                    DataSource = "botdata.db"
-                }.ToString());
-                dbConnection.Open();
-
-                // first check the structure exist before we use the module
-                string sqlCreateStructure = @"
-                        CREATE TABLE IF NOT EXISTS Logger(
-                            'ServerID' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'MessageUpdatedChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'MessageDeletedChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'UserBannedChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'UserUnbannedChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'UserJoinedChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'UserLeftChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'MemberUpdatesChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'UserKickedChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'UserMutedChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'UserUnmutedChannel' UNSIGNED BIT INT DEFAULT 0 NOT NULL,
-                            'IsOn' INT DEFAULT 0 NOT NULL)
-                      ";
-                using (SqliteCommand cmdCreateStructure = new SqliteCommand(sqlCreateStructure, dbConnection))
-                {
-                    cmdCreateStructure.ExecuteScalar();
-                }
+                _floofDB = floofDB;
             }
 
-            protected void CheckServer(ulong ServerId)
+            protected void CheckServer(ulong server)
             {
                 // checks if server exists in database and adds if not
-                string sqlInsertServer = @"
-                                            INSERT INTO Logger(ServerID,
-                                                                MessageUpdatedChannel,
-                                                                MessageDeletedChannel,
-                                                                UserBannedChannel,
-                                                                UserUnbannedChannel,
-                                                                UserJoinedChannel,
-                                                                UserLeftChannel,
-                                                                MemberUpdatesChannel,
-                                                                UserKickedChannel,
-                                                                UserMutedChannel,
-                                                                UserUnmutedChannel,
-                                                                IsOn)
-                                            SELECT * FROM (SELECT $ServerID,0,0,0,0,0,0,0,0,0,0,0) AS tmp
-                                            WHERE NOT EXISTS (
-                                                              SELECT * FROM Logger WHERE ServerID = $ServerID
-                                                              ) LIMIT 1;
-                                          ";
-                using (SqliteCommand cmdInsertServer = new SqliteCommand(sqlInsertServer, dbConnection))
+                var serverConfig = _floofDB.LogConfigs.Find(server);
+                if (serverConfig == null)
                 {
-                    cmdInsertServer.Parameters.Add(new SqliteParameter("$ServerID", ServerId));
-                    cmdInsertServer.ExecuteNonQuery();
+                    _floofDB.Add(new LogConfig { 
+                                                ServerId = server,
+                                                MessageUpdatedChannel = 0,
+                                                MessageDeletedChannel = 0,
+                                                UserBannedChannel = 0,
+                                                UserUnbannedChannel = 0,
+                                                UserJoinedChannel = 0,
+                                                UserLeftChannel = 0,
+                                                MemberUpdatesChannel = 0,
+                                                UserKickedChannel = 0,
+                                                UserMutedChannel = 0,
+                                                UserUnmutedChannel = 0,
+                                                IsOn = false
+                                                });
+                    _floofDB.SaveChanges();
+
                 }
             }
 
@@ -83,11 +61,8 @@ namespace Floofbot.Modules
                 CheckServer(guild.Id);
 
                 // set channel
-                string sqlUpdateChannel = $"UPDATE Logger SET {tableName} = {channel.Id} WHERE ServerID = {guild.Id}";
-                using (SqliteCommand cmd = new SqliteCommand(sqlUpdateChannel, dbConnection))
-                {
-                    cmd.ExecuteNonQuery();
-                }
+                _floofDB.Database.ExecuteSqlRaw($"UPDATE LogConfigs SET {tableName} = {channel.Id} WHERE ServerID = {guild.Id}");
+                _floofDB.SaveChanges();
                 await Context.Channel.SendMessageAsync("Channel updated! Set " + tableName + " to <#" + channel.Id + ">");
             }
 
@@ -127,48 +102,31 @@ namespace Floofbot.Modules
                 try
                 {
                     // check the status of logger
-                    string sqlCheckStatus = $"SELECT * FROM Logger WHERE ServerID = {Context.Guild.Id} LIMIT 1"; // check state
-                    using (SqliteCommand command = new SqliteCommand(sqlCheckStatus, dbConnection))
+                    var ServerConfig = _floofDB.LogConfigs.Find(Context.Guild.Id);
+
+                    bool bEnabled = ServerConfig.IsOn;
+                    if (!bEnabled)
                     {
-                        using (SqliteDataReader result = command.ExecuteReader())
-                        {
-                            while (result.Read())
-                            {
-                                long bEnabled = (long)result["IsOn"];
-                                if (bEnabled == 0)
-                                {
-                                    string sqlToggleStatus = $"UPDATE Logger SET IsOn = 1 WHERE ServerID = {Context.Guild.Id}";
-                                    using (SqliteCommand cmd = new SqliteCommand(sqlToggleStatus, dbConnection))
-                                    {
-                                        cmd.ExecuteNonQuery();
-                                    }
-                                    await Context.Channel.SendMessageAsync("Logger Enabled!");
-                                }
-                                else if (bEnabled == 1)
-                                {
-                                    string sqlToggleStatus = $"UPDATE Logger SET IsOn = 0 WHERE ServerID = {Context.Guild.Id}";
-                                    using (SqliteCommand cmd = new SqliteCommand(sqlToggleStatus, dbConnection))
-                                    {
-                                        cmd.ExecuteNonQuery();
-                                    }
-                                    await Context.Channel.SendMessageAsync("Logger Disabled!");
-                                }
-                                else // should never happen, but incase it does, reset the value
-                                {
-                                    await Context.Channel.SendMessageAsync("Unable to toggle logger. Try again");
-                                    string sqlToggleStatus = $"UPDATE Logger SET IsOn = 0 WHERE ServerID = {Context.Guild.Id}";
-                                    using (SqliteCommand cmd = new SqliteCommand(sqlToggleStatus, dbConnection))
-                                    {
-                                        cmd.ExecuteNonQuery();
-                                    }
-                                }
-                            }
-                        }
+                        ServerConfig.IsOn = true;
+                        await Context.Channel.SendMessageAsync("Logger Enabled!");
                     }
+                    else if (bEnabled)
+                    {
+                        ServerConfig.IsOn = false;
+                        await Context.Channel.SendMessageAsync("Logger Disabled!");
+                    }
+                    else // should never happen, but incase it does, reset the value
+                    {
+                        await Context.Channel.SendMessageAsync("Unable to toggle logger. Try again");
+                        ServerConfig.IsOn = false;
+                    }
+                    _floofDB.SaveChanges();
                 }
                 catch (Exception ex)
                 {
                     await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                    Log.Error("Error when trying to toggle the event logger: " + ex);
+                    return;
                 }
             }
 
@@ -177,226 +135,297 @@ namespace Floofbot.Modules
         // events handling
         public class EventHandlingService{
 
-            SqliteConnection dbConnection;
-            public EventHandlingService()
+            FloofDataContext _floofDb;
+            public EventHandlingService(FloofDataContext floofDb)
             {
-                dbConnection = new SqliteConnection(new SqliteConnectionStringBuilder
-                {
-                    DataSource = "botdata.db"
-                }.ToString());
-                dbConnection.Open();
+                _floofDb = floofDb;
             }
-            public async Task<ITextChannel> GetChannel(string tableName, Discord.IGuild guild)
+            public async Task<ITextChannel> GetChannel(string eventName, Discord.IGuild guild)
             {
-                // gets a channel based on the tablename (the type of logger)
-                string sqlGetChannel = $"SELECT {tableName} FROM Logger WHERE ServerID = {guild.Id} LIMIT 1"; // check state
-                using (SqliteCommand command = new SqliteCommand(sqlGetChannel, dbConnection))
-                {
-                    using (SqliteDataReader result = command.ExecuteReader())
-                    {
-                        while (result.Read())
-                        {
-                            if (result.HasRows)
-                            {
-                                ulong channelID = Convert.ToUInt64(result[tableName]);
-                                if (channelID == 0)
-                                    return null; // they have not set a logger channel
-                                // get channel object
-                                var textChannel = await guild.GetTextChannelAsync(channelID);
-                                return textChannel;
-                            }
-                            else
-                            {
-                                // channel entry not there? Incorrect cast? 
-                                Log.Error("Tried to log {tableName} but could not find the associated database entry", tableName); return null;
-                            }
+                // TODO: Find a better algorithm for this. Hardcoding event names is :(
 
-                        }
-                        return null;
+                var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
+
+                var validEvents = new List<string> {
+                            "MessageUpdatedChannel",
+                            "MessageDeletedChannel",
+                            "UserBannedChannel",
+                            "UserUnbannedChannel",
+                            "UserJoinedChannel",
+                            "UserLeftChannel",
+                            "MemberUpdatesChannel",
+                            "UserKickedChannel",
+                            "UserMutedChannel",
+                            "UserUnmutedChannel"
+                            };
+                if (validEvents.Contains(eventName))
+                {
+                    ulong logChannel;
+                    switch (eventName)
+                    {
+                        case "MessageUpdatedChannel":
+                            logChannel =  serverConfig.MessageUpdatedChannel;
+                            break;
+                        case "MessageDeletedChannel":
+                            logChannel = serverConfig.MessageDeletedChannel;
+                            break;
+                        case "UserBannedChannel":
+                            logChannel = serverConfig.UserBannedChannel;
+                            break;
+                        case "UserUnbannedChannel":
+                            logChannel = serverConfig.UserUnbannedChannel;
+                            break;
+                        case "UserJoinedChannel":
+                            logChannel =  serverConfig.UserJoinedChannel;
+                            break;
+                        case "UserLeftChannel":
+                            logChannel = serverConfig.UserLeftChannel;
+                            break;
+                        case "MemberUpdatesChannel":
+                            logChannel =  serverConfig.MemberUpdatesChannel;
+                            break;
+                        case "UserKickedChannel":
+                            logChannel =  serverConfig.UserKickedChannel;
+                            break;
+                        case "UserMutedChannel":
+                            logChannel =  serverConfig.UserMutedChannel;
+                            break;
+                        case "UserUnmutedChannel":
+                            logChannel =  serverConfig.UserUnmutedChannel;
+                            break;
+                        default:
+                            logChannel = 0;
+                            break;
                     }
+                    var textChannel = await guild.GetTextChannelAsync(logChannel);
+                    return textChannel;
                 }
+                return null;
             }
             public bool IsToggled(IGuild guild)
             {
                 // check if the logger is toggled on in this server
                 // check the status of logger
-                string sqlCheckStatus = $"SELECT IsOn FROM Logger WHERE ServerID = {guild.Id} LIMIT 1"; // check state
-                using (SqliteCommand command = new SqliteCommand(sqlCheckStatus, dbConnection))
-                {
-                    using (SqliteDataReader result = command.ExecuteReader())
-                    {
-                        while (result.Read())
-                        {
-                            long bEnabled = (long)result["IsOn"];
-                            if (bEnabled == 0)
-                                return false;
-                            else if (bEnabled == 1)
-                                return true;
-                            else
-                                return false;
-                        }
-                        return false;
-                    }
-                }
+                var ServerConfig = _floofDb.LogConfigs.Find(guild.Id);
+                if (ServerConfig == null) // no entry in DB for server - not configured
+                    return false;
+
+                bool bEnabled = ServerConfig.IsOn;
+                if (!bEnabled)
+                    return false;
+                else if (bEnabled)
+                    return true;
+                else
+                    return false;
             }
 
             public async Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel chan)
             {
-                // deal with empty message
-                var messageBefore = (before.HasValue ? before.Value : null) as IUserMessage;
-                if (messageBefore == null)
+                try
+                {
+                    // deal with empty message
+                    var messageBefore = (before.HasValue ? before.Value : null) as IUserMessage;
+                    if (messageBefore == null)
+                        return;
+
+                    var channel = chan as ITextChannel; // channel null, dm message?
+                    if (channel == null)
+                        return;
+
+                    if (messageBefore.Content == after.Content) // no change
+                        return;
+
+                    if ((IsToggled(channel.Guild)) == false) // not toggled on
+                        return;
+
+                    Discord.ITextChannel logChannel = await GetChannel("MessageEditedChannel", channel.Guild);
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                     .WithTitle($"⚠️ Message Edited | {after.Author.Username}")
+                     .WithColor(Color.DarkGrey)
+                     .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
+                     .AddField("Before", messageBefore.Content)
+                     .AddField("After", after.Content)
+                     .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(after.Author.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
+
+                    await logChannel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the message updated event handler: " + ex);
                     return;
+                }
 
-                var channel = chan as ITextChannel; // channel null, dm message?
-                if (channel == null)
-                    return;
-
-                if (messageBefore.Content == after.Content) // no change
-                    return;
-
-                if ((IsToggled(channel.Guild)) == false) // not toggled on
-                    return;
-
-                Discord.ITextChannel logChannel = await GetChannel("MessageEditedChannel", channel.Guild);
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                 .WithTitle($"⚠️ Message Edited | {after.Author.Username}")
-                 .WithColor(Color.DarkGrey)
-                 .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
-                 .AddField("Before", messageBefore.Content)
-                 .AddField("After", after.Content)
-                 .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(after.Author.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
-
-                await logChannel.SendMessageAsync("", false, embed.Build());
             }
             public async Task MessageDeleted(Cacheable<IMessage, ulong> before, ISocketMessageChannel chan)
             {
+                try
+                {
 
-                // deal with empty message
-                var message = (before.HasValue ? before.Value : null) as IUserMessage;
-                if (message == null)
+                    // deal with empty message
+                    var message = (before.HasValue ? before.Value : null) as IUserMessage;
+                    if (message == null)
+                        return;
+
+                    var channel = chan as ITextChannel; // channel null, dm message?
+                    if (channel == null)
+                        return;
+
+                    if ((IsToggled(channel.Guild)) == false) // not toggled on
+                        return;
+
+                    Discord.ITextChannel logChannel = await GetChannel("MessageDeletedChannel", channel.Guild);
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                     .WithTitle($"⚠️ Message Deleted | {message.Author.Username}")
+                     .WithColor(Color.Gold)
+                     .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
+                     .AddField("Content", message.Content)
+                     .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
+
+                    await logChannel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the message deleted event handler: " + ex);
                     return;
-
-                var channel = chan as ITextChannel; // channel null, dm message?
-                if (channel == null)
-                    return;
-
-                if ((IsToggled(channel.Guild)) == false) // not toggled on
-                    return;
-
-                Discord.ITextChannel logChannel = await GetChannel("MessageDeletedChannel", channel.Guild);
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                 .WithTitle($"⚠️ Message Deleted | {message.Author.Username}")
-                 .WithColor(Color.Gold)
-                 .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
-                 .AddField("Content", message.Content)
-                 .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
-
-                await logChannel.SendMessageAsync("", false, embed.Build());
+                }
             }
             public async Task MessageDeletedByBot(SocketMessage before, ITextChannel channel, string reason = "N/A")
             {
+                try
+                {
+                    // deal with empty message
+                    if (before.Content == null)
+                        return;
 
-                // deal with empty message
-                if (before.Content == null)
+                    if (channel == null)
+                        return;
+
+                    if ((IsToggled(channel.Guild)) == false) // not toggled on
+                        return;
+
+                    Discord.ITextChannel logChannel = await GetChannel("MessageDeletedChannel", channel.Guild);
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                     .WithTitle($"⚠️ Message Deleted By Bot | {before.Author.Username}")
+                     .WithColor(Color.Gold)
+                     .WithDescription($"{before.Author.Mention} ({before.Author.Id}) has had their message deleted in {channel.Mention}!")
+                     .AddField("Content", before.Content)
+                     .AddField("Reason", reason)
+                     .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(before.Author.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(before.Author.GetAvatarUrl());
+
+                    await logChannel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the message deleted by bot event handler: " + ex);
                     return;
-
-                if (channel == null)
-                    return;
-
-                if ((IsToggled(channel.Guild)) == false) // not toggled on
-                    return;
-
-                Discord.ITextChannel logChannel = await GetChannel("MessageDeletedChannel", channel.Guild);
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                 .WithTitle($"⚠️ Message Deleted By Bot | {before.Author.Username}")
-                 .WithColor(Color.Gold)
-                 .WithDescription($"{before.Author.Mention} ({before.Author.Id}) has had their message deleted in {channel.Mention}!")
-                 .AddField("Content", before.Content)
-                 .AddField("Reason", reason)
-                 .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(before.Author.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(before.Author.GetAvatarUrl());
-
-                await logChannel.SendMessageAsync("", false, embed.Build());
+                }
             }
             public async Task UserBanned(IUser user, IGuild guild)
             {
-                if ((IsToggled(guild)) == false)
+                try
+                {
+
+                    if ((IsToggled(guild)) == false)
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel("UserBannedChannel", guild);
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                     .WithTitle($"🔨 User Banned | {user.Username}")
+                     .WithColor(Color.Red)
+                     .WithDescription($"{user.Mention} | ``{user.Id}``")
+                     .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(user.GetAvatarUrl());
+
+                    await channel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the user banned event handler: " + ex);
                     return;
-
-                Discord.ITextChannel channel = await GetChannel("UserBannedChannel", guild);
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                 .WithTitle($"🔨 User Banned | {user.Username}")
-                 .WithColor(Color.Red)
-                 .WithDescription($"{user.Mention} | ``{user.Id}``")
-                 .WithFooter(DateTime.Now.ToString());
-
-                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
-                     embed.WithThumbnailUrl(user.GetAvatarUrl());
-
-                await channel.SendMessageAsync("", false, embed.Build());
+                }
 
             }
             public async Task UserBannedByBot(IUser user, IGuild guild, string reason = "N/A")
             {
-                if ((IsToggled(guild)) == false)
+                try
+                {
+                    if ((IsToggled(guild)) == false)
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel("UserBannedChannel", guild);
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                     .WithTitle($"🔨 User Banned | {user.Username}")
+                     .WithColor(Color.Red)
+                     .WithDescription($"{user.Mention} | ``{user.Id}``")
+                     .AddField("Reason", reason)
+                     .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(user.GetAvatarUrl());
+
+                    await channel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the user banned by bot event handler: " + ex);
                     return;
-
-                Discord.ITextChannel channel = await GetChannel("UserBannedChannel", guild);
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                 .WithTitle($"🔨 User Banned | {user.Username}")
-                 .WithColor(Color.Red)
-                 .WithDescription($"{user.Mention} | ``{user.Id}``")
-                 .AddField("Reason", reason)
-                 .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(user.GetAvatarUrl());
-
-                await channel.SendMessageAsync("", false, embed.Build());
+                }
 
             }
             public async Task UserUnbanned(IUser user, IGuild guild)
             {
-                if ((IsToggled(guild)) == false)
+                try
+                {
+
+                    if ((IsToggled(guild)) == false)
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel("UserUnbannedChannel", guild);
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                    .WithTitle($"♻️ User Unbanned | {user.Username}")
+                    .WithColor(Color.Gold)
+                    .WithDescription($"{user.Mention} | ``{user.Id}``")
+                    .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(user.GetAvatarUrl());
+
+                    await channel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the user unbanned event handler: " + ex);
                     return;
-
-                Discord.ITextChannel channel = await GetChannel("UserUnbannedChannel", guild);
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                .WithTitle($"♻️ User Unbanned | {user.Username}")
-                .WithColor(Color.Gold)
-                .WithDescription($"{user.Mention} | ``{user.Id}``")
-                .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(user.GetAvatarUrl());
-
-                await channel.SendMessageAsync("", false, embed.Build());
+                }
 
             }
             public async Task UserJoined(IGuildUser user)
@@ -421,151 +450,192 @@ namespace Floofbot.Modules
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
                     await channel.SendMessageAsync("", false, embed.Build());
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Console.Write(ex);
+                    Log.Error("Error with the user joined event handler: " + ex);
+                    return;
                 }
             }
             public async Task UserLeft(IGuildUser user)
             {
-                if ((IsToggled(user.Guild)) == false)
+                try
+                {
+                    if ((IsToggled(user.Guild)) == false)
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel("UserLeftChannel", user.Guild);
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                    .WithTitle($"❌ User Left | {user.Username}")
+                    .WithColor(Color.Red)
+                    .WithDescription($"{user.Mention} | ``{user.Id}``")
+                    .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(user.GetAvatarUrl());
+
+                    await channel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the user left event handler: " + ex);
                     return;
-
-                Discord.ITextChannel channel = await GetChannel("UserLeftChannel", user.Guild);
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                .WithTitle($"❌ User Left | {user.Username}")
-                .WithColor(Color.Red)
-                .WithDescription($"{user.Mention} | ``{user.Id}``")
-                .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(user.GetAvatarUrl());
-
-                await channel.SendMessageAsync("", false, embed.Build());
+                }
 
             }
             public async Task GuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
             {
-
-                if (before == null || after == null) // empty user params
-                    return;
-                var user = after as SocketGuildUser;
-
-                if ((IsToggled(user.Guild) == false)) // turned off
-                    return;
-
-                Discord.ITextChannel channel = await GetChannel("MemberUpdatesChannel", user.Guild);
-                if (channel == null) // no log channel set
-                    return;
-
-                var embed = new EmbedBuilder();
-
-                if (before.Username != after.Username)
+                try
                 {
-                    embed.WithTitle($"👥 Username Changed | {user.Mention}")
+                    if (before == null || after == null) // empty user params
+                        return;
+                    var user = after as SocketGuildUser;
+
+                    if ((IsToggled(user.Guild) == false)) // turned off
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel("MemberUpdatesChannel", user.Guild);
+                    if (channel == null) // no log channel set
+                        return;
+
+                    var embed = new EmbedBuilder();
+
+                    if (before.Username != after.Username)
+                    {
+                        embed.WithTitle($"👥 Username Changed | {user.Mention}")
+                            .WithColor(Color.Purple)
+                            .WithDescription($"<@{after.Id}> | ``{before.Id}``")
+                            .AddField("Old Username", user.Username)
+                            .AddField("New Name", user.Username)
+                            .WithFooter(DateTime.Now.ToString());
+
+                    }
+                    else if (before.Nickname != after.Nickname)
+                    {
+                        embed.WithTitle($"👥 Nickname Changed | {user.Mention}")
+                            .WithColor(Color.Purple)
+                            .WithDescription($"<@{user.Nickname}> | ``{user.Id}``")
+                            .AddField("Old Nickname", before.Nickname)
+                            .AddField("New Nickname", user.Nickname)
+                            .WithFooter(DateTime.Now.ToString());
+
+                    }
+                    else if (before.AvatarId != after.AvatarId)
+                    {
+                        embed.WithTitle($"🖼️ Avatar Changed | {user.Mention}")
                         .WithColor(Color.Purple)
                         .WithDescription($"<@{before.Id}> | ``{before.Id}``")
-                        .AddField("Old Username", user.Username)
-                        .AddField("New Name", user.Username)
                         .WithFooter(DateTime.Now.ToString());
-
+                        if (Uri.IsWellFormedUriString(before.GetAvatarUrl(), UriKind.Absolute))
+                            embed.WithThumbnailUrl(before.GetAvatarUrl());
+                        if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
+                            embed.WithImageUrl(after.GetAvatarUrl());
+                    }
+                    else
+                    {
+                        return;
+                    }
+                    await channel.SendMessageAsync("", false, embed.Build());
                 }
-                else if (before.Nickname != after.Nickname)
+                catch (Exception ex)
                 {
-                    embed.WithTitle($"👥 Nickname Changed | {user.Mention}")
-                        .WithColor(Color.Purple)
-                        .WithDescription($"<@{before.Id}> | ``{before.Id}``")
-                        .AddField("Old Nickname", before.Nickname)
-                        .AddField("New Nickname", user.Nickname)
-                        .WithFooter(DateTime.Now.ToString());
-
-                }
-                else if (before.AvatarId != after.AvatarId)
-                {
-                    embed.WithTitle($"🖼️ Avatar Changed | {user.Mention}")
-                    .WithColor(Color.Purple)
-                    .WithDescription($"<@{before.Id}> | ``{before.Id}``")
-                    .WithFooter(DateTime.Now.ToString());
-                    if (Uri.IsWellFormedUriString(before.GetAvatarUrl(), UriKind.Absolute))
-                        embed.WithThumbnailUrl(before.GetAvatarUrl());
-                    if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
-                        embed.WithImageUrl(after.GetAvatarUrl());
-                }
-                else
-                {
+                    Log.Error("Error with the guild member updated event handler: " + ex);
                     return;
                 }
-                await channel.SendMessageAsync("", false, embed.Build());
-
 
             }
             public async Task UserKicked(IUser user, IUser kicker, IGuild guild)
             {
-                if ((IsToggled(guild)) == false)
+                try
+                {
+
+                    if ((IsToggled(guild)) == false)
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel("UserKickedChannel", guild);
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                     .WithTitle($"👢 User Kicked | {user.Username}")
+                     .WithColor(Color.Red)
+                     .WithDescription($"{user.Mention} | ``{user.Id}``")
+                     .AddField("Kicked By", kicker.Mention)
+                     .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(user.GetAvatarUrl());
+
+                    await channel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the user kicked event handler: " + ex);
                     return;
-
-                Discord.ITextChannel channel = await GetChannel("UserKickedChannel", guild);
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                 .WithTitle($"👢 User Kicked | {user.Username}")
-                 .WithColor(Color.Red)
-                 .WithDescription($"{user.Mention} | ``{user.Id}``")
-                 .AddField("Kicked By", kicker.Mention)
-                 .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(user.GetAvatarUrl());
-
-                await channel.SendMessageAsync("", false, embed.Build());
+                }
             }
             public async Task UserMuted(IUser user, IUser muter, IGuild guild)
             {
-                if ((IsToggled(guild)) == false)
+                try
+                {
+                    if ((IsToggled(guild)) == false)
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel("UserMutedChannel", guild);
+
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                     .WithTitle($"🔇 User Muted | {user.Username}")
+                     .WithColor(Color.Teal)
+                     .WithDescription($"{user.Mention} | ``{user.Id}``")
+                     .AddField("Muted By", muter.Mention)
+                     .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(user.GetAvatarUrl());
+
+                    await channel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the user muted event handler: " + ex);
                     return;
-
-                Discord.ITextChannel channel = await GetChannel("UserMutedChannel", guild);
-
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                 .WithTitle($"🔇 User Muted | {user.Username}")
-                 .WithColor(Color.Teal)
-                 .WithDescription($"{user.Mention} | ``{user.Id}``")
-                 .AddField("Muted By", muter.Mention)
-                 .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(user.GetAvatarUrl());
-
-                await channel.SendMessageAsync("", false, embed.Build());
+                }
             }
             public async Task UserUnmuted(IUser user, IUser unmuter, IGuild guild)
             {
-                if ((IsToggled(guild)) == false)
+                try
+                {
+
+                    if ((IsToggled(guild)) == false)
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel("UserUnmutedChannel", guild);
+
+                    if (channel == null)
+                        return;
+
+                    var embed = new EmbedBuilder()
+                     .WithTitle($"🔊 User Unmuted | {user.Username}")
+                     .WithColor(Color.Teal)
+                     .WithDescription($"{user.Mention} | ``{user.Id}``")
+                     .AddField("Unmuted By", unmuter.Mention)
+                     .WithFooter(DateTime.Now.ToString());
+
+                    if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                        embed.WithThumbnailUrl(user.GetAvatarUrl());
+
+                    await channel.SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the user unmuted event handler: " + ex);
                     return;
-
-                Discord.ITextChannel channel = await GetChannel("UserUnmutedChannel", guild);
-
-                if (channel == null)
-                    return;
-
-                var embed = new EmbedBuilder()
-                 .WithTitle($"🔊 User Unmuted | {user.Username}")
-                 .WithColor(Color.Teal)
-                 .WithDescription($"{user.Mention} | ``{user.Id}``")
-                 .AddField("Unmuted By", unmuter.Mention)
-                 .WithFooter(DateTime.Now.ToString());
-
-                if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
-                    embed.WithThumbnailUrl(user.GetAvatarUrl());
-
-                await channel.SendMessageAsync("", false, embed.Build());
+                }
             }
 
 
