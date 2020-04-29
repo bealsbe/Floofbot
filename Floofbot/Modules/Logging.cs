@@ -444,9 +444,9 @@ namespace Floofbot.Modules
 
                     if (before.Username != after.Username)
                     {
-                        embed.WithTitle($"👥 Username Changed | {user.Mention}")
+                        embed.WithTitle($"👥 Username Changed | {user.Username}")
                             .WithColor(Color.Purple)
-                            .WithDescription($"<@{after.Id}> | ``{before.Id}``")
+                            .WithDescription($"{after.Id} | ``{before.Id}``")
                             .AddField("Old Username", user.Username)
                             .AddField("New Name", user.Username)
                             .WithFooter(DateTime.Now.ToString());
@@ -454,9 +454,9 @@ namespace Floofbot.Modules
                     }
                     else if (before.Nickname != after.Nickname)
                     {
-                        embed.WithTitle($"👥 Nickname Changed | {user.Mention}")
+                        embed.WithTitle($"👥 Nickname Changed | {user.Username}")
                             .WithColor(Color.Purple)
-                            .WithDescription($"<@{user.Nickname}> | ``{user.Id}``")
+                            .WithDescription($"{user.Nickname} | ``{user.Id}``")
                             .AddField("Old Nickname", before.Nickname)
                             .AddField("New Nickname", user.Nickname)
                             .WithFooter(DateTime.Now.ToString());
@@ -464,9 +464,9 @@ namespace Floofbot.Modules
                     }
                     else if (before.AvatarId != after.AvatarId)
                     {
-                        embed.WithTitle($"🖼️ Avatar Changed | {user.Mention}")
+                        embed.WithTitle($"🖼️ Avatar Changed | {user.Username}")
                         .WithColor(Color.Purple)
-                        .WithDescription($"<@{before.Id}> | ``{before.Id}``")
+                        .WithDescription($"{before.Id} | ``{before.Id}``")
                         .WithFooter(DateTime.Now.ToString());
                         if (Uri.IsWellFormedUriString(before.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(before.GetAvatarUrl());
