@@ -143,45 +143,10 @@ namespace Floofbot.Modules
                     return null;
 
                 var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
-                    ulong logChannel;
-                    switch (eventName)
-                    {
-                        case "MessageUpdatedChannel":
-                            logChannel =  serverConfig.MessageUpdatedChannel;
-                            break;
-                        case "MessageDeletedChannel":
-                            logChannel = serverConfig.MessageDeletedChannel;
-                            break;
-                        case "UserBannedChannel":
-                            logChannel = serverConfig.UserBannedChannel;
-                            break;
-                        case "UserUnbannedChannel":
-                            logChannel = serverConfig.UserUnbannedChannel;
-                            break;
-                        case "UserJoinedChannel":
-                            logChannel =  serverConfig.UserJoinedChannel;
-                            break;
-                        case "UserLeftChannel":
-                            logChannel = serverConfig.UserLeftChannel;
-                            break;
-                        case "MemberUpdatesChannel":
-                            logChannel =  serverConfig.MemberUpdatesChannel;
-                            break;
-                        case "UserKickedChannel":
-                            logChannel =  serverConfig.UserKickedChannel;
-                            break;
-                        case "UserMutedChannel":
-                            logChannel =  serverConfig.UserMutedChannel;
-                            break;
-                        case "UserUnmutedChannel":
-                            logChannel =  serverConfig.UserUnmutedChannel;
-                            break;
-                        default:
-                            logChannel = 0;
-                            break;
-                    }
-                    var textChannel = await guild.GetTextChannelAsync(logChannel);
-                    return textChannel;
+                System.Reflection.PropertyInfo propertyInfo = serverConfig.GetType().GetProperty(eventName);
+                ulong logChannel = (ulong)(propertyInfo.GetValue(serverConfig, null));
+                var textChannel = await guild.GetTextChannelAsync(logChannel);
+                return textChannel;
             }
             public bool IsToggled(IGuild guild)
             {
@@ -517,6 +482,7 @@ namespace Floofbot.Modules
                 catch (Exception ex)
                 {
                     Log.Error("Error with the guild member updated event handler: " + ex);
+                    Console.Write(ex);
                     return;
                 }
 
