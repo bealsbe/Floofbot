@@ -139,7 +139,7 @@ namespace Floofbot.Modules
             int warningCount = 0;
             builder.WithTitle($"Warnings for {badUser.Username}#{badUser.Discriminator}");
             foreach (Warning warning in warnings) {
-                builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("MMMM dd yyyy")}", $"```{warning.Reason}```");
+                builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy-MM-dd")}", $"```{warning.Reason}```");
                 warningCount++;
 
                 //discord embeds have a limit of 25 fields showing the most recent for now. Will look into a paginated reply later
