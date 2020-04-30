@@ -18,6 +18,7 @@ namespace Floofbot.Modules
         public Administration(FloofDataContext floofDB) => _floofDB = floofDB;
 
         [Command("ban")]
+        [Alias("b")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task YeetUser(string input, [Remainder] string reason = "No Reason Provided")
@@ -49,6 +50,7 @@ namespace Floofbot.Modules
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
         [Command("kick")]
+        [Alias("k")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task kickUser(string user, [Remainder]string reason = "No Reason Provided")
@@ -79,6 +81,7 @@ namespace Floofbot.Modules
         }
 
         [Command("warn")]
+        [Alias("w")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task warnUser(string user, string reason)
@@ -117,6 +120,7 @@ namespace Floofbot.Modules
         }
 
         [Command("warnlog")]
+        [Alias("wl")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task warnlog(string user)
