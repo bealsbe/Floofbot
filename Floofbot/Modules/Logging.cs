@@ -290,11 +290,19 @@ namespace Floofbot.Modules
                     if (channel == null)
                         return;
 
+                    var banReason = guild.GetBanAsync(user.Id).Result.Reason;
+
                     var embed = new EmbedBuilder()
                      .WithTitle($"🔨 User Banned | {user.Username}")
                      .WithColor(Color.Red)
                      .WithDescription($"{user.Mention} | ``{user.Id}``")
                      .WithFooter(DateTime.Now.ToString());
+
+                    if (banReason == null)
+                        embed.AddField("Reason", "No Reason Provided");
+                    else
+                        embed.AddField("Reason", banReason);
+
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -304,36 +312,6 @@ namespace Floofbot.Modules
                 catch (Exception ex)
                 {
                     Log.Error("Error with the user banned event handler: " + ex);
-                    return;
-                }
-
-            }
-            public async Task UserBannedByBot(IUser user, IGuild guild, string reason = "N/A")
-            {
-                try
-                {
-                    if ((IsToggled(guild)) == false)
-                        return;
-
-                    Discord.ITextChannel channel = await GetChannel(guild, "UserBannedChannel");
-                    if (channel == null)
-                        return;
-
-                    var embed = new EmbedBuilder()
-                     .WithTitle($"🔨 User Banned | {user.Username}")
-                     .WithColor(Color.Red)
-                     .WithDescription($"{user.Mention} | ``{user.Id}``")
-                     .AddField("Reason", reason)
-                     .WithFooter(DateTime.Now.ToString());
-
-                    if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
-                        embed.WithThumbnailUrl(user.GetAvatarUrl());
-
-                    await channel.SendMessageAsync("", false, embed.Build());
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error with the user banned by bot event handler: " + ex);
                     return;
                 }
 
