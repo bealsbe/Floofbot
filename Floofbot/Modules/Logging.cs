@@ -88,7 +88,15 @@ namespace Floofbot.Modules
                 }
                 else
                 {
-                    // some sort of thing telling them what to put
+                    EmbedBuilder builder = new EmbedBuilder()
+                    {
+                        Description = $"" +
+                        $"💾 Accepted Channels: ``MessageUpdatedChannel, MessageDeletedChannel, " +
+                        $"UserBannedChannel, UserUnbannedChannel, UserJoinedChannel, UserLeftChannel, MemberUpdatesChannel, " +
+                        $"UserKickedChannel, UserMutedChannel, UserUnmutedChannel]``",
+                        Color = Color.Magenta
+                    };
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
                 }
             }
 
@@ -137,8 +145,6 @@ namespace Floofbot.Modules
             }
             public async Task<ITextChannel> GetChannel(Discord.IGuild guild, string eventName = null)
             {
-                // TODO: Find a better algorithm for this. Hardcoding event names is :(
-
                 if (eventName == null)
                     return null;
 
