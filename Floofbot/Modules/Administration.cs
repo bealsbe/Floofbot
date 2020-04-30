@@ -133,7 +133,7 @@ namespace Floofbot.Modules
 
             var warnings = _floofDB.Warnings.AsQueryable()
                 .Where(u => u.UserId == badUser.Id && u.GuildId == Context.Guild.Id)
-                .OrderByDescending(x => x.DateAdded);
+                .OrderByDescending(x => x.DateAdded).Take(24);
 
             EmbedBuilder builder = new EmbedBuilder();
             int warningCount = 0;
@@ -141,10 +141,6 @@ namespace Floofbot.Modules
             foreach (Warning warning in warnings) {
                 builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy-MM-dd")}", $"```{warning.Reason}```");
                 warningCount++;
-
-                //discord embeds have a limit of 25 fields showing the most recent for now. Will look into a paginated reply later
-                if(warningCount > 24) 
-                    break;
             }
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
