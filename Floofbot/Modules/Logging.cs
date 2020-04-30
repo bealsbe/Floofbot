@@ -429,6 +429,9 @@ namespace Floofbot.Modules
                             .AddField("New Name", user.Username)
                             .WithFooter(DateTime.Now.ToString());
 
+                        if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                            embed.WithThumbnailUrl(user.GetAvatarUrl());
+
                     }
                     else if (before.Nickname != after.Nickname)
                     {
@@ -438,6 +441,9 @@ namespace Floofbot.Modules
                             .AddField("Old Nickname", before.Nickname)
                             .AddField("New Nickname", user.Nickname)
                             .WithFooter(DateTime.Now.ToString());
+
+                        if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                            embed.WithThumbnailUrl(user.GetAvatarUrl());
 
                     }
                     else if (before.AvatarId != after.AvatarId)
@@ -450,6 +456,43 @@ namespace Floofbot.Modules
                             embed.WithThumbnailUrl(before.GetAvatarUrl());
                         if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithImageUrl(after.GetAvatarUrl());
+                    }
+                    else if (before.Roles.Count != after.Roles.Count)
+                    {
+                        List<SocketRole> beforeRoles = new List<SocketRole>(before.Roles);
+                        List<SocketRole> afterRoles = new List<SocketRole>(after.Roles);
+                        List<SocketRole> roleDifference = new List<SocketRole>();
+
+                        if (before.Roles.Count > after.Roles.Count) // roles removed
+                        {
+                            roleDifference = beforeRoles.Except(afterRoles).ToList();
+                            embed.WithTitle($"❗ Roles Removed | {user.Username}")
+                            .WithColor(Color.Orange)
+                            .WithDescription($"{user.Mention} | ``{user.Id}``")
+                            .WithFooter(DateTime.Now.ToString());
+
+                            foreach (SocketRole role in roleDifference)
+                            {
+                                embed.AddField("Role Removed", role);
+                            }
+
+                            if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                                embed.WithThumbnailUrl(user.GetAvatarUrl());
+                        }
+                        else if (before.Roles.Count < after.Roles.Count) // roles added
+                        {
+                            roleDifference = afterRoles.Except(beforeRoles).ToList();
+                            embed.WithTitle($"❗ Roles Added | {user.Username}")
+                            .WithColor(Color.Orange)
+                            .WithDescription($"{user.Mention} | ``{user.Id}``")
+                            .WithFooter(DateTime.Now.ToString());
+                            foreach (SocketRole role in roleDifference)
+                            {
+                                embed.AddField("Role Added", role);
+                            }
+                            if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                                embed.WithThumbnailUrl(user.GetAvatarUrl());
+                        }
                     }
                     else
                     {
