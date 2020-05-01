@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Floofbot.Services.Repository.Models
 {
-    public class LogConfig
+    public partial class LogConfig
     {
         [Key]
         public ulong ServerId { get; set; }

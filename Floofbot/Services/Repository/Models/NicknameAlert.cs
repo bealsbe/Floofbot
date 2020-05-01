@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Floofbot.Services.Repository.Models
 {
-    public class NicknameAlert
+    public partial class NicknameAlert
     {
         [Key]
         public ulong ServerId { get; set; }
