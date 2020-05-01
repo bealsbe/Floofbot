@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord.WebSocket;
@@ -42,9 +43,10 @@ namespace Floofbot.Handlers
                 return;
 
             var context = new SocketCommandContext(_client, msg);
+            string prefix = ConfigurationManager.AppSettings["Prefix"];
             int argPos = 0;
 
-            if (msg.HasCharPrefix('.', ref argPos))
+            if (msg.HasStringPrefix(prefix, ref argPos))
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 

@@ -1,9 +1,11 @@
 using System;
+using System.Configuration;
 using Floofbot.Services;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Serilog;
+using Floofbot.Configs;
 using Floofbot.Handlers;
 using Floofbot.Modules;
 using Floofbot.Services.Repository;
@@ -86,6 +88,7 @@ namespace Floofbot
             _botDatabase = new BotDatabase();
             _handler = new CommandHandler(_client);
 
+            await _client.SetActivityAsync(new BotActivity());
             await Task.Delay(-1);
         }
     }
