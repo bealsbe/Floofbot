@@ -71,7 +71,7 @@ namespace Floofbot.Services
                     if ((IsToggled(channel.Guild)) == false) // not toggled on
                         return;
 
-                    Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageEditedChannel");
+                    Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageUpdatedChannel");
                     if (logChannel == null)
                         return;
 
