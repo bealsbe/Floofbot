@@ -129,7 +129,6 @@ namespace Floofbot.Services
                          .WithCurrentTimestamp()
                          .WithFooter($"user_message_deleted user_messagelog {message.Author.Id}");
 
-
                     if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
 
@@ -560,8 +559,5 @@ namespace Floofbot.Services
             });
             return Task.CompletedTask;
         }
-
-
-
     }
 }
