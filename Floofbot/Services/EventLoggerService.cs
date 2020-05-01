@@ -12,12 +12,9 @@ namespace Floofbot.Services
     public class EventLoggerService
     {
 
-        private FloofDataContext _floofDb;
         private DiscordSocketClient _client;
-        public EventLoggerService(FloofDataContext floofDb, DiscordSocketClient client)
+        public EventLoggerService(DiscordSocketClient client)
         {
-
-            _floofDb = floofDb;
             _client = client;
             _client.MessageUpdated += MessageUpdated;
             _client.MessageDeleted += MessageDeleted;
@@ -32,6 +29,8 @@ namespace Floofbot.Services
             if (eventName == null)
                 return null;
 
+            FloofDataContext _floofDb = new FloofDataContext();
+
             var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
             System.Reflection.PropertyInfo propertyInfo = serverConfig.GetType().GetProperty(eventName);
             ulong logChannel = (ulong)(propertyInfo.GetValue(serverConfig, null));
@@ -42,6 +41,8 @@ namespace Floofbot.Services
         {
             // check if the logger is toggled on in this server
             // check the status of logger
+            FloofDataContext _floofDb = new FloofDataContext();
+
             var ServerConfig = _floofDb.LogConfigs.Find(guild.Id);
             if (ServerConfig == null) // no entry in DB for server - not configured
                 return false;
