@@ -58,18 +58,9 @@ namespace Floofbot
                   });
             try
             {
+                var _EventLoggerService = new EventLoggerService(_client);
                 await _client.LoginAsync(TokenType.Bot, token);
                 await _client.StartAsync();
-
-                Logging.EventHandlingService eventService = new Logging.EventHandlingService(new FloofDataContext());
-                _client.MessageUpdated += eventService.MessageUpdated;
-                _client.MessageDeleted += eventService.MessageDeleted;
-                _client.UserBanned += eventService.UserBanned;
-                _client.UserUnbanned += eventService.UserUnbanned;
-                _client.UserJoined += eventService.UserJoined;
-                _client.UserLeft += eventService.UserLeft;
-                _client.GuildMemberUpdated += eventService.GuildMemberUpdated;
-
             }
             catch (Exception ex)
             {
