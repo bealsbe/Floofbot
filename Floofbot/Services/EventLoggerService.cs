@@ -75,14 +75,15 @@ namespace Floofbot.Services
                     if (logChannel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                     .WithTitle($"⚠️ Message Edited | {after.Author.Username}#{after.Author.Discriminator}")
-                     .WithColor(Color.DarkGrey)
-                     .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
-                     .AddField("Before", messageBefore.Content, true)
-                     .AddField("After", after.Content, true)
-                     .WithCurrentTimestamp()
-                     .WithFooter($"user_message_edited user_messagelog {after.Author.Id}");
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"⚠️ Message Edited | {after.Author.Username}#{after.Author.Discriminator}")
+                         .WithColor(Color.DarkGrey)
+                         .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
+                         .AddField("Before", messageBefore.Content, true)
+                         .AddField("After", after.Content, true)
+                         .WithCurrentTimestamp()
+                         .WithFooter($"user_message_edited user_messagelog {after.Author.Id}");
 
                     if (Uri.IsWellFormedUriString(after.Author.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
@@ -102,8 +103,7 @@ namespace Floofbot.Services
             var _ = Task.Run(async () =>
             {
                 try
-                {
-
+                { 
                     // deal with empty message
                     var message = (before.HasValue ? before.Value : null) as IUserMessage;
                     if (message == null)
@@ -120,13 +120,14 @@ namespace Floofbot.Services
                     if (logChannel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                     .WithTitle($"⚠️ Message Deleted | {message.Author.Username}#{message.Author.Discriminator}")
-                     .WithColor(Color.Gold)
-                     .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
-                     .AddField("Content", message.Content)
-                     .WithCurrentTimestamp()
-                     .WithFooter($"user_message_deleted user_messagelog {message.Author.Id}");
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"⚠️ Message Deleted | {message.Author.Username}#{message.Author.Discriminator}")
+                         .WithColor(Color.Gold)
+                         .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
+                         .AddField("Content", message.Content)
+                         .WithCurrentTimestamp()
+                         .WithFooter($"user_message_deleted user_messagelog {message.Author.Id}");
 
 
                     if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
@@ -162,14 +163,15 @@ namespace Floofbot.Services
                     if (logChannel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                     .WithTitle($"⚠️ Message Deleted By Bot | {before.Author.Username}#{before.Author.Discriminator}")
-                     .WithColor(Color.Gold)
-                     .WithDescription($"{before.Author.Mention} ({before.Author.Id}) has had their message deleted in {channel.Mention}!")
-                     .AddField("Content", before.Content)
-                     .AddField("Reason", reason)
-                     .WithFooter($"user_message_bot_delete user_messagelog {before.Author.Id}")
-                     .WithCurrentTimestamp();
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"⚠️ Message Deleted By Bot | {before.Author.Username}#{before.Author.Discriminator}")
+                         .WithColor(Color.Gold)
+                         .WithDescription($"{before.Author.Mention} ({before.Author.Id}) has had their message deleted in {channel.Mention}!")
+                         .AddField("Content", before.Content)
+                         .AddField("Reason", reason)
+                         .WithFooter($"user_message_bot_delete user_messagelog {before.Author.Id}")
+                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(before.Author.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(before.Author.GetAvatarUrl());
@@ -190,7 +192,6 @@ namespace Floofbot.Services
             {
                 try
                 {
-
                     if ((IsToggled(guild)) == false)
                         return;
 
@@ -200,18 +201,18 @@ namespace Floofbot.Services
 
                     var banReason = guild.GetBanAsync(user.Id).Result.Reason;
 
-                    var embed = new EmbedBuilder()
-                     .WithTitle($"🔨 User Banned | {user.Username}#{user.Discriminator}")
-                     .WithColor(Color.Red)
-                     .WithDescription($"{user.Mention} | ``{user.Id}``")
-                     .WithFooter($"user_banned user_banlog {user.Id}")
-                     .WithCurrentTimestamp();
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"🔨 User Banned | {user.Username}#{user.Discriminator}")
+                         .WithColor(Color.Red)
+                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                         .WithFooter($"user_banned user_banlog {user.Id}")
+                         .WithCurrentTimestamp();
 
                     if (banReason == null)
                         embed.AddField("Reason", "No Reason Provided");
                     else
                         embed.AddField("Reason", banReason);
-
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -233,7 +234,6 @@ namespace Floofbot.Services
             {
                 try
                 {
-
                     if ((IsToggled(guild)) == false)
                         return;
 
@@ -241,12 +241,13 @@ namespace Floofbot.Services
                     if (channel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                    .WithTitle($"♻️ User Unbanned | {user.Username}#{user.Discriminator}")
-                    .WithColor(Color.Gold)
-                    .WithDescription($"{user.Mention} | ``{user.Id}``")
-                    .WithFooter($"user_unbanned user_banlog {user.Id}")
-                    .WithCurrentTimestamp();
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"♻️ User Unbanned | {user.Username}#{user.Discriminator}")
+                         .WithColor(Color.Gold)
+                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                         .WithFooter($"user_unbanned user_banlog {user.Id}")
+                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -273,17 +274,19 @@ namespace Floofbot.Services
                     if (channel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                    .WithTitle($"✅ User Joined | {user.Username}#{user.Discriminator}")
-                    .WithColor(Color.Green)
-                    .WithDescription($"{user.Mention} | ``{user.Id}``")
-                    .AddField("Joined Server", user.JoinedAt, true)
-                    .AddField("Joined Discord", user.CreatedAt, true)
-                    .WithFooter($"user_join user_joinlog {user.Id}")
-                    .WithCurrentTimestamp();
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"✅ User Joined | {user.Username}#{user.Discriminator}")
+                         .WithColor(Color.Green)
+                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                         .AddField("Joined Server", user.JoinedAt, true)
+                         .AddField("Joined Discord", user.CreatedAt, true)
+                         .WithFooter($"user_join user_joinlog {user.Id}")
+                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
+
                     await channel.SendMessageAsync("", false, embed.Build());
                 }
                 catch (Exception ex)
@@ -307,12 +310,13 @@ namespace Floofbot.Services
                     if (channel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                    .WithTitle($"❌ User Left | {user.Username}#{user.Discriminator}")
-                    .WithColor(Color.Red)
-                    .WithDescription($"{user.Mention} | ``{user.Id}``")
-                    .WithFooter($"user_leave user_joinlog {user.Id}")
-                    .WithCurrentTimestamp();
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"❌ User Left | {user.Username}#{user.Discriminator}")
+                         .WithColor(Color.Red)
+                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                         .WithFooter($"user_leave user_joinlog {user.Id}")
+                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -350,12 +354,12 @@ namespace Floofbot.Services
                     if (before.Username != after.Username)
                     {
                         embed.WithTitle($"👥 Username Changed | {user.Username}#{user.Discriminator}")
-                            .WithColor(Color.Purple)
-                            .WithDescription($"{user.Mention} | ``{user.Id}``")
-                            .AddField("Old Username", user.Username, true)
-                            .AddField("New Name", user.Username, true)
-                            .WithFooter($"user_username_change user_namelog {user.Id}")
-                            .WithCurrentTimestamp();
+                             .WithColor(Color.Purple)
+                             .WithDescription($"{user.Mention} | ``{user.Id}``")
+                             .AddField("Old Username", user.Username, true)
+                             .AddField("New Name", user.Username, true)
+                             .WithFooter($"user_username_change user_namelog {user.Id}")
+                             .WithCurrentTimestamp();
 
                         if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -364,10 +368,10 @@ namespace Floofbot.Services
                     else if (before.Nickname != after.Nickname)
                     {
                         embed.WithTitle($"👥 Nickname Changed | {user.Username}#{user.Discriminator}")
-                            .WithColor(Color.Purple)
-                            .WithDescription($"{user.Mention} | ``{user.Id}``")
-                            .WithFooter($"user_nickname_change user_namelog {user.Id}")
-                            .WithCurrentTimestamp();
+                             .WithColor(Color.Purple)
+                             .WithDescription($"{user.Mention} | ``{user.Id}``")
+                             .WithFooter($"user_nickname_change user_namelog {user.Id}")
+                             .WithCurrentTimestamp();
 
                         if (before.Nickname != null && after.Nickname != null) // changing nickname
                         {
@@ -386,10 +390,10 @@ namespace Floofbot.Services
                     else if (before.AvatarId != after.AvatarId)
                     {
                         embed.WithTitle($"🖼️ Avatar Changed | {user.Username}#{user.Discriminator}")
-                        .WithColor(Color.Purple)
-                        .WithDescription($"{user.Mention} | ``{user.Id}``")
-                        .WithFooter($"user_avatar_change {user.Id}")
-                        .WithCurrentTimestamp();
+                             .WithColor(Color.Purple)
+                             .WithDescription($"{user.Mention} | ``{user.Id}``")
+                             .WithFooter($"user_avatar_change {user.Id}")
+                             .WithCurrentTimestamp();
                         if (Uri.IsWellFormedUriString(before.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(before.GetAvatarUrl());
                         if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
@@ -405,10 +409,10 @@ namespace Floofbot.Services
                         {
                             roleDifference = beforeRoles.Except(afterRoles).ToList();
                             embed.WithTitle($"❗ Roles Removed | {user.Username}#{user.Discriminator}")
-                            .WithColor(Color.Orange)
-                            .WithDescription($"{user.Mention} | ``{user.Id}``")
-                            .WithFooter($"user_roles_removed user_rolelog {user.Id}")
-                            .WithCurrentTimestamp();
+                                 .WithColor(Color.Orange)
+                                 .WithDescription($"{user.Mention} | ``{user.Id}``")
+                                 .WithFooter($"user_roles_removed user_rolelog {user.Id}")
+                                 .WithCurrentTimestamp();
 
                             foreach (SocketRole role in roleDifference)
                             {
@@ -422,10 +426,10 @@ namespace Floofbot.Services
                         {
                             roleDifference = afterRoles.Except(beforeRoles).ToList();
                             embed.WithTitle($"❗ Roles Added | {user.Username}#{user.Discriminator}")
-                            .WithColor(Color.Orange)
-                            .WithDescription($"{user.Mention} | ``{user.Id}``")
-                            .WithFooter($"user_roles_added user_rolelog {user.Id}")
-                            .WithCurrentTimestamp();
+                                 .WithColor(Color.Orange)
+                                 .WithDescription($"{user.Mention} | ``{user.Id}``")
+                                 .WithFooter($"user_roles_added user_rolelog {user.Id}")
+                                 .WithCurrentTimestamp();
                             foreach (SocketRole role in roleDifference)
                             {
                                 embed.AddField("Role Added", role);
@@ -455,7 +459,6 @@ namespace Floofbot.Services
             {
                 try
                 {
-
                     if ((IsToggled(guild)) == false)
                         return;
 
@@ -463,13 +466,14 @@ namespace Floofbot.Services
                     if (channel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                     .WithTitle($"👢 User Kicked | {user.Username}#{user.Discriminator}")
-                     .WithColor(Color.Red)
-                     .WithDescription($"{user.Mention} | ``{user.Id}``")
-                     .AddField("Kicked By", kicker.Mention)
-                     .WithFooter($"user_kicked {user.Id}")
-                     .WithCurrentTimestamp();
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"👢 User Kicked | {user.Username}#{user.Discriminator}")
+                         .WithColor(Color.Red)
+                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                         .AddField("Kicked By", kicker.Mention)
+                         .WithFooter($"user_kicked {user.Id}")
+                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -498,13 +502,14 @@ namespace Floofbot.Services
                     if (channel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                     .WithTitle($"🔇 User Muted | {user.Username}#{user.Discriminator}")
-                     .WithColor(Color.Teal)
-                     .WithDescription($"{user.Mention} | ``{user.Id}``")
-                     .AddField("Muted By", muter.Mention)
-                     .WithFooter($"user_muted user_mutelog {user.Id}")
-                     .WithCurrentTimestamp();
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"🔇 User Muted | {user.Username}#{user.Discriminator}")
+                         .WithColor(Color.Teal)
+                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                         .AddField("Muted By", muter.Mention)
+                         .WithFooter($"user_muted user_mutelog {user.Id}")
+                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -525,7 +530,6 @@ namespace Floofbot.Services
             {
                 try
                 {
-
                     if ((IsToggled(guild)) == false)
                         return;
 
@@ -534,13 +538,14 @@ namespace Floofbot.Services
                     if (channel == null)
                         return;
 
-                    var embed = new EmbedBuilder()
-                     .WithTitle($"🔊 User Unmuted | {user.Username}#{user.Discriminator}")
-                     .WithColor(Color.Teal)
-                     .WithDescription($"{user.Mention} | ``{user.Id}``")
-                     .AddField("Unmuted By", unmuter.Mention)
-                     .WithFooter($"user_unmuted user_mutelog {user.Id}")
-                     .WithCurrentTimestamp();
+                    var embed = new EmbedBuilder();
+
+                    embed.WithTitle($"🔊 User Unmuted | {user.Username}#{user.Discriminator}")
+                         .WithColor(Color.Teal)
+                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                         .AddField("Unmuted By", unmuter.Mention)
+                         .WithFooter($"user_unmuted user_mutelog {user.Id}")
+                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
