@@ -4,7 +4,6 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -18,9 +17,8 @@ namespace Floofbot
         [RequireUserPermission(Discord.GuildPermission.AttachFiles)]
         public class Tag : ModuleBase<SocketCommandContext>
         {
-            SqliteConnection dbConnection;
-            List<string> pages;
-
+            private SqliteConnection dbConnection;
+            private static readonly Discord.Color embedColor = Color.Magenta;
 
             public Tag()
             {
@@ -45,62 +43,45 @@ namespace Floofbot
                         string sql = @"INSERT into Tags (TagID,UserID, Content)
                                VALUES ($TagId, $UserID, $Content)";
 
+                        string tagId = $"{Tag.ToString()}:{Context.Guild.Id.ToString()}";
                         SqliteCommand command = new SqliteCommand(sql, dbConnection);
-                        command.Parameters.Add(new SqliteParameter("$TagId", Tag.ToString() + ":" + Context.Guild.Id.ToString()));
+                        command.Parameters.Add(new SqliteParameter("$TagId", tagId));
                         command.Parameters.Add(new SqliteParameter("$UserID", Context.User.Id.ToString()));
                         command.Parameters.Add(new SqliteParameter("$Content", Content));
-
                         var result = command.ExecuteScalar();
 
-                        EmbedBuilder builder = new EmbedBuilder() {
-                            Description = $"💾 Added Tag `{Tag}`",
-                            Color = Color.Magenta
-                        };
-                        await Context.Channel.SendMessageAsync("", false, builder.Build());
-
+                        await sendEmbed(createDescriptionEmbed($"💾 Added Tag `{Tag}`"));
                     }
                     else {
-                        EmbedBuilder builder = new EmbedBuilder() {
-                            Description = $"💾 Usage: `tag add [name] [content]`",
-                            Color = Color.Magenta
-                        };
-                        await Context.Channel.SendMessageAsync("", false, builder.Build());
+                        await sendEmbed(createDescriptionEmbed($"💾 Usage: `tag add [name] [content]`"));
                     }
                 }
                 catch (SqliteException) {
-                    EmbedBuilder builder = new EmbedBuilder() {
-                        Description = $"💾 Tag `{Tag}` Alright Exists",
-                        Color = Color.Magenta
-                    };
-                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                    await sendEmbed(createDescriptionEmbed($"💾 Tag `{Tag}` Already Exists"));
                 }
-
             }
 
             [Command("add")]
             [Priority(1)]
             public async Task Add()
             {
-                EmbedBuilder builder = new EmbedBuilder() {
-                    Description = $"💾 Useage: `tag add [name] [content]`",
-                    Color = Color.Magenta
-                };
-                await Context.Channel.SendMessageAsync("", false, builder.Build());
-
+                await sendEmbed(createDescriptionEmbed($"💾 Usage: `tag add [name] [content]`"));
             }
 
             //TODO: Fix me
             [Command("list")]
             [Summary("Lists all tags")]
             [RequireUserPermission(GuildPermission.AttachFiles)]
-            public async Task Listtags([Remainder] string Content = null)
+            public async Task ListTags([Remainder] string Content = null)
             {
-                string sql = $"SELECT TAGID FROM Tags WHERE TagID LIKE '%:{Context.Guild.Id}%'";
+                string guildId = $"{Context.Guild.Id}";
+                string sql = $"SELECT tagID FROM Tags WHERE tagID LIKE '%:$guildId%'";
                 SqliteCommand command = new SqliteCommand(sql, dbConnection);
+                command.Parameters.Add(new SqliteParameter("$guildId", guildId));
                 var result = command.ExecuteReader();
 
                 List<string> tags = new List<string>();
-                pages = new List<string>();
+                List<string> pages = new List<string>();
 
                 while (result.Read()) {
                     tags.Add(result.GetString(0).Split(':')[0]);
@@ -120,6 +101,7 @@ namespace Floofbot
                     text += "\n```";
                     pages.Add(text);
                 };
+
                 // await PagedReplyAsync(pages);
             }
 
@@ -139,19 +121,11 @@ namespace Floofbot
                     command = new SqliteCommand(delete, dbConnection);
                     command.Parameters.Add(new SqliteParameter("$TagId", tagId));
                     command.ExecuteScalar();
-                    EmbedBuilder builder = new EmbedBuilder() {
-                        Description = $"💾 Tag: `{tag}` Removed",
-                        Color = Color.Magenta
-                    };
 
-                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                    await sendEmbed(createDescriptionEmbed($"💾 Tag: `{tag}` Removed"));
                 }
                 else {
-                    EmbedBuilder builder = new EmbedBuilder() {
-                        Description = $"💾 Could not find Tag: `{tag}`",
-                        Color = Color.Magenta
-                    };
-                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                    await sendEmbed(createDescriptionEmbed($"💾 Could not find Tag: `{tag}`"));
                 }
             }
 
@@ -159,20 +133,15 @@ namespace Floofbot
             [Priority(1)]
             public async Task Remove()
             {
-                EmbedBuilder builder = new EmbedBuilder() {
-                    Description = $"💾 Useage: `tag remove [name]`",
-                    Color = Color.Magenta
-                };
-                await Context.Channel.SendMessageAsync("", false, builder.Build());
-
+                await sendEmbed(createDescriptionEmbed($"💾 Usage: `tag remove [name]`"));
             }
 
             [Command]
             [Summary("Displays a tag")]
             [RequireUserPermission(GuildPermission.AttachFiles)]
-            public async Task GetTag([Summary("Tag name")] string Tag)
+            public async Task GetTag([Summary("Tag name")] string Tag = "")
             {
-                if (Tag != null) {
+                if (!string.IsNullOrWhiteSpace(Tag)) {
                     string TagID = $"{Tag}:{Context.Guild.Id}".ToLower();
                     string sql = @"SELECT Content FROM Tags
                                  Where TagID = $TagID";
@@ -182,11 +151,6 @@ namespace Floofbot
 
                     if (result != null) {
                         string tag = result.ToString().Replace("@", "[at]");
-
-                        EmbedBuilder builder = new EmbedBuilder() {
-                            Title = "💾  " + Tag,
-                            Color = Color.Magenta
-                        };
 
                         bool isImage = false;
                         if (Uri.IsWellFormedUriString(tag, UriKind.RelativeOrAbsolute)) {
@@ -200,25 +164,41 @@ namespace Floofbot
                                ext == "gif" ||
                                ext == "mp4");
                         }
+
+                        // tag found, so post it
                         if (isImage) {
+                            EmbedBuilder builder = new EmbedBuilder() {
+                                Title = "💾  " + Tag,
+                                Color = Color.Magenta
+                            };
                             builder.WithImageUrl(tag);
-                            await Context.Channel.SendMessageAsync("", false, builder.Build());
+                            await sendEmbed(builder.Build());
                         }
                         else {
                             await Context.Channel.SendMessageAsync(tag);
                         }
                     }
                     else {
-                        EmbedBuilder builder = new EmbedBuilder() {
-                            Description = $"💾 Could not find Tag: `{Tag}`",
-                            Color = Color.Magenta
-                        };
-                        await Context.Channel.SendMessageAsync("", false, builder.Build());
+                        // tag not found
+                        await sendEmbed(createDescriptionEmbed($"💾 Could not find Tag: `{Tag}`"));
                     }
                 }
                 else {
-                    await Context.Channel.SendMessageAsync("Usage: Entire String Here`");
+                    // no tag given
+                    await sendEmbed(createDescriptionEmbed($"💾 Usage: `tag [name]`"));
                 }
+            }
+
+            private Embed createDescriptionEmbed(string description) {
+                EmbedBuilder builder = new EmbedBuilder {
+                    Description = description,
+                    Color = embedColor
+                };
+                return builder.Build();
+            }
+
+            private Task sendEmbed(Embed embed) {
+                return Context.Channel.SendMessageAsync("", false, embed);
             }
         }
     }
