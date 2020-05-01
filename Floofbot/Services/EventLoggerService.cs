@@ -78,7 +78,7 @@ namespace Floofbot.Services
                  .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
                  .AddField("Before", messageBefore.Content)
                  .AddField("After", after.Content)
-                 .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(after.Author.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
@@ -118,7 +118,7 @@ namespace Floofbot.Services
                  .WithColor(Color.Gold)
                  .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
                  .AddField("Content", message.Content)
-                 .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                 .WithCurrentTimestamp(); 
 
                 if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
@@ -155,7 +155,7 @@ namespace Floofbot.Services
                  .WithDescription($"{before.Author.Mention} ({before.Author.Id}) has had their message deleted in {channel.Mention}!")
                  .AddField("Content", before.Content)
                  .AddField("Reason", reason)
-                 .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(before.Author.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(before.Author.GetAvatarUrl());
@@ -186,7 +186,7 @@ namespace Floofbot.Services
                  .WithTitle($"🔨 User Banned | {user.Username}")
                  .WithColor(Color.Red)
                  .WithDescription($"{user.Mention} | ``{user.Id}``")
-                 .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                 .WithCurrentTimestamp();
 
                 if (banReason == null)
                     embed.AddField("Reason", "No Reason Provided");
@@ -222,7 +222,7 @@ namespace Floofbot.Services
                 .WithTitle($"♻️ User Unbanned | {user.Username}")
                 .WithColor(Color.Gold)
                 .WithDescription($"{user.Mention} | ``{user.Id}``")
-                .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -252,7 +252,7 @@ namespace Floofbot.Services
                 .WithDescription($"{user.Mention} | ``{user.Id}``")
                 .AddField("Joined Server", user.JoinedAt)
                 .AddField("Joined Discord", user.CreatedAt)
-                .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -279,7 +279,7 @@ namespace Floofbot.Services
                 .WithTitle($"❌ User Left | {user.Username}")
                 .WithColor(Color.Red)
                 .WithDescription($"{user.Mention} | ``{user.Id}``")
-                .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -317,7 +317,7 @@ namespace Floofbot.Services
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
                         .AddField("Old Username", user.Username)
                         .AddField("New Name", user.Username)
-                        .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                        .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -330,7 +330,7 @@ namespace Floofbot.Services
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
                         .AddField("Old Nickname", before.Nickname)
                         .AddField("New Nickname", user.Nickname)
-                        .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                        .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -341,7 +341,7 @@ namespace Floofbot.Services
                     embed.WithTitle($"🖼️ Avatar Changed | {user.Username}")
                     .WithColor(Color.Purple)
                     .WithDescription($"{user.Mention} | ``{user.Id}``")
-                    .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                    .WithCurrentTimestamp();
                     if (Uri.IsWellFormedUriString(before.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(before.GetAvatarUrl());
                     if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
@@ -359,7 +359,7 @@ namespace Floofbot.Services
                         embed.WithTitle($"❗ Roles Removed | {user.Username}")
                         .WithColor(Color.Orange)
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
-                        .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                        .WithCurrentTimestamp();
 
                         foreach (SocketRole role in roleDifference)
                         {
@@ -375,7 +375,7 @@ namespace Floofbot.Services
                         embed.WithTitle($"❗ Roles Added | {user.Username}")
                         .WithColor(Color.Orange)
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
-                        .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                        .WithCurrentTimestamp();
                         foreach (SocketRole role in roleDifference)
                         {
                             embed.AddField("Role Added", role);
@@ -415,7 +415,7 @@ namespace Floofbot.Services
                  .WithColor(Color.Red)
                  .WithDescription($"{user.Mention} | ``{user.Id}``")
                  .AddField("Kicked By", kicker.Mention)
-                 .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -445,7 +445,7 @@ namespace Floofbot.Services
                  .WithColor(Color.Teal)
                  .WithDescription($"{user.Mention} | ``{user.Id}``")
                  .AddField("Muted By", muter.Mention)
-                 .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(user.GetAvatarUrl());
@@ -476,7 +476,7 @@ namespace Floofbot.Services
                  .WithColor(Color.Teal)
                  .WithDescription($"{user.Mention} | ``{user.Id}``")
                  .AddField("Unmuted By", unmuter.Mention)
-                 .WithFooter(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(user.GetAvatarUrl());
