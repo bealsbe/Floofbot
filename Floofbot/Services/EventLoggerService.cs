@@ -78,7 +78,8 @@ namespace Floofbot.Services
                  .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
                  .AddField("Before", messageBefore.Content, true)
                  .AddField("After", after.Content, true)
-                 .WithCurrentTimestamp();
+                 .WithCurrentTimestamp()
+                 .WithFooter($"user_message_edited user_messagelog {after.Author.Id}");
 
                 if (Uri.IsWellFormedUriString(after.Author.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
@@ -118,7 +119,9 @@ namespace Floofbot.Services
                  .WithColor(Color.Gold)
                  .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
                  .AddField("Content", message.Content)
-                 .WithCurrentTimestamp(); 
+                 .WithCurrentTimestamp()
+                 .WithFooter($"user_message_deleted user_messagelog {message.Author.Id}");
+
 
                 if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
                     embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
@@ -155,6 +158,7 @@ namespace Floofbot.Services
                  .WithDescription($"{before.Author.Mention} ({before.Author.Id}) has had their message deleted in {channel.Mention}!")
                  .AddField("Content", before.Content)
                  .AddField("Reason", reason)
+                 .WithFooter($"user_message_bot_delete user_messagelog {before.Author.Id}")
                  .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(before.Author.GetAvatarUrl(), UriKind.Absolute))
@@ -186,6 +190,7 @@ namespace Floofbot.Services
                  .WithTitle($"🔨 User Banned | {user.Username}")
                  .WithColor(Color.Red)
                  .WithDescription($"{user.Mention} | ``{user.Id}``")
+                 .WithFooter($"user_banned user_banlog {user.Id}")
                  .WithCurrentTimestamp();
 
                 if (banReason == null)
@@ -222,6 +227,7 @@ namespace Floofbot.Services
                 .WithTitle($"♻️ User Unbanned | {user.Username}")
                 .WithColor(Color.Gold)
                 .WithDescription($"{user.Mention} | ``{user.Id}``")
+                .WithFooter($"user_unbanned user_banlog {user.Id}")
                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -252,6 +258,7 @@ namespace Floofbot.Services
                 .WithDescription($"{user.Mention} | ``{user.Id}``")
                 .AddField("Joined Server", user.JoinedAt, true)
                 .AddField("Joined Discord", user.CreatedAt, true)
+                .WithFooter($"user_join user_joinlog {user.Id}")
                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -279,6 +286,7 @@ namespace Floofbot.Services
                 .WithTitle($"❌ User Left | {user.Username}")
                 .WithColor(Color.Red)
                 .WithDescription($"{user.Mention} | ``{user.Id}``")
+                .WithFooter($"user_leave user_joinlog {user.Id}")
                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -317,6 +325,7 @@ namespace Floofbot.Services
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
                         .AddField("Old Username", user.Username, true)
                         .AddField("New Name", user.Username, true)
+                        .WithFooter($"user_username_change user_namelog {user.Id}")
                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -328,6 +337,7 @@ namespace Floofbot.Services
                     embed.WithTitle($"👥 Nickname Changed | {user.Username}")
                         .WithColor(Color.Purple)
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                        .WithFooter($"user_nickname_change user_namelog {user.Id}")
                         .WithCurrentTimestamp();
 
                     if (before.Nickname != null && after.Nickname != null) // changing nickname
@@ -349,6 +359,7 @@ namespace Floofbot.Services
                     embed.WithTitle($"🖼️ Avatar Changed | {user.Username}")
                     .WithColor(Color.Purple)
                     .WithDescription($"{user.Mention} | ``{user.Id}``")
+                    .WithFooter($"user_avatar_change {user.Id}")
                     .WithCurrentTimestamp();
                     if (Uri.IsWellFormedUriString(before.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(before.GetAvatarUrl());
@@ -367,6 +378,7 @@ namespace Floofbot.Services
                         embed.WithTitle($"❗ Roles Removed | {user.Username}")
                         .WithColor(Color.Orange)
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                        .WithFooter($"user_roles_removed user_rolelog {user.Id}")
                         .WithCurrentTimestamp();
 
                         foreach (SocketRole role in roleDifference)
@@ -383,6 +395,7 @@ namespace Floofbot.Services
                         embed.WithTitle($"❗ Roles Added | {user.Username}")
                         .WithColor(Color.Orange)
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
+                        .WithFooter($"user_roles_added user_rolelog {user.Id}")
                         .WithCurrentTimestamp();
                         foreach (SocketRole role in roleDifference)
                         {
@@ -422,6 +435,7 @@ namespace Floofbot.Services
                  .WithColor(Color.Red)
                  .WithDescription($"{user.Mention} | ``{user.Id}``")
                  .AddField("Kicked By", kicker.Mention)
+                 .WithFooter($"user_kicked {user.Id}")
                  .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -452,6 +466,7 @@ namespace Floofbot.Services
                  .WithColor(Color.Teal)
                  .WithDescription($"{user.Mention} | ``{user.Id}``")
                  .AddField("Muted By", muter.Mention)
+                 .WithFooter($"user_muted user_mutelog {user.Id}")
                  .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -483,6 +498,7 @@ namespace Floofbot.Services
                  .WithColor(Color.Teal)
                  .WithDescription($"{user.Mention} | ``{user.Id}``")
                  .AddField("Unmuted By", unmuter.Mention)
+                 .WithFooter($"user_unmuted user_mutelog {user.Id}")
                  .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
