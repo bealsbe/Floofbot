@@ -16,7 +16,7 @@ class BotConfig {
         }
         public ActivityProperties Flags {
             get {
-                return ActivityProperties.Play;
+                return ActivityProperties.None;
             }
         }
         public string Details {
