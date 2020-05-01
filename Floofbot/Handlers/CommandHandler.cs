@@ -44,7 +44,7 @@ namespace Floofbot.Handlers
             var context = new SocketCommandContext(_client, msg);
             int argPos = 0;
 
-            if (msg.HasCharPrefix('.', ref argPos))
+            if (msg.HasStringPrefix(BotConfig.BotPrefix, ref argPos))
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 

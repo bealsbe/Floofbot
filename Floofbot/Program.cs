@@ -60,6 +60,7 @@ namespace Floofbot
             {
                 await _client.LoginAsync(TokenType.Bot, token);
                 await _client.StartAsync();
+                await _client.SetActivityAsync(new BotConfig.BotActivity());
 
                 Logging.EventHandlingService eventService = new Logging.EventHandlingService(new FloofDataContext());
                 _client.MessageUpdated += eventService.MessageUpdated;
@@ -69,7 +70,6 @@ namespace Floofbot
                 _client.UserJoined += eventService.UserJoined;
                 _client.UserLeft += eventService.UserLeft;
                 _client.GuildMemberUpdated += eventService.GuildMemberUpdated;
-
             }
             catch (Exception ex)
             {
