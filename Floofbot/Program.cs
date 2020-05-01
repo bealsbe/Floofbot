@@ -1,5 +1,4 @@
 using System;
-using System.Configuration;
 using Floofbot.Services;
 using System.Threading.Tasks;
 using Discord;
