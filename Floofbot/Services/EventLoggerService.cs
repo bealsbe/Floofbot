@@ -328,9 +328,17 @@ namespace Floofbot.Services
                     embed.WithTitle($"👥 Nickname Changed | {user.Username}")
                         .WithColor(Color.Purple)
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
-                        .AddField("Old Nickname", before.Nickname, true)
-                        .AddField("New Nickname", user.Nickname, true)
                         .WithCurrentTimestamp();
+
+                    if (before.Nickname != null && after.Nickname != null) // changing nickname
+                    {
+                        embed.AddField("Old Nickname", before.Nickname, true);
+                        embed.AddField("New Nickname", user.Nickname, true);
+                    }
+                    else if (after.Nickname == null) // removed their nickname
+                        embed.AddField("Old Nickname", before.Nickname, true);
+                    else // new nickname, didnt have one before
+                        embed.AddField("New Nickname", user.Nickname, true);
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
