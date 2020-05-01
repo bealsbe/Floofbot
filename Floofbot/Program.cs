@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Serilog;
 using Floofbot.Handlers;
 using Floofbot.Modules;
+using Floofbot.Services.Repository;
 
 namespace Floofbot
 {
@@ -60,7 +61,7 @@ namespace Floofbot
                 await _client.LoginAsync(TokenType.Bot, token);
                 await _client.StartAsync();
 
-                Logging.EventHandlingService eventService = new Logging.EventHandlingService();
+                Logging.EventHandlingService eventService = new Logging.EventHandlingService(new FloofDataContext());
                 _client.MessageUpdated += eventService.MessageUpdated;
                 _client.MessageDeleted += eventService.MessageDeleted;
                 _client.UserBanned += eventService.UserBanned;
