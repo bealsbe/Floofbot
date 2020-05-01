@@ -6,11 +6,11 @@ using System.Text;
 
 namespace Floofbot.Services
 {
-    public class NicknameAlert
+    public class NicknameAlertService
     {
         private FloofDataContext _floofDb;
         private IGuildUser _user;
-        public NicknameAlert(FloofDataContext floofDb)
+        public NicknameAlertService(FloofDataContext floofDb)
         {
             _floofDb = floofDb;
             //_user = user;
