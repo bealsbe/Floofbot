@@ -69,15 +69,15 @@ namespace Floofbot.Services
                     return;
 
                 Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageEditedChannel");
-                if (channel == null)
+                if (logChannel == null)
                     return;
 
                 var embed = new EmbedBuilder()
                  .WithTitle($"⚠️ Message Edited | {after.Author.Username}")
                  .WithColor(Color.DarkGrey)
                  .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
-                 .AddField("Before", messageBefore.Content)
-                 .AddField("After", after.Content)
+                 .AddField("Before", messageBefore.Content, true)
+                 .AddField("After", after.Content, true)
                  .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(after.Author.GetAvatarUrl(), UriKind.Absolute))
@@ -110,7 +110,7 @@ namespace Floofbot.Services
                     return;
 
                 Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageDeletedChannel");
-                if (channel == null)
+                if (logChannel == null)
                     return;
 
                 var embed = new EmbedBuilder()
@@ -146,7 +146,7 @@ namespace Floofbot.Services
                     return;
 
                 Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageDeletedChannel");
-                if (channel == null)
+                if (logChannel == null)
                     return;
 
                 var embed = new EmbedBuilder()
@@ -250,8 +250,8 @@ namespace Floofbot.Services
                 .WithTitle($"✅ User Joined | {user.Username}")
                 .WithColor(Color.Green)
                 .WithDescription($"{user.Mention} | ``{user.Id}``")
-                .AddField("Joined Server", user.JoinedAt)
-                .AddField("Joined Discord", user.CreatedAt)
+                .AddField("Joined Server", user.JoinedAt, true)
+                .AddField("Joined Discord", user.CreatedAt, true)
                 .WithCurrentTimestamp();
 
                 if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -315,8 +315,8 @@ namespace Floofbot.Services
                     embed.WithTitle($"👥 Username Changed | {user.Username}")
                         .WithColor(Color.Purple)
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
-                        .AddField("Old Username", user.Username)
-                        .AddField("New Name", user.Username)
+                        .AddField("Old Username", user.Username, true)
+                        .AddField("New Name", user.Username, true)
                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -328,8 +328,8 @@ namespace Floofbot.Services
                     embed.WithTitle($"👥 Nickname Changed | {user.Username}")
                         .WithColor(Color.Purple)
                         .WithDescription($"{user.Mention} | ``{user.Id}``")
-                        .AddField("Old Nickname", before.Nickname)
-                        .AddField("New Nickname", user.Nickname)
+                        .AddField("Old Nickname", before.Nickname, true)
+                        .AddField("New Nickname", user.Nickname, true)
                         .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
@@ -393,7 +393,6 @@ namespace Floofbot.Services
             catch (Exception ex)
             {
                 Log.Error("Error with the guild member updated event handler: " + ex);
-                Console.Write(ex);
                 return;
             }
 
