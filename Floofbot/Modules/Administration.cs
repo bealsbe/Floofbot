@@ -3,12 +3,9 @@ using Discord;
 using System.Threading.Tasks;
 using Discord.Commands;
 using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using System.Text;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 
 namespace Floofbot.Modules
 {
@@ -53,7 +50,7 @@ namespace Floofbot.Modules
         [Alias("k")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task kickUser(string user, [Remainder]string reason = "No Reason Provided")
+        public async Task kickUser(string user, [Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
@@ -84,8 +81,18 @@ namespace Floofbot.Modules
         [Alias("w")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task warnUser(string user, string reason)
+        public async Task warnUser(string user, [Remainder] string reason = "")
         {
+            EmbedBuilder builder;
+            if (string.IsNullOrEmpty(reason)) {
+                builder = new EmbedBuilder() {
+                    Description = $"Usage: `warn [user] [reason]`",
+                    Color = Color.Magenta
+                };
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+                return;
+            }
+
             IUser badUser = resolveUser(user);
             if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
@@ -103,7 +110,7 @@ namespace Floofbot.Modules
             _floofDB.SaveChanges();
 
             //sends message to user
-            EmbedBuilder builder = new EmbedBuilder();
+            builder = new EmbedBuilder();
             builder.Title = "⚖️ Warn Notification";
             builder.Description = $"You have recieved a warning in {Context.Guild.Name}";
             builder.AddField("Reason", reason);

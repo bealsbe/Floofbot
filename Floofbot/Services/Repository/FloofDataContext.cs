@@ -20,6 +20,8 @@ namespace Floofbot.Services.Repository
         public virtual DbSet<Tag> Tags { get; set; }
         public virtual DbSet<Warning> Warnings { get; set; }
 
+        public virtual DbSet<NicknameAlertConfig> NicknameAlertConfigs { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)

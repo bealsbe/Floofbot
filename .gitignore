@@ -260,3 +260,12 @@ paket-files/
 __pycache__/
 *.pyc
 /Floofbot/Properties/launchSettings.json
+
+# VSCode
+
+.vscode/
+
+# App Config File
+
+Floofbot/app.config
+/Floofbot/floofData.db
