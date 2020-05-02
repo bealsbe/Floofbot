@@ -1,6 +1,5 @@
 ﻿using System;
 using Discord;
-using Discord.WebSocket;
 using System.Threading.Tasks;
 using Discord.Commands;
 using System.Text.RegularExpressions;
@@ -28,7 +27,6 @@ namespace Floofbot.Modules
             IUser badUser = resolveUser(user);
             if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
-                return;
             }
 
             //sends message to user
@@ -172,53 +170,70 @@ namespace Floofbot.Modules
         public async Task MuteUser(string user)
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null){
+            if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                 return;
             }
 
             IRole mute_role;
-            bool test = !_floofDB.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id);
 
             //check to see if the server exists within the "AdminConfig" Table
-            if (!_floofDB.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id)){
+            if (!_floofDB.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id)) {
+
                 //create new mute role
-                mute_role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(), Color.LighterGrey, false, null);
+                mute_role = await createMuteRole();
 
-                //add channel overrides for the new mute role
-                foreach(IGuildChannel channel in Context.Guild.Channels){
-                    OverwritePermissions permissions = new OverwritePermissions(
-                        sendMessages: PermValue.Deny,
-                        addReactions: PermValue.Deny,
-                        speak: PermValue.Deny
-                        );
+                //save the newly created role
+                _floofDB.Add(new AdminConfig {
+                    ServerId = Context.Guild.Id,
+                    MuteRoleId = mute_role.Id
+                });
+                _floofDB.SaveChanges();
+            }
+            else {
+                //grabs the mute role from the database
+                mute_role = Context.Guild.GetRole(
+                   _floofDB.AdminConfig.AsQueryable()
+                   .Where(x => x.ServerId == Context.Guild.Id)
+                   .Select(x => x.MuteRoleId).ToList()[0]);
 
-                    await channel.AddPermissionOverwriteAsync(mute_role, permissions);
-
-                    //save the newly created role
-                    _floofDB.Add(new AdminConfig
-                    {
-                        ServerId = Context.Guild.Id,
-                        MuteRoleId = mute_role.Id
-                    });
+                //mute role was deleted create a new one
+                if (mute_role == null) {
+                    mute_role = await createMuteRole();
+                    var result = _floofDB.AdminConfig.AsQueryable()
+                         .SingleOrDefault(x => x.ServerId == Context.Guild.Id);
+                    result.MuteRoleId = mute_role.Id;
                     _floofDB.SaveChanges();
                 }
             }
-            else {
-                 mute_role = Context.Guild.GetRole(
-                    _floofDB.AdminConfig.AsQueryable()
-                    .Where(x => x.ServerId == Context.Guild.Id)
-                    .Select(x => x.MuteRoleId).ToList()[0]);
-            }
+
             await Context.Guild.GetUser(badUser.Id).AddRoleAsync(mute_role);
 
-            EmbedBuilder builder = new EmbedBuilder(){
+            EmbedBuilder builder = new EmbedBuilder() {
                 Title = "🔇 User Muted",
                 Description = $"{badUser.Username}#{badUser.Discriminator} Muted!",
                 Color = Color.DarkBlue
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+
+        public async Task<IRole> createMuteRole()
+        {
+            var mute_role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(), Color.DarkerGrey, false, false);
+
+            //add channel overrides for the new mute role
+            foreach (IGuildChannel channel in Context.Guild.Channels) {
+                OverwritePermissions permissions = new OverwritePermissions(
+                    sendMessages: PermValue.Deny,
+                    addReactions: PermValue.Deny,
+                    speak: PermValue.Deny
+                    );
+
+                await channel.AddPermissionOverwriteAsync(mute_role, permissions);
+            }
+
+            return mute_role;
         }
 
         [Command("lock")]
