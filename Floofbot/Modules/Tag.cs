@@ -152,14 +152,16 @@ namespace Floofbot.Modules
                     bool isImage = false;
                     if (Uri.IsWellFormedUriString(mentionless_tag, UriKind.RelativeOrAbsolute)) {
                         string ext = mentionless_tag.Split('.').Last().ToLower();
-                        isImage = (
-                            ext == "jpg" ||
-                            ext == "png" ||
-                            ext == "jpeg" ||
-                            ext == "webp" ||
-                            ext == "gifv" ||
-                            ext == "gif" ||
-                            ext == "mp4");
+                        List<string> imageExtensions = new List<string> {
+                            "jpg",
+                            "png",
+                            "jpeg",
+                            "webp",
+                            "gifv",
+                            "gif",
+                            "mp4"
+                        };
+                        isImage = imageExtensions.Contains(ext);
                     }
 
                     // tag found, so post it
