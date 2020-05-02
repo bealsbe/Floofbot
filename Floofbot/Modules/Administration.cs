@@ -188,7 +188,6 @@ namespace Floofbot.Modules
         [Summary("Unlocks a channel")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-
         public async Task ChannelUnLock()
         {
             try {
@@ -210,15 +209,16 @@ namespace Floofbot.Modules
             }
         }
 
-        // rfurry Discord Rules Gate
+        // r/furry Discord Rules Gate
         [Command("ireadtherules")]
-        [Summary("Allows a user into the server")]
+        [Summary("Confirms a user has read the server rules by giving them a new role")]
         public async Task getaccess()
         {
-            if (Context.Guild.Id == 225980129799700481) {
-                ulong roleID = 494149550622375936;
+            ulong serverId = 225980129799700481;
+            ulong readRulesRoleId = 494149550622375936;
+            if (Context.Guild.Id == serverId) {
                 var user = (IGuildUser)Context.User;
-                await user.AddRoleAsync(Context.Guild.GetRole(roleID));
+                await user.AddRoleAsync(Context.Guild.GetRole(readRulesRoleId));
             }
         }
 
