@@ -15,8 +15,9 @@ namespace Floofbot.Modules
     [RequireUserPermission(Discord.GuildPermission.AttachFiles)]
     public class Tag : ModuleBase<SocketCommandContext>
     {
+        private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
+
         private SqliteConnection dbConnection;
-        private static readonly Discord.Color embedColor = Color.Magenta;
 
         public Tag()
         {
@@ -30,31 +31,31 @@ namespace Floofbot.Modules
         [Priority(0)]
         [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task Add(
-            [Summary("Tag name")] string Tag,
-            [Summary("Tag content")] [Remainder] string Content = null)
+            [Summary("Tag name")] string tag,
+            [Summary("Tag content")] [Remainder] string content = null)
         {
             try {
-                if (Content != null) {
+                if (content != null) {
                     Regex rgx = new Regex("[^a-zA-Z0-9 -]");
-                    Tag = rgx.Replace(Tag, "").ToLower();
+                    tag = rgx.Replace(tag, "").ToLower();
                     string sql = @"INSERT into Tags (TagID,UserID, Content)
                             VALUES ($TagId, $UserID, $Content)";
 
-                    string tagId = $"{Tag.ToString()}:{Context.Guild.Id.ToString()}";
+                    string tagId = $"{tag.ToString()}:{Context.Guild.Id.ToString()}";
                     SqliteCommand command = new SqliteCommand(sql, dbConnection);
                     command.Parameters.Add(new SqliteParameter("$TagId", tagId));
                     command.Parameters.Add(new SqliteParameter("$UserID", Context.User.Id.ToString()));
-                    command.Parameters.Add(new SqliteParameter("$Content", Content));
+                    command.Parameters.Add(new SqliteParameter("$Content", content));
                     var result = command.ExecuteScalar();
 
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{Tag}`"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{tag}`"));
                 }
                 else {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag add [name] [content]`"));
                 }
             }
             catch (SqliteException) {
-                await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{Tag}` Already Exists"));
+                await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{tag}` Already Exists"));
             }
         }
 
@@ -68,7 +69,7 @@ namespace Floofbot.Modules
         //TODO: Fix me
         [Command("list")]
         [Summary("Lists all tags")]
-        public async Task ListTags([Remainder] string Content = null)
+        public async Task ListTags([Remainder] string content = null)
         {
             string guildId = $"{Context.Guild.Id}";
             string sql = $"SELECT tagID FROM Tags WHERE tagID LIKE '%:$guildId%'";
@@ -135,10 +136,10 @@ namespace Floofbot.Modules
         [Command]
         [Summary("Displays a tag")]
         [RequireUserPermission(GuildPermission.AttachFiles)]
-        public async Task GetTag([Summary("Tag name")] string Tag = "")
+        public async Task GetTag([Summary("Tag name")] string tag = "")
         {
-            if (!string.IsNullOrWhiteSpace(Tag)) {
-                string TagID = $"{Tag}:{Context.Guild.Id}".ToLower();
+            if (!string.IsNullOrWhiteSpace(tag)) {
+                string TagID = $"{tag}:{Context.Guild.Id}".ToLower();
                 string sql = @"SELECT Content FROM Tags
                                 Where TagID = $TagID";
                 SqliteCommand command = new SqliteCommand(sql, dbConnection);
@@ -146,11 +147,11 @@ namespace Floofbot.Modules
                 var result = command.ExecuteScalar();
 
                 if (result != null) {
-                    string tag = result.ToString().Replace("@", "[at]");
+                    string mentionless_tag = result.ToString().Replace("@", "[at]");
 
                     bool isImage = false;
-                    if (Uri.IsWellFormedUriString(tag, UriKind.RelativeOrAbsolute)) {
-                        string ext = tag.Split('.').Last().ToLower();
+                    if (Uri.IsWellFormedUriString(mentionless_tag, UriKind.RelativeOrAbsolute)) {
+                        string ext = mentionless_tag.Split('.').Last().ToLower();
                         isImage = (
                             ext == "jpg" ||
                             ext == "png" ||
@@ -164,19 +165,19 @@ namespace Floofbot.Modules
                     // tag found, so post it
                     if (isImage) {
                         EmbedBuilder builder = new EmbedBuilder() {
-                            Title = "💾  " + Tag,
+                            Title = "💾  " + mentionless_tag,
                             Color = Color.Magenta
                         };
-                        builder.WithImageUrl(tag);
+                        builder.WithImageUrl(mentionless_tag);
                         await SendEmbed(builder.Build());
                     }
                     else {
-                        await Context.Channel.SendMessageAsync(tag);
+                        await Context.Channel.SendMessageAsync(mentionless_tag);
                     }
                 }
                 else {
                     // tag not found
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{Tag}`"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{tag}`"));
                 }
             }
             else {
@@ -188,7 +189,7 @@ namespace Floofbot.Modules
         private Embed CreateDescriptionEmbed(string description) {
             EmbedBuilder builder = new EmbedBuilder {
                 Description = description,
-                Color = embedColor
+                Color = EMBED_COLOR
             };
             return builder.Build();
         }
