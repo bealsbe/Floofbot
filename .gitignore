@@ -261,4 +261,4 @@ __pycache__/
 *.pyc
 /Floofbot/Properties/launchSettings.json
 
-floofData.db
+/Floofbot/floofData.db
