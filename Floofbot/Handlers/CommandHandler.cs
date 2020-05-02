@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Configuration;
 using System.Reflection;
 using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +14,6 @@ namespace Floofbot.Handlers
 {
     public class CommandHandler
     {
-
         private DiscordSocketClient _client;
         private CommandService _commands;
         private IServiceProvider _services;
@@ -42,15 +43,26 @@ namespace Floofbot.Handlers
                 return;
 
             var context = new SocketCommandContext(_client, msg);
+            string prefix = ConfigurationManager.AppSettings["Prefix"];
             int argPos = 0;
 
-            if (msg.HasCharPrefix('.', ref argPos))
+            if (msg.HasStringPrefix(prefix, ref argPos))
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 
                 if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
                 {
                     Log.Error(result.ErrorReason);
+                }
+            }
+            else if (msg.Source == MessageSource.User)
+            {
+                var generator = new RandomResponseGenerator();
+                string randomResponse = generator.generateResponse(msg);
+
+                if (!string.IsNullOrEmpty(randomResponse))
+                {
+                    await context.Channel.SendMessageAsync(randomResponse);
                 }
             }
         }

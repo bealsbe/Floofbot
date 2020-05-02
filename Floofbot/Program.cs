@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Serilog;
+using Floofbot.Configs;
 using Floofbot.Handlers;
 using Floofbot.Modules;
 using Floofbot.Services.Repository;
@@ -58,18 +59,9 @@ namespace Floofbot
                   });
             try
             {
+                var _EventLoggerService = new EventLoggerService(_client);
                 await _client.LoginAsync(TokenType.Bot, token);
                 await _client.StartAsync();
-
-                Logging.EventHandlingService eventService = new Logging.EventHandlingService(new FloofDataContext());
-                _client.MessageUpdated += eventService.MessageUpdated;
-                _client.MessageDeleted += eventService.MessageDeleted;
-                _client.UserBanned += eventService.UserBanned;
-                _client.UserUnbanned += eventService.UserUnbanned;
-                _client.UserJoined += eventService.UserJoined;
-                _client.UserLeft += eventService.UserLeft;
-                _client.GuildMemberUpdated += eventService.GuildMemberUpdated;
-
             }
             catch (Exception ex)
             {
@@ -86,6 +78,7 @@ namespace Floofbot
             _botDatabase = new BotDatabase();
             _handler = new CommandHandler(_client);
 
+            await _client.SetActivityAsync(new BotActivity());
             await Task.Delay(-1);
         }
     }
