@@ -8,6 +8,7 @@ namespace Floofbot
     public class Utilities : ModuleBase<SocketCommandContext>
     {
         [Command("ping")]
+        [Summary("Responds with the ping in milliseconds")]
         public async Task Ping()
         {
             var sw = Stopwatch.StartNew();
@@ -25,6 +26,7 @@ namespace Floofbot
         }
 
         [Command("userinfo")]
+        [Summary("Displays information on a mentioned user. If no parameters are given, displays the user's own information")]
         [RequireContext(ContextType.Guild)]
         public async Task UserInfo(IGuildUser usr = null)
         {
@@ -39,7 +41,7 @@ namespace Floofbot
                 avatar = user.GetAvatarUrl(ImageFormat.Auto, 512);
 
             string infostring = $"👥 **User info for:** {user.Mention}\n";
-            infostring += 
+            infostring +=
                  $"**Username** : {user.Username}#{user.Discriminator}\n" +
                  $"**Nickname** : {user.Nickname ?? user.Username}\n" +
                  $"**ID** : {user.Id}\n" +
@@ -57,6 +59,7 @@ namespace Floofbot
         }
 
         [Command("avatar")]
+        [Summary("Displays a mentioned user's avatar. If no parameters are given, displays the user's own avatar")]
         [RequireContext(ContextType.Guild)]
         public async Task Avatar([Remainder] IGuildUser user = null)
         {

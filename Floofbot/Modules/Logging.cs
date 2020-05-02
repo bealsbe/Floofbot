@@ -16,6 +16,7 @@ using System.Linq;
 
 namespace Floofbot.Modules
 {
+    [Summary("Logging commands")]
     public class Logging
     {
         [Group("logger")]
@@ -23,7 +24,6 @@ namespace Floofbot.Modules
         [RequireContext(ContextType.Guild)]
         public class LoggerCommands : ModuleBase<SocketCommandContext>
         {
-          
             private FloofDataContext _floofDB;
 
             public LoggerCommands(FloofDataContext floofDB)
@@ -37,7 +37,7 @@ namespace Floofbot.Modules
                 var serverConfig = _floofDB.LogConfigs.Find(server);
                 if (serverConfig == null)
                 {
-                    _floofDB.Add(new LogConfig { 
+                    _floofDB.Add(new LogConfig {
                                                 ServerId = server,
                                                 MessageUpdatedChannel = 0,
                                                 MessageDeletedChannel = 0,
