@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace Floofbot.Modules
 {
+    [Summary("Administration commands")]
     public class Administration : ModuleBase<SocketCommandContext>
     {
         private FloofDataContext _floofDB;
@@ -47,6 +48,7 @@ namespace Floofbot.Modules
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
+
         [Command("kick")]
         [Alias("k")]
         [Summary("Kicks a user from the server")]

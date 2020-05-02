@@ -26,7 +26,7 @@ namespace Floofbot
         }
 
         [Command("userinfo")]
-        [Summary("Displays information on a mentioned user. If no parameters are given, displays user's own information")]
+        [Summary("Displays information on a mentioned user. If no parameters are given, displays the user's own information")]
         [RequireContext(ContextType.Guild)]
         public async Task UserInfo(IGuildUser usr = null)
         {
@@ -59,7 +59,7 @@ namespace Floofbot
         }
 
         [Command("avatar")]
-        [Summary("Displays a mentioned user's avatar. If no parameters are given, displays user's own avatar")]
+        [Summary("Displays a mentioned user's avatar. If no parameters are given, displays the user's own avatar")]
         [RequireContext(ContextType.Guild)]
         public async Task Avatar([Remainder] IGuildUser user = null)
         {

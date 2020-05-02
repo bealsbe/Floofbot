@@ -12,6 +12,7 @@ namespace Floofbot
 {
     public partial class Utility
     {
+        [Summary("Tag commands")]
         [Group("tag")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(Discord.GuildPermission.AttachFiles)]
