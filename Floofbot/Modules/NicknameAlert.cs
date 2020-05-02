@@ -53,19 +53,9 @@ namespace Floofbot.Modules
             {
                 // check the status of logger
                 var ServerConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
-
-                bool bEnabled = ServerConfig.IsOn;
-                if (!bEnabled)
-                {
-                    ServerConfig.IsOn = true;
-                    await Context.Channel.SendMessageAsync("Nicknqme Alerts Enabled!");
-                }
-                else if (bEnabled)
-                {
-                    ServerConfig.IsOn = false;
-                    await Context.Channel.SendMessageAsync("Nickname Alerts Disabled!");
-                }
+                ServerConfig.IsOn = !ServerConfig.IsOn;
                 _floofDB.SaveChanges();
+                await Context.Channel.SendMessageAsync("Nickname Alerts " + (ServerConfig.IsOn ? "Enabled!" : "Disabled!"));
             }
             catch (Exception ex)
             {
