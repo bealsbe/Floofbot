@@ -6,11 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20200501113559_AddNicknameAlert.cs" />
-    <Compile Remove="Migrations\20200501113559_AddNicknameAlert.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Discord.Net" Version="2.2.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.3" />
