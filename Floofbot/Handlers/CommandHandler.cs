@@ -3,12 +3,13 @@ using System.Configuration;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.WebSocket;
 using Discord.Commands;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Floofbot.Handlers
 {
@@ -21,7 +22,7 @@ namespace Floofbot.Handlers
         public CommandHandler(DiscordSocketClient client)
         {
             _client = client;
-            _services = BuildServiceProvider();
+            _services = BuildServiceProvider(client);
             var context = _services.GetRequiredService<FloofDataContext>();
             context.Database.Migrate(); // apply all migrations
             _commands = new CommandService();
@@ -29,9 +30,11 @@ namespace Floofbot.Handlers
             _client.MessageReceived += HandleCommandAsync;
         }
 
-        private IServiceProvider BuildServiceProvider()
+        private IServiceProvider BuildServiceProvider(DiscordSocketClient client)
         {
+            InteractiveService interactiveService = new InteractiveService(client);
             return new ServiceCollection()
+                .AddSingleton<InteractiveService>(interactiveService)
                 .AddDbContext<FloofDataContext>()
                 .BuildServiceProvider();
         }
