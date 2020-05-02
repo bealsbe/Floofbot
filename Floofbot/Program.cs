@@ -1,13 +1,12 @@
 using System;
-using Floofbot.Services;
+using System.Configuration;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Serilog;
 using Floofbot.Configs;
 using Floofbot.Handlers;
-using Floofbot.Modules;
-using Floofbot.Services.Repository;
+using Floofbot.Services;
+using Serilog;
 
 namespace Floofbot
 {
@@ -21,17 +20,7 @@ namespace Floofbot
         {
             InitialiseLogger();
 
-            // TODO: Replace console input with env variable import
-            string token;
-            if (!(args.Length == 1))
-            {
-                Console.WriteLine("Enter Bot Token");
-                token = Console.ReadLine();
-            }
-            else
-            {
-                token = args[0];
-            }
+            string token = ConfigurationManager.AppSettings["Token"];
             await new Program().MainAsync(token);
         }
 

@@ -6,5 +6,6 @@
         <add key="ActivityType" value="Playing" />
         <add key="ActivityFlags" value="None" />
         <add key="ActivityDetails" value="" />
+        <add key="Token" value="" />
     </appSettings>
 </configuration>
