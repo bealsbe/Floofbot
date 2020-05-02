@@ -1,12 +1,65 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Floofbot.Handlers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Floofbot
 {
     public class Utilities : ModuleBase<SocketCommandContext>
     {
+        private readonly IServiceProvider _services;
+        private readonly CommandService _commands;
+        public Utilities(CommandService commands, IServiceProvider services)
+        {
+            _services = services;
+            _commands = commands;
+        }
+
+        [Command("help")]
+        public async Task Help()
+        {
+            try
+            {
+                List<CommandInfo> commands = _commands.Commands.ToList();
+                List<ModuleInfo> modules = _commands.Modules.ToList();
+                EmbedBuilder embedBuilder = new EmbedBuilder();
+                bool stopped = false;
+                while (!stopped)
+                foreach (ModuleInfo module in modules)
+                {
+                    EmbedBuilder embed = new EmbedBuilder();
+
+                    embed.WithTitle(module.Name);
+                    embed.WithDescription("``" + module.Summary ?? "No module description available" + "``");
+                    embed.WithColor(Color.Green);
+                    foreach (CommandInfo command in commands)
+                    {
+                        if (command.Module == module)
+                        {
+                            string aliases;
+                            if (command.Aliases != null)
+                                aliases = string.Join(", ", command.Aliases);
+                            else
+                                aliases = "None";
+
+                            embed.AddField($"{command.Name} (aliases: {aliases})", module.Summary ?? "No command description available");
+                        }
+                    }
+                    await Context.Channel.SendMessageAsync("", false, embed.Build());
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex);
+            }
+        }
+
         [Command("ping")]
         public async Task Ping()
         {
