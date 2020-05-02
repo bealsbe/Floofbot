@@ -29,10 +29,8 @@ namespace Floofbot.Modules
                     IsOn = false
                 }) ;
                 _floofDB.SaveChanges();
-
             }
         }
-
 
         [Command("setchannel")] // update into a group
         [Summary("Sets the channel for the nickname alerts")]
