@@ -21,6 +21,10 @@ namespace Floofbot
             InitialiseLogger();
 
             string token = ConfigurationManager.AppSettings["Token"];
+            if (string.IsNullOrEmpty(token)) {
+                Console.WriteLine("Error: the Token field in app.config must contain a valid Discord bot token.");
+                Environment.Exit(1);
+            }
             await new Program().MainAsync(token);
         }
 
