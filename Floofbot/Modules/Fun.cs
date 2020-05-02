@@ -11,6 +11,7 @@ namespace Floofbot.Modules
     {
 
         [Command("8ball")]
+        [Summary("Gives an 8ball response to a given question")]
         public async Task eightball([Remainder]string question)
         {
             var responses = new List<string> {

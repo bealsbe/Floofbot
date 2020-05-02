@@ -16,6 +16,7 @@ namespace Floofbot.Modules
 
         [Command("ban")]
         [Alias("b")]
+        [Summary("Bans a user from the server")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task YeetUser(string input, [Remainder] string reason = "No Reason Provided")
@@ -48,6 +49,7 @@ namespace Floofbot.Modules
         }
         [Command("kick")]
         [Alias("k")]
+        [Summary("Kicks a user from the server")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task kickUser(string user, [Remainder] string reason = "No Reason Provided")
@@ -79,6 +81,7 @@ namespace Floofbot.Modules
 
         [Command("warn")]
         [Alias("w")]
+        [Summary("Warns a user on the server, with a given reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task warnUser(string user, [Remainder] string reason = "")
@@ -128,6 +131,7 @@ namespace Floofbot.Modules
 
         [Command("warnlog")]
         [Alias("wl")]
+        [Summary("Displays the warning log for a given user")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task warnlog(string user)
@@ -154,6 +158,7 @@ namespace Floofbot.Modules
 
 
         [Command("lock")]
+        [Summary("Locks a channel")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task ChannelLock()
@@ -178,6 +183,7 @@ namespace Floofbot.Modules
         }
 
         [Command("unlock")]
+        [Summary("Unlocks a channel")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
 
@@ -204,6 +210,7 @@ namespace Floofbot.Modules
 
         // rfurry Discord Rules Gate
         [Command("ireadtherules")]
+        [Summary("Allows a user into the server")]
         public async Task getaccess()
         {
             if (Context.Guild.Id == 225980129799700481) {

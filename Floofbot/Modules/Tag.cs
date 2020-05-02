@@ -30,6 +30,7 @@ namespace Floofbot
             }
 
             [Command("add")]
+            [Summary("Adds a tag")]
             [Priority(0)]
             [RequireUserPermission(GuildPermission.AttachFiles)]
             public async Task Add(string Tag, [Remainder] string Content = null)
@@ -87,6 +88,7 @@ namespace Floofbot
 
             //TODO: Fix me
             [Command("list")]
+            [Summary("Lists all tags")]
             [RequireUserPermission(GuildPermission.AttachFiles)]
             public async Task Listtags([Remainder] string Content = null)
             {
@@ -119,6 +121,7 @@ namespace Floofbot
             }
 
             [Command("remove")]
+            [Summary("Removes a tag")]
             [RequireUserPermission(GuildPermission.ManageMessages)]
             public async Task Remove(string tag)
             {
@@ -162,6 +165,7 @@ namespace Floofbot
             }
 
             [Command]
+            [Summary("Displays a tag")]
             [RequireUserPermission(GuildPermission.AttachFiles)]
             public async Task GetTag(string Tag)
             {
