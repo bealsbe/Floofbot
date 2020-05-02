@@ -1,6 +1,5 @@
 ﻿using System;
 using Discord;
-using Discord.WebSocket;
 using System.Threading.Tasks;
 using Discord.Commands;
 using System.Text.RegularExpressions;
@@ -25,7 +24,8 @@ namespace Floofbot.Modules
         public async Task YeetUser(string input, [Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(input);
-            if (badUser == null) {
+            if (badUser == null)
+            {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{input}\"");
                 return;
             }
@@ -57,7 +57,8 @@ namespace Floofbot.Modules
         public async Task kickUser(string user, [Remainder]string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null) {
+            if (badUser == null)
+            {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
                 return;
             }
@@ -88,12 +89,14 @@ namespace Floofbot.Modules
         public async Task warnUser(string user, string reason)
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null) {
+            if (badUser == null)
+            {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                 return;
             }
 
-            _floofDB.Add(new Warning {
+            _floofDB.Add(new Warning
+            {
                 DateAdded = DateTime.Now,
                 Forgiven = false,
                 GuildId = Context.Guild.Id,
@@ -127,7 +130,8 @@ namespace Floofbot.Modules
         public async Task warnlog(string user)
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null) {
+            if (badUser == null)
+            {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                 return;
             }
@@ -139,7 +143,8 @@ namespace Floofbot.Modules
             EmbedBuilder builder = new EmbedBuilder();
             int warningCount = 0;
             builder.WithTitle($"Warnings for {badUser.Username}#{badUser.Discriminator}");
-            foreach (Warning warning in warnings) {
+            foreach (Warning warning in warnings)
+            {
                 builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy-MM-dd")}", $"```{warning.Reason}```");
                 warningCount++;
             }
@@ -153,47 +158,48 @@ namespace Floofbot.Modules
         public async Task MuteUser(string user)
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null){
+            if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                 return;
             }
 
             IRole mute_role;
-            bool test = !_floofDB.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id);
 
             //check to see if the server exists within the "AdminConfig" Table
-            if (!_floofDB.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id)){
+            if (!_floofDB.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id)) {
+
                 //create new mute role
-                mute_role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(), Color.LighterGrey, false, null);
+                mute_role = await createMuteRole();
 
-                //add channel overrides for the new mute role
-                foreach(IGuildChannel channel in Context.Guild.Channels){
-                    OverwritePermissions permissions = new OverwritePermissions(
-                        sendMessages: PermValue.Deny,
-                        addReactions: PermValue.Deny,
-                        speak: PermValue.Deny
-                        );
+                //save the newly created role
+                _floofDB.Add(new AdminConfig
+                {
+                    ServerId = Context.Guild.Id,
+                    MuteRoleId = mute_role.Id
+                });
+                _floofDB.SaveChanges();
+            }
+            else {
+                //grabs the mute role from the database
+                mute_role = Context.Guild.GetRole(
+                   _floofDB.AdminConfig.AsQueryable()
+                   .Where(x => x.ServerId == Context.Guild.Id)
+                   .Select(x => x.MuteRoleId).ToList()[0]);
 
-                    await channel.AddPermissionOverwriteAsync(mute_role, permissions);
-
-                    //save the newly created role
-                    _floofDB.Add(new AdminConfig
-                    {
-                        ServerId = Context.Guild.Id,
-                        MuteRoleId = mute_role.Id
-                    });
+                //mute role was deleted create a new one
+                if (mute_role == null) { 
+                    mute_role = await createMuteRole();
+                    var result = _floofDB.AdminConfig.AsQueryable()
+                         .SingleOrDefault(x => x.ServerId == Context.Guild.Id);
+                    result.MuteRoleId = mute_role.Id;
                     _floofDB.SaveChanges();
                 }
             }
-            else {
-                 mute_role = Context.Guild.GetRole(
-                    _floofDB.AdminConfig.AsQueryable()
-                    .Where(x => x.ServerId == Context.Guild.Id)
-                    .Select(x => x.MuteRoleId).ToList()[0]);
-            }
+
             await Context.Guild.GetUser(badUser.Id).AddRoleAsync(mute_role);
 
-            EmbedBuilder builder = new EmbedBuilder(){
+            EmbedBuilder builder = new EmbedBuilder()
+            {
                 Title = "🔇 User Muted",
                 Description = $"{badUser.Username}#{badUser.Discriminator} Muted!",
                 Color = Color.DarkBlue
@@ -202,26 +208,48 @@ namespace Floofbot.Modules
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
+        public async Task<IRole> createMuteRole()
+        {
+            var mute_role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(), Color.DarkerGrey, false, false);
+
+            //add channel overrides for the new mute role
+            foreach (IGuildChannel channel in Context.Guild.Channels) {
+                OverwritePermissions permissions = new OverwritePermissions(
+                    sendMessages: PermValue.Deny,
+                    addReactions: PermValue.Deny,
+                    speak: PermValue.Deny
+                    );
+
+                await channel.AddPermissionOverwriteAsync(mute_role, permissions);
+            }
+
+            return mute_role;
+        }
+
         [Command("lock")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task ChannelLock()
         {
-            try {
+            try
+            {
                 IGuildChannel textChannel = (IGuildChannel)Context.Channel;
-                EmbedBuilder builder = new EmbedBuilder {
+                EmbedBuilder builder = new EmbedBuilder
+                {
                     Description = $"🔒  <#{textChannel.Id}> Locked",
                     Color = Color.Orange,
 
                 };
-                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages)) {
+                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                {
                     var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
 
                     await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
                 }
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            catch {
+            catch
+            {
                 await Context.Channel.SendMessageAsync("Something went wrong!");
             }
         }
@@ -232,21 +260,25 @@ namespace Floofbot.Modules
 
         public async Task ChannelUnLock()
         {
-            try {
+            try
+            {
                 IGuildChannel textChannel = (IGuildChannel)Context.Channel;
-                EmbedBuilder builder = new EmbedBuilder {
+                EmbedBuilder builder = new EmbedBuilder
+                {
                     Description = $"🔓  <#{textChannel.Id}> Unlocked",
                     Color = Color.DarkGreen,
 
                 };
-                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages)) {
+                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                {
                     var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
                     if (role.Name != "nadeko-mute" && role.Name != "Muted")
                         await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
                 }
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            catch {
+            catch
+            {
                 await Context.Channel.SendMessageAsync("Something went wrong!");
             }
         }
@@ -255,7 +287,8 @@ namespace Floofbot.Modules
         [Command("ireadtherules")]
         public async Task getaccess()
         {
-            if (Context.Guild.Id == 225980129799700481) {
+            if (Context.Guild.Id == 225980129799700481)
+            {
                 ulong roleID = 494149550622375936;
                 var user = (IGuildUser)Context.User;
                 await user.AddRoleAsync(Context.Guild.GetRole(roleID));
@@ -266,12 +299,14 @@ namespace Floofbot.Modules
         {
             IUser user = null;
             //resolve userID or @mention
-            if (Regex.IsMatch(input, @"\d{17,18}")) {
+            if (Regex.IsMatch(input, @"\d{17,18}"))
+            {
                 string userID = Regex.Match(input, @"\d{17,18}").Value;
                 user = Context.Client.GetUser(Convert.ToUInt64(userID));
             }
             //resolve username#0000
-            else if (Regex.IsMatch(input, ".*#[0-9]{4}")) {
+            else if (Regex.IsMatch(input, ".*#[0-9]{4}"))
+            {
                 string[] splilt = input.Split("#");
                 user = Context.Client.GetUser(splilt[0], splilt[1]);
             }
