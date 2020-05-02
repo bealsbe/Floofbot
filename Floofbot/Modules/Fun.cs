@@ -9,10 +9,9 @@ namespace Floofbot.Modules
 {
     public class fun : ModuleBase<SocketCommandContext>
     {
-
         [Command("8ball")]
-        [Summary("Gives an 8ball response to a given question")]
-        public async Task eightball([Remainder]string question)
+        [Summary("Ask the Magic 8-Ball a question")]
+        public async Task eightball([Summary("question")][Remainder] string question)
         {
             var responses = new List<string> {
                  "As I see it, yes.",

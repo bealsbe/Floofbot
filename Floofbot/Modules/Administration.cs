@@ -17,14 +17,16 @@ namespace Floofbot.Modules
 
         [Command("ban")]
         [Alias("b")]
-        [Summary("Bans a user from the server")]
+        [Summary("Bans a user from the server, with an optional reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task YeetUser(string input, [Remainder] string reason = "No Reason Provided")
+        public async Task YeetUser(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
-            IUser badUser = resolveUser(input);
+            IUser badUser = resolveUser(user);
             if (badUser == null) {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{input}\"");
+                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
                 return;
             }
 
@@ -51,10 +53,12 @@ namespace Floofbot.Modules
 
         [Command("kick")]
         [Alias("k")]
-        [Summary("Kicks a user from the server")]
+        [Summary("Kicks a user from the server, with an optional reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task kickUser(string user, [Remainder] string reason = "No Reason Provided")
+        public async Task kickUser(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
@@ -86,7 +90,9 @@ namespace Floofbot.Modules
         [Summary("Warns a user on the server, with a given reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task warnUser(string user, [Remainder] string reason = "")
+        public async Task warnUser(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "")
         {
             EmbedBuilder builder;
             if (string.IsNullOrEmpty(reason)) {
@@ -136,7 +142,7 @@ namespace Floofbot.Modules
         [Summary("Displays the warning log for a given user")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task warnlog(string user)
+        public async Task warnlog([Summary("user")] string user)
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {

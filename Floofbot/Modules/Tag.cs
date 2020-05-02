@@ -34,7 +34,9 @@ namespace Floofbot
             [Summary("Adds a tag")]
             [Priority(0)]
             [RequireUserPermission(GuildPermission.AttachFiles)]
-            public async Task Add(string Tag, [Remainder] string Content = null)
+            public async Task Add(
+                [Summary("Tag name")] string Tag,
+                [Summary("Tag content")] [Remainder] string Content = null)
             {
                 try {
                     if (Content != null) {
@@ -124,7 +126,7 @@ namespace Floofbot
             [Command("remove")]
             [Summary("Removes a tag")]
             [RequireUserPermission(GuildPermission.ManageMessages)]
-            public async Task Remove(string tag)
+            public async Task Remove([Summary("Tag name")] string tag)
             {
                 string tagId = $"{tag.ToString()}:{Context.Guild.Id.ToString()}";
 
@@ -168,7 +170,7 @@ namespace Floofbot
             [Command]
             [Summary("Displays a tag")]
             [RequireUserPermission(GuildPermission.AttachFiles)]
-            public async Task GetTag(string Tag)
+            public async Task GetTag([Summary("Tag name")] string Tag)
             {
                 if (Tag != null) {
                     string TagID = $"{Tag}:{Context.Guild.Id}".ToLower();
