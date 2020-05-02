@@ -1,5 +1,5 @@
 using System;
-using System.Configuration;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -19,8 +19,9 @@ namespace Floofbot
         static async Task Main(string[] args)
         {
             InitialiseLogger();
+            InitialiseConfig();
 
-            string token = ConfigurationManager.AppSettings["Token"];
+            string token = BotConfigFactory.Config.Token;
             if (string.IsNullOrEmpty(token)) {
                 Console.WriteLine("Error: the Token field in app.config must contain a valid Discord bot token.");
                 Environment.Exit(1);
@@ -40,6 +41,12 @@ namespace Floofbot
                     outputTemplate: logTemplate)
                 .WriteTo.Console(outputTemplate: logTemplate)
                 .CreateLogger();
+        }
+
+        private static void InitialiseConfig()
+        {
+            string botDirectory = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            BotConfigFactory.Initialize(botDirectory + "/app.config");
         }
 
         public async Task MainAsync(string token)
@@ -71,7 +78,7 @@ namespace Floofbot
             _botDatabase = new BotDatabase();
             _handler = new CommandHandler(_client);
 
-            await _client.SetActivityAsync(new BotActivity());
+            await _client.SetActivityAsync(BotConfigFactory.Config.Activity);
             await Task.Delay(-1);
         }
     }

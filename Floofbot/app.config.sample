@@ -1,11 +1,18 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<configuration>
-    <appSettings>
-        <add key="Prefix" value="." />
-        <add key="ActivityName" value="🦉 Simulator" />
-        <add key="ActivityType" value="Playing" />
-        <add key="ActivityFlags" value="None" />
-        <add key="ActivityDetails" value="" />
-        <add key="Token" value="" />
-    </appSettings>
-</configuration>
+# Floofbot Config File
+
+# The prefix to use for the bot commands
+Prefix: "."
+
+# The bot's status
+# Name and Details are strings
+# For the available Types and Flags check the wiki
+#   https://github.com/bealsbe/Floofbot/wiki
+Activity:
+  Name: "🦉 Simulator"
+  Type: "Playing"
+  Flags: "None"
+  Details: ""
+
+# The token to use for the bot.
+# This must be a valid Discord bot token
+Token: ""

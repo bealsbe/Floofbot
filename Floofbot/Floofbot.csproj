@@ -21,4 +21,11 @@
     <PackageReference Include="YamlDotNet" Version="8.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ConfigFiles Include="*.config" />
+  </ItemGroup>
+
+  <Target Name="CopyConfigs" AfterTargets="AfterBuild">
+    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
