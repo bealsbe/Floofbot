@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Floofbot.Modules
 {
+    [Group("nicknamealert")]
     public class NicknameAlert : ModuleBase<SocketCommandContext>
     {
         private FloofDataContext _floofDB;
