@@ -1,11 +1,11 @@
-﻿using Discord.Commands;
-using Discord;
-using HtmlAgilityPack;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Floofbot.Modules
 {
@@ -53,28 +53,39 @@ namespace Floofbot.Modules
         }
 
         [Command("xkcd")]
-        [Summary("Get an xkcd comic by id. If no id given, get the latest one.")]
-        public async Task xkcd([Summary("comic id")] string comic_id = "")
+        [Summary("Get an xkcd comic by ID. If no ID given, get the latest one.")]
+        public async Task xkcd([Summary("Comic ID")] string comicId = "")
         {
-            int parsed_comic_id;
-            if (!int.TryParse(comic_id, out parsed_comic_id) || parsed_comic_id <= 0)
+            int parsedComicId;
+            if (!int.TryParse(comicId, out parsedComicId) || parsedComicId <= 0)
             {
-                await Context.Channel.SendMessageAsync("Comic id must be a positive integer less than or equal to Int32.MaxValue.");
+                await Context.Channel.SendMessageAsync("Comic ID must be a positive integer less than or equal to Int32.MaxValue.");
                 return;
             }
 
-            HtmlWeb web = new HtmlWeb();
-            HtmlDocument document = web.Load($"https://xkcd.com/{comic_id}");
-            HtmlNode comicImg = document.GetElementbyId("comic")?.SelectSingleNode(".//img");
-            if (comicImg == null)
+            string json;
+            using (WebClient wc = new WebClient())
             {
-                await Context.Channel.SendMessageAsync("Comic not found.");
-                return;
+                try
+                {
+                    json = wc.DownloadString(new Uri($"https://xkcd.com/{comicId}/info.0.json"));
+                }
+                catch (Exception)
+                {
+                    await Context.Channel.SendMessageAsync("404 Not Found");
+                    return;
+                }
             }
-            HtmlAttributeCollection comicAttributes = comicImg.Attributes;
-            string imgLink = "https:" + comicAttributes["src"].Value;
-            string imgHoverText = HttpUtility.HtmlDecode(comicAttributes["title"].Value);
-            string comicTitle = HttpUtility.HtmlDecode(comicAttributes["alt"].Value);
+
+            string imgLink;
+            string imgHoverText;
+            string comicTitle;
+            using (JsonDocument parsedJson = JsonDocument.Parse(json))
+            {
+                imgLink = parsedJson.RootElement.GetProperty("img").ToString();
+                imgHoverText = parsedJson.RootElement.GetProperty("alt").ToString();
+                comicTitle = parsedJson.RootElement.GetProperty("safe_title").ToString();
+            }
 
             EmbedBuilder builder = new EmbedBuilder();
             builder.Title = comicTitle;
