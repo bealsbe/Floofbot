@@ -17,10 +17,10 @@ namespace Floofbot.Services
         
         private Dictionary<ulong, SocketGuildUser> messageDic = new Dictionary<ulong, SocketGuildUser>(); 
         private ITextChannel _channel;
-        private Emoji banEmoji = new Emoji("🔨");
-        private Emoji warnEmoji = new Emoji("⚠️");
-        private Emoji kickEmoji = new Emoji("👢");
-        private Emoji removeEmoji = new Emoji("📝");
+        private static readonly Emoji BAN_EMOJI = new Emoji("🔨");
+        private static readonly Emoji WARN_EMOJI = new Emoji("⚠️");
+        private static readonly Emoji KICK_EMOJI = new Emoji("👢");
+        private static readonly Emoji REMOVE_EMOJI = new Emoji("📝");
 
         public NicknameAlertService(FloofDataContext floofDb)
         {
@@ -42,18 +42,18 @@ namespace Floofbot.Services
             _channel = await GetChannel(guild, serverConfig.Channel);
 
             var embed = new EmbedBuilder()
-                .WithDescription($"{removeEmoji.Name}: Remove Nickname\n" +
-                $"{warnEmoji.Name}: Warn\n" +
-                $"{kickEmoji.Name}: Kick\n" +
-                $"{banEmoji.Name}: Ban")
+                .WithDescription($"{REMOVE_EMOJI.Name}: Remove Nickname\n" +
+                $"{WARN_EMOJI.Name}: Warn\n" +
+                $"{KICK_EMOJI.Name}: Kick\n" +
+                $"{BAN_EMOJI.Name}: Ban")
                 .Build();
 
             var message = await _channel.SendMessageAsync($"{badUser.Mention} ({badUser.Username}#{badUser.Discriminator}) has been " +
                 $"detected with a bad name! What should I do?\n\nNickname: {badUser.Nickname}", false, embed);
-            await message.AddReactionAsync(removeEmoji);
-            await message.AddReactionAsync(kickEmoji);
-            await message.AddReactionAsync(warnEmoji);
-            await message.AddReactionAsync(banEmoji);
+            await message.AddReactionAsync(REMOVE_EMOJI);
+            await message.AddReactionAsync(KICK_EMOJI);
+            await message.AddReactionAsync(WARN_EMOJI);
+            await message.AddReactionAsync(BAN_EMOJI);
 
             messageDic.Add(message.Id, badUser);
 
@@ -69,7 +69,7 @@ namespace Floofbot.Services
                 messageDic.TryGetValue(msg.Id, out badUser);
                 var moderator = badUser.Guild.GetUser(reaction.UserId);
 
-                if (reaction.Emote.Name.Equals(banEmoji.Name))
+                if (reaction.Emote.Name.Equals(BAN_EMOJI.Name))
                 {
                     try
                     {
@@ -93,7 +93,7 @@ namespace Floofbot.Services
                     messageDic.Remove(msg.Id);
                     return;
                 }
-                if (reaction.Emote.Name.Equals(warnEmoji.Name))
+                if (reaction.Emote.Name.Equals(WARN_EMOJI.Name))
                 {
                     try
                     {
@@ -126,7 +126,7 @@ namespace Floofbot.Services
                     messageDic.Remove(msg.Id);
                     return;
                 }
-                if (reaction.Emote.Name.Equals(kickEmoji.Name))
+                if (reaction.Emote.Name.Equals(KICK_EMOJI.Name))
                 {
                     try
                     {
@@ -150,7 +150,7 @@ namespace Floofbot.Services
                     messageDic.Remove(msg.Id);
                     return;
                 }
-                if (reaction.Emote.Name.Equals(removeEmoji.Name))
+                if (reaction.Emote.Name.Equals(REMOVE_EMOJI.Name))
                 {
                     try
                     {
