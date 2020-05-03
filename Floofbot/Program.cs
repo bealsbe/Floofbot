@@ -15,6 +15,7 @@ namespace Floofbot
         private DiscordSocketClient _client;
         private CommandHandler _handler;
         private BotDatabase _botDatabase;
+        private VoiceChannelSync _VoiceChannelSync;
 
         static async Task Main(string[] args)
         {
@@ -70,6 +71,7 @@ namespace Floofbot
             };
             _botDatabase = new BotDatabase();
             _handler = new CommandHandler(_client);
+            _VoiceChannelSync = new VoiceChannelSync(_client);
 
             await _client.SetActivityAsync(new BotActivity());
             await Task.Delay(-1);
