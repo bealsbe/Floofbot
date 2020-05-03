@@ -6,7 +6,8 @@ namespace Floofbot.Services.Repository.Models
     {
         [Key]
         public ulong TagId { get; set; }
+        public string TagName { get; set; }
         public ulong UserId { get; set; }
-        public string Content { get; set; }
+        public string TagContent { get; set; }
     }
 }
