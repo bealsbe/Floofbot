@@ -27,6 +27,7 @@ namespace Floofbot.Modules
             IUser badUser = resolveUser(user);
             if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
+                return;
             }
 
             //sends message to user
