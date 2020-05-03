@@ -170,9 +170,21 @@ namespace Floofbot.Modules
         }
 
         [Command("minesweeper")]
-        [Summary("Responds with a random cat fact")]
-        public async Task Minesweeper(int gridx, int gridy, int bombs)
+        [Summary("Minesweeper minigame")]
+        public async Task Minesweeper([Summary("grid x")]int gridx, [Summary("grid y")]int gridy, [Summary("bomb count")]int bombs)
         {
+            //limits the size of the board
+            if(gridx > 10 || gridy > 10)
+            {
+                await Context.Channel.SendMessageAsync("Max Grid Size: 10 x 10");
+                return;
+            }
+            else if(bombs >= gridy * gridx)
+            {
+                await Context.Channel.SendMessageAsync("Too many bombs!");
+                return;
+            }
+
             Gameboard game = new Gameboard(gridx, gridy, bombs);
             EmbedBuilder builder = new EmbedBuilder();
             builder.Title = ":bomb: Minesweeper";
@@ -181,7 +193,6 @@ namespace Floofbot.Modules
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
-
 
         public class Gameboard
         {
