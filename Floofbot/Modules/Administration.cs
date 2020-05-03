@@ -306,7 +306,7 @@ namespace Floofbot.Modules
         }
 
         [Command("unmute")]
-        [Summary("Removes a mute role to a user")]
+        [Summary("Removes a mute role from a user")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task UnMuteUser([Summary("user")]string user)
