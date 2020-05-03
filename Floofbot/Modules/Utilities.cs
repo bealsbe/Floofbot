@@ -85,12 +85,19 @@ namespace Floofbot
         [Summary("Repeats a message")]
         public async Task RepeatMessage([Remainder] string message =null)
         {
-            EmbedBuilder builder = new EmbedBuilder()
+            if (message != null)
             {
-                Description = message,
-                Color = EMBED_COLOR
-            };
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Description = message,
+                    Color = EMBED_COLOR
+                };
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Usage: `.say [message]);
+            }
         }
     }
 }
