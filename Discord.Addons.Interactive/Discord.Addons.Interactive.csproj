@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>2.0.4</Version>
+    <Authors>PassiveModding</Authors>
+    
+    <PackageId>Discord.Addons.PassiveInteractive</PackageId>
+    <PackageLicenseUrl>https://opensource.org/licenses/isc</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/PassiveModding/Discord.Addons.Interactive</PackageProjectUrl>
+    <PackageTags>discord;discord.net;discord.addons;discord.addons.interactive</PackageTags>
+    <AssemblyName>Discord.Addons.Interactive</AssemblyName>
+    <RootNamespace>Discord.Addons.Interactive</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageReleaseNotes>Push to Stable</PackageReleaseNotes>
+    <Description>A fork of Discord.Addons.Interactive, Adding more functionality including
+
+-Inline Reactions
+
+-Full Paginater Customization</Description>
+    <AssemblyVersion>2.0.3.1</AssemblyVersion>
+    <FileVersion>2.0.3.1</FileVersion>
+    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Discord.Net.Commands" Version="2.2.0" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0" />
+  </ItemGroup>
+
+</Project>
