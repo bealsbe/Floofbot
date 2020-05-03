@@ -18,7 +18,7 @@ namespace Floofbot.Modules
             _floofDB = floofDB;
         }
 
-        protected void CheckServer(ulong server)
+        protected void CheckServerEntryExists(ulong server)
         {
             // checks if server exists in database and adds if not
             var serverConfig = _floofDB.NicknameAlertConfigs.Find(server);
@@ -38,7 +38,7 @@ namespace Floofbot.Modules
         [Summary("Sets the channel for the nickname alerts")]
         public async Task Channel([Summary("Channel (eg #alerts)")]Discord.IChannel channel)
         {
-            CheckServer(Context.Guild.Id);
+            CheckServerEntryExists(Context.Guild.Id);
             var ServerConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
             ServerConfig.Channel = channel.Id;
             _floofDB.SaveChanges();
@@ -53,7 +53,7 @@ namespace Floofbot.Modules
             // try toggling
             try
             {
-                CheckServer(Context.Guild.Id);
+                CheckServerEntryExists(Context.Guild.Id);
                 // check the status of logger
                 var ServerConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
                 ServerConfig.IsOn = !ServerConfig.IsOn;
