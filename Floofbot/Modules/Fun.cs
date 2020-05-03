@@ -1,7 +1,9 @@
-﻿using Discord.Commands;
-using Discord;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -91,6 +93,33 @@ namespace Floofbot.Modules
 
                 await Context.Channel.SendMessageAsync(string.Join(" ", rolls));
             }
+        }
+
+        [Command("catfact")]
+        [Summary("Responds with a random cat fact")]
+        public async Task RequestCatFact()
+        {
+            string json;
+            using (WebClient wc = new WebClient())
+            {
+                try
+                {
+                    json = wc.DownloadString("https://catfact.ninja/fact");
+                }
+                catch (Exception)
+                {
+                    await Context.Channel.SendMessageAsync("The Catfacts feature is currently unavailable.");
+                    return;
+                }
+            }
+
+            string fact;
+            using (JsonDocument jsonDocument = JsonDocument.Parse(json))
+            {
+                fact = jsonDocument.RootElement.GetProperty("fact").ToString();
+            }
+
+            await Context.Channel.SendMessageAsync(fact);
         }
     }
 }
