@@ -7,6 +7,8 @@ namespace Floofbot
 {
     public class Utilities : ModuleBase<SocketCommandContext>
     {
+        private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
+
         [Command("ping")]
         [Summary("Responds with the ping in milliseconds")]
         public async Task Ping()
@@ -20,7 +22,7 @@ namespace Floofbot
             {
                 Title = "Butts!",
                 Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
-                Color = Color.Magenta
+                Color = EMBED_COLOR
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -54,7 +56,7 @@ namespace Floofbot
             {
                 ThumbnailUrl = avatar,
                 Description = infostring,
-                Color = Color.Magenta
+                Color = EMBED_COLOR
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -73,7 +75,7 @@ namespace Floofbot
             {
                 Description = $"🖼️ **Avatar for:** {user.Mention}\n",
                 ImageUrl = avatarUrl,
-                Color = Color.Magenta
+                Color = EMBED_COLOR
 
             };
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -86,7 +88,7 @@ namespace Floofbot
             EmbedBuilder builder = new EmbedBuilder()
             {
                 Description = message,
-                Color = Color.Magenta
+                Color = EMBED_COLOR
             };
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
