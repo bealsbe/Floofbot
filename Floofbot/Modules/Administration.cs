@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace Floofbot.Modules
 {
+    [Summary("Administration commands")]
     public class Administration : ModuleBase<SocketCommandContext>
     {
         private FloofDataContext _floofDB;
@@ -16,13 +17,16 @@ namespace Floofbot.Modules
 
         [Command("ban")]
         [Alias("b")]
+        [Summary("Bans a user from the server, with an optional reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task YeetUser(string input, [Remainder] string reason = "No Reason Provided")
+        public async Task YeetUser(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
-            IUser badUser = resolveUser(input);
+            IUser badUser = resolveUser(user);
             if (badUser == null) {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{input}\"");
+                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
                 return;
             }
 
@@ -46,11 +50,15 @@ namespace Floofbot.Modules
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
+
         [Command("kick")]
         [Alias("k")]
+        [Summary("Kicks a user from the server, with an optional reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task kickUser(string user, [Remainder] string reason = "No Reason Provided")
+        public async Task kickUser(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
@@ -79,9 +87,12 @@ namespace Floofbot.Modules
 
         [Command("warn")]
         [Alias("w")]
+        [Summary("Warns a user on the server, with a given reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task warnUser(string user, [Remainder] string reason = "")
+        public async Task warnUser(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "")
         {
             EmbedBuilder builder;
             if (string.IsNullOrEmpty(reason)) {
@@ -128,9 +139,10 @@ namespace Floofbot.Modules
 
         [Command("warnlog")]
         [Alias("wl")]
+        [Summary("Displays the warning log for a given user")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task warnlog(string user)
+        public async Task warnlog([Summary("user")] string user)
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
@@ -154,6 +166,7 @@ namespace Floofbot.Modules
 
 
         [Command("lock")]
+        [Summary("Locks a channel")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task ChannelLock()
@@ -178,9 +191,9 @@ namespace Floofbot.Modules
         }
 
         [Command("unlock")]
+        [Summary("Unlocks a channel")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-
         public async Task ChannelUnLock()
         {
             try {
@@ -202,14 +215,16 @@ namespace Floofbot.Modules
             }
         }
 
-        // rfurry Discord Rules Gate
+        // r/furry Discord Rules Gate
         [Command("ireadtherules")]
+        [Summary("Confirms a user has read the server rules by giving them a new role")]
         public async Task getaccess()
         {
-            if (Context.Guild.Id == 225980129799700481) {
-                ulong roleID = 494149550622375936;
+            ulong serverId = 225980129799700481;
+            ulong readRulesRoleId = 494149550622375936;
+            if (Context.Guild.Id == serverId) {
                 var user = (IGuildUser)Context.User;
-                await user.AddRoleAsync(Context.Guild.GetRole(roleID));
+                await user.AddRoleAsync(Context.Guild.GetRole(readRulesRoleId));
             }
         }
 
