@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    [Migration("20200503224258_AlterTagTable")]
+    [Migration("20200503231617_AlterTagTable")]
     partial class AlterTagTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -97,6 +97,9 @@ namespace Floofbot.Migrations
                 {
                     b.Property<ulong>("TagId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("ServerId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("TagContent")

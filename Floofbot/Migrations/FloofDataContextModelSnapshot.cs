@@ -97,6 +97,9 @@ namespace Floofbot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<ulong>("ServerId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("TagContent")
                         .HasColumnType("TEXT");
 
