@@ -49,7 +49,8 @@ namespace Floofbot.Services
                 .Build();
 
             var message = await _channel.SendMessageAsync($"{badUser.Mention} ({badUser.Username}#{badUser.Discriminator}) has been " +
-                $"detected with a bad name! What should I do?\n\nNickname: {badUser.Nickname}", false, embed);
+                $"detected with a bad name! What should I do?" + 
+                (badUser.Nickname != null ? $"\n\nNickname: {badUser.Nickname}" : $"\n\nUsername: {badUser.Username}#{badUser.Discriminator}"), false, embed);
             await message.AddReactionAsync(REMOVE_EMOJI);
             await message.AddReactionAsync(KICK_EMOJI);
             await message.AddReactionAsync(WARN_EMOJI);
