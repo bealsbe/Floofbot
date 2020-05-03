@@ -80,10 +80,9 @@ namespace Floofbot.Services
                         builder.Description = $"You have been banned from {badUser.Guild.Name}";
                         builder.AddField("Reason", "Banned by BOT for an inappropriate name");
                         builder.Color = Color.DarkOrange;
+
                         await badUser.SendMessageAsync("", false, builder.Build());
-
                         await badUser.Guild.AddBanAsync(badUser, 0, $"{moderator.Username}#{moderator.Discriminator} ({moderator.Id}) -> Inappropriate Name");
-
                         await channel.SendMessageAsync($"Got it! I banned {badUser.Username}#{badUser.Discriminator}!");
                     }
                     catch (Exception ex)
