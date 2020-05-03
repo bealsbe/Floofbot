@@ -166,7 +166,7 @@ namespace Floofbot.Modules
 
 
         [Command("mute")]
-        [Summary("Applys a mute role to a user")]
+        [Summary("Applies a mute role to a user")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task MuteUser([Summary("user")]string user, [Summary("Time")]string time = null)
