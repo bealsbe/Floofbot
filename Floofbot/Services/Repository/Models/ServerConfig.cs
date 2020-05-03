@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Floofbot.Services.Repository.Models
 {
@@ -9,6 +7,5 @@ namespace Floofbot.Services.Repository.Models
         [Key]
         public ulong ServerId { get; set; }
         public ulong MuteRoleId { get; set; }
-
     }
 }
