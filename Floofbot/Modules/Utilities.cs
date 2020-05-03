@@ -1,71 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Floofbot.Handlers;
-using Microsoft.Extensions.DependencyInjection;
-using Discord.Addons.Interactive;
-using System.Collections;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.VisualBasic;
 
 namespace Floofbot
 {
-    public class Utilities : InteractiveBase
+    public class Utilities : ModuleBase<SocketCommandContext>
     {
-        private readonly IServiceProvider _services;
-        private readonly CommandService _commands;
-        public Utilities(CommandService commands, IServiceProvider services)
-        {
-            _services = services;
-            _commands = commands;
-        }
-
-        [Command("help")]
-        public async Task Help()
-        {
-            try
-            {
-                List<CommandInfo> commands = _commands.Commands.ToList();
-                List<ModuleInfo> modules = _commands.Modules.ToList();
-                List <EmbedFieldBuilder> listOfFields = new List<EmbedFieldBuilder>();
-
-                foreach (ModuleInfo module in modules)
-                {                     
-                        foreach (CommandInfo command in commands)
-                        {
-                            string aliases;
-                            if (command.Aliases != null)
-                                aliases = string.Join(", ", command.Aliases);
-                            else
-                                aliases = "None";
-
-                        listOfFields.Add(new EmbedFieldBuilder()
-                        {
-                            Name = module.Name,
-                            Value = $"{command.Name} (aliases: {aliases})\n -> " + command.Summary ?? "No command description available",
-                            IsInline = false
-                        });
-                        }
-                }
-                PaginatedMessage message = new PaginatedMessage
-                {
-                    Color = Discord.Color.Green,
-                    Pages = listOfFields
-                };
-                await PagedReplyAsync(message, true);
-
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex);
-            }
-        }
-
         [Command("ping")]
         [Summary("Responds with the ping in milliseconds")]
         public async Task Ping()
@@ -75,7 +16,8 @@ namespace Floofbot
             sw.Stop();
             await msg.DeleteAsync();
 
-            EmbedBuilder builder = new EmbedBuilder() {
+            EmbedBuilder builder = new EmbedBuilder()
+            {
                 Title = "Butts!",
                 Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
                 Color = Color.Magenta
@@ -108,7 +50,8 @@ namespace Floofbot
                  $"**Guild Join Date** : {user.JoinedAt?.ToString("MM/dd/yyyy")}\n" +
                  $"**Status** : {user.Status}\n";
 
-            EmbedBuilder builder = new EmbedBuilder {
+            EmbedBuilder builder = new EmbedBuilder
+            {
                 ThumbnailUrl = avatar,
                 Description = infostring,
                 Color = Color.Magenta
@@ -126,7 +69,8 @@ namespace Floofbot
                 user = (IGuildUser)Context.User;
 
             var avatarUrl = user.GetAvatarUrl(ImageFormat.Auto, 512);
-            EmbedBuilder builder = new EmbedBuilder() {
+            EmbedBuilder builder = new EmbedBuilder()
+            {
                 Description = $"🖼️ **Avatar for:** {user.Mention}\n",
                 ImageUrl = avatarUrl,
                 Color = Color.Magenta
