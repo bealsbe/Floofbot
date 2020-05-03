@@ -183,7 +183,7 @@ namespace Floofbot.Modules
             if (!_floofDB.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id)) {
 
                 //create new mute role
-                muteRole = await createMuteRole();
+                muteRole = await CreateMuteRole();
 
                 //save the newly created role
                 _floofDB.Add(new AdminConfig {
@@ -201,7 +201,7 @@ namespace Floofbot.Modules
 
                 //mute role was deleted create a new one
                 if (muteRole == null) {
-                    muteRole = await createMuteRole();
+                    muteRole = await CreateMuteRole();
                     var result = _floofDB.AdminConfig.AsQueryable()
                          .SingleOrDefault(x => x.ServerId == Context.Guild.Id);
                     result.MuteRoleId = muteRole.Id;
@@ -288,7 +288,7 @@ namespace Floofbot.Modules
             await badUser.SendMessageAsync("", false, builder.Build());
         }
 
-        public async Task<IRole> createMuteRole()
+        public async Task<IRole> CreateMuteRole()
         {
             var muteRole = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(), Color.DarkerGrey, false, false);
 
@@ -310,7 +310,7 @@ namespace Floofbot.Modules
         [Summary("Removes a mute role from a user")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task UnMuteUser([Summary("user")]string user)
+        public async Task UnmuteUser([Summary("user")]string user)
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
