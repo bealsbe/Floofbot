@@ -16,3 +16,22 @@ Activity:
 # The token to use for the bot.
 # This must be a valid Discord bot token
 Token: ""
+
+# The list of random responses the bot gives out
+# Input: the user input, not case sensitive
+# Response: the bot response, case sensitive
+# Probability: the probability of the response occuring, between 0 and 1
+# RequireExact:
+#   True -- if we need the user to type exactly the non-case-sensitive
+#   string in $Input for the bot to respond,
+#   False -- if we only need the user to type text that contains the
+#   non-case-sensitive string in $Input for the bot to respond
+RandomResponses:
+  - Input: "Hi"
+    Response: "Hi!"
+    Probability: 0.25
+    RequireExact: False
+  - Input: "Bye"
+    Response: "Bye!"
+    Probability: 0.15
+    RequireExact: False

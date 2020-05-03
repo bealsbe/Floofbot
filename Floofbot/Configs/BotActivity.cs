@@ -1,7 +1,9 @@
 using Discord;
 
-namespace Floofbot.Configs {
-    class BotActivity : IActivity {
+namespace Floofbot.Configs
+{
+    class BotActivity : IActivity
+    {
         public string Name { get; set; }
         public ActivityType Type { get; set; }
         public ActivityProperties Flags { get; set; }
