@@ -177,44 +177,44 @@ namespace Floofbot.Modules
                 return;
             }
 
-            IRole mute_role;
+            IRole muteRole;
 
             //check to see if the server exists within the "AdminConfig" Table
             if (!_floofDB.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id)) {
 
                 //create new mute role
-                mute_role = await createMuteRole();
+                muteRole = await createMuteRole();
 
                 //save the newly created role
                 _floofDB.Add(new AdminConfig {
                     ServerId = Context.Guild.Id,
-                    MuteRoleId = mute_role.Id
+                    MuteRoleId = muteRole.Id
                 });
                 _floofDB.SaveChanges();
             }
             else {
                 //grabs the mute role from the database
-                mute_role = Context.Guild.GetRole(
+                muteRole = Context.Guild.GetRole(
                    _floofDB.AdminConfig.AsQueryable()
                    .Where(x => x.ServerId == Context.Guild.Id)
                    .Select(x => x.MuteRoleId).ToList()[0]);
 
                 //mute role was deleted create a new one
-                if (mute_role == null) {
-                    mute_role = await createMuteRole();
+                if (muteRole == null) {
+                    muteRole = await createMuteRole();
                     var result = _floofDB.AdminConfig.AsQueryable()
                          .SingleOrDefault(x => x.ServerId == Context.Guild.Id);
-                    result.MuteRoleId = mute_role.Id;
+                    result.MuteRoleId = muteRole.Id;
                     _floofDB.SaveChanges();
                 }
             }
 
-            if (Context.Guild.GetUser(badUser.Id).Roles.Contains(mute_role)) {
+            if (Context.Guild.GetUser(badUser.Id).Roles.Contains(muteRole)) {
                 await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is already muted!");
                 return;
             }
 
-            await Context.Guild.GetUser(badUser.Id).AddRoleAsync(mute_role);
+            await Context.Guild.GetUser(badUser.Id).AddRoleAsync(muteRole);
 
             EmbedBuilder builder = new EmbedBuilder() {
                 Title = "🔇 User Muted",
@@ -254,8 +254,8 @@ namespace Floofbot.Modules
                     {
                         await Task.Delay(duration);
 
-                        if (Context.Guild.GetUser(badUser.Id).Roles.Contains(mute_role)) {
-                            await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(mute_role);
+                        if (Context.Guild.GetUser(badUser.Id).Roles.Contains(muteRole)) {
+                            await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(muteRole);
 
                             //notify user that they were unmuted
                             builder = new EmbedBuilder();
@@ -290,7 +290,7 @@ namespace Floofbot.Modules
 
         public async Task<IRole> createMuteRole()
         {
-            var mute_role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(), Color.DarkerGrey, false, false);
+            var muteRole = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(), Color.DarkerGrey, false, false);
 
             //add channel overrides for the new mute role
             foreach (IGuildChannel channel in Context.Guild.Channels) {
@@ -300,10 +300,10 @@ namespace Floofbot.Modules
                     speak: PermValue.Deny
                     );
 
-                await channel.AddPermissionOverwriteAsync(mute_role, permissions);
+                await channel.AddPermissionOverwriteAsync(muteRole, permissions);
             }
 
-            return mute_role;
+            return muteRole;
         }
 
         [Command("unmute")]
@@ -318,19 +318,19 @@ namespace Floofbot.Modules
                 return;
             }
 
-            var mute_role = Context.Guild.GetRole(
+            var muteRole = Context.Guild.GetRole(
                    _floofDB.AdminConfig.AsQueryable()
                    .Where(x => x.ServerId == Context.Guild.Id)
                    .Select(x => x.MuteRoleId).ToList()[0]);
 
-            if (mute_role == null) {
+            if (muteRole == null) {
                 await Context.Channel.SendMessageAsync("The Mute Role for this Server Doesn't Exist!\n" +
                     "A new one will be created next time you run the `mute` command");
                 return;
             }
 
-            if (Context.Guild.GetUser(badUser.Id).Roles.Contains(mute_role)) {
-                await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(mute_role);
+            if (Context.Guild.GetUser(badUser.Id).Roles.Contains(muteRole)) {
+                await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(muteRole);
             }
             else {
                 await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is not muted");
