@@ -9,7 +9,7 @@ namespace Floofbot.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "TagName",
                 table: "Tags",
-                nullable: true);
+                nullable: false);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
