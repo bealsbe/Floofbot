@@ -21,7 +21,8 @@ namespace Floofbot.Modules
 
         public Tag()
         {
-            dbConnection = new SqliteConnection(new SqliteConnectionStringBuilder {
+            dbConnection = new SqliteConnection(new SqliteConnectionStringBuilder
+            {
                 DataSource = "botdata.db"
             }.ToString());
             dbConnection.Open();
@@ -34,8 +35,10 @@ namespace Floofbot.Modules
             [Summary("Tag name")] string tag,
             [Summary("Tag content")] [Remainder] string content = null)
         {
-            try {
-                if (content != null) {
+            try
+            {
+                if (content != null)
+                {
                     Regex rgx = new Regex("[^a-zA-Z0-9 -]");
                     tag = rgx.Replace(tag, "").ToLower();
                     string sql = @"INSERT into Tags (TagID,UserID, Content)
@@ -50,11 +53,13 @@ namespace Floofbot.Modules
 
                     await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{tag}`"));
                 }
-                else {
+                else
+                {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag add [name] [content]`"));
                 }
             }
-            catch (SqliteException) {
+            catch (SqliteException)
+            {
                 await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{tag}` Already Exists"));
             }
         }
@@ -80,17 +85,21 @@ namespace Floofbot.Modules
             List<string> tags = new List<string>();
             List<string> pages = new List<string>();
 
-            while (result.Read()) {
+            while (result.Read())
+            {
                 tags.Add(result.GetString(0).Split(':')[0]);
             }
 
             tags = tags.OrderBy(x => x).ToList();
             int index = 0;
-            for (int i = 1; i <= (tags.Count / 50) + 1; i++) {
+            for (int i = 1; i <= (tags.Count / 50) + 1; i++)
+            {
                 string text = "```glsl\n";
                 int pagebreak = index;
-                for (; index < pagebreak + 50; index++) {
-                    if (index < tags.Count) {
+                for (; index < pagebreak + 50; index++)
+                {
+                    if (index < tags.Count)
+                    {
                         text += $"[{index}] - {tags[index].ToLower()}\n";
                     }
                 }
@@ -113,7 +122,8 @@ namespace Floofbot.Modules
             SqliteCommand command = new SqliteCommand(select, dbConnection);
             command.Parameters.Add(new SqliteParameter("$TagId", tagId));
 
-            if (Convert.ToInt32(command.ExecuteScalar()) > 0) {
+            if (Convert.ToInt32(command.ExecuteScalar()) > 0)
+            {
                 string delete = @"DELETE FROM Tags WHERE TagID = $TagId";
                 command = new SqliteCommand(delete, dbConnection);
                 command.Parameters.Add(new SqliteParameter("$TagId", tagId));
@@ -121,7 +131,8 @@ namespace Floofbot.Modules
 
                 await SendEmbed(CreateDescriptionEmbed($"💾 Tag: `{tag}` Removed"));
             }
-            else {
+            else
+            {
                 await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{tag}`"));
             }
         }
@@ -138,7 +149,8 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task GetTag([Summary("Tag name")] string tag = "")
         {
-            if (!string.IsNullOrWhiteSpace(tag)) {
+            if (!string.IsNullOrWhiteSpace(tag))
+            {
                 string TagID = $"{tag}:{Context.Guild.Id}".ToLower();
                 string sql = @"SELECT Content FROM Tags
                                 Where TagID = $TagID";
@@ -146,11 +158,13 @@ namespace Floofbot.Modules
                 command.Parameters.Add(new SqliteParameter("$TagID", TagID));
                 var result = command.ExecuteScalar();
 
-                if (result != null) {
+                if (result != null)
+                {
                     string mentionless_tag = result.ToString().Replace("@", "[at]");
 
                     bool isImage = false;
-                    if (Uri.IsWellFormedUriString(mentionless_tag, UriKind.RelativeOrAbsolute)) {
+                    if (Uri.IsWellFormedUriString(mentionless_tag, UriKind.RelativeOrAbsolute))
+                    {
                         string ext = mentionless_tag.Split('.').Last().ToLower();
                         List<string> imageExtensions = new List<string> {
                             "jpg",
@@ -165,38 +179,46 @@ namespace Floofbot.Modules
                     }
 
                     // tag found, so post it
-                    if (isImage) {
-                        EmbedBuilder builder = new EmbedBuilder() {
+                    if (isImage)
+                    {
+                        EmbedBuilder builder = new EmbedBuilder()
+                        {
                             Title = "💾  " + mentionless_tag,
                             Color = Color.Magenta
                         };
                         builder.WithImageUrl(mentionless_tag);
                         await SendEmbed(builder.Build());
                     }
-                    else {
+                    else
+                    {
                         await Context.Channel.SendMessageAsync(mentionless_tag);
                     }
                 }
-                else {
+                else
+                {
                     // tag not found
                     await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{tag}`"));
                 }
             }
-            else {
+            else
+            {
                 // no tag given
                 await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag [name]`"));
             }
         }
 
-        private Embed CreateDescriptionEmbed(string description) {
-            EmbedBuilder builder = new EmbedBuilder {
+        private Embed CreateDescriptionEmbed(string description)
+        {
+            EmbedBuilder builder = new EmbedBuilder
+            {
                 Description = description,
                 Color = EMBED_COLOR
             };
             return builder.Build();
         }
 
-        private Task SendEmbed(Embed embed) {
+        private Task SendEmbed(Embed embed)
+        {
             return Context.Channel.SendMessageAsync("", false, embed);
         }
     }
