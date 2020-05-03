@@ -215,6 +215,37 @@ namespace Floofbot.Modules
                 Color = Color.DarkBlue
             };
 
+<<<<<<< HEAD
+=======
+
+            if (time != null) {
+                var m = Regex.Match(time, @"^((?<days>\d+)d)?((?<hours>\d+)h)?((?<minutes>\d+)m)?((?<seconds>\d+)s)?$", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.RightToLeft);
+
+                int dd = m.Groups["days"].Success ? int.Parse(m.Groups["days"].Value) : 0;
+                int hs = m.Groups["hours"].Success ? int.Parse(m.Groups["hours"].Value) : 0;
+                int ms = m.Groups["minutes"].Success ? int.Parse(m.Groups["minutes"].Value) : 0;
+                int ss = m.Groups["seconds"].Success ? int.Parse(m.Groups["seconds"].Value) : 0;
+
+                int seconds = dd * 86400 + hs * 60 * 60 + ms * 60 + ss;
+
+                if (seconds > 0) {
+                    TimeSpan duration = TimeSpan.FromSeconds(seconds);
+                    builder.AddField("Duration", $"Days: {duration.Days} Hours: {duration.Hours} Minutes: {duration.Minutes} Seconds: {duration.Seconds}");
+
+                 DateTime expires  =  DateTime.Now.AddSeconds(seconds);
+                    builder.AddField("Expires", $"{expires.ToString("dddd, dd MMMM yyyy hh:mm tt")} PDT \n {expires.ToUniversalTime().ToString("dddd, dd MMMM yyyy hh:mm tt")} UTC");
+
+
+
+                }
+                else {
+                    await Context.Channel.SendMessageAsync("Invalid Time format... \nExamples: `.mute Talon#6237 1d` `.mute Talon#6237 6h30m`");
+                    return;
+                }
+
+            }
+
+>>>>>>> added time to mute command
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
@@ -236,6 +267,42 @@ namespace Floofbot.Modules
             return mute_role;
         }
 
+<<<<<<< HEAD
+=======
+        [Command("unmute")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task UnMuteUser(string user)
+        {
+            IUser badUser = resolveUser(user);
+            if (badUser == null) {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
+                return;
+            }
+
+            var mute_role = Context.Guild.GetRole(
+                   _floofDB.AdminConfig.AsQueryable()
+                   .Where(x => x.ServerId == Context.Guild.Id)
+                   .Select(x => x.MuteRoleId).ToList()[0]);
+
+            if (mute_role == null) {
+                await Context.Channel.SendMessageAsync("The Mute Role for this Server Doesn't Exist!\n" +
+                    "A new one will be created next time you run the `mute` command");
+                return;
+            }
+
+            await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(mute_role);
+
+            EmbedBuilder builder = new EmbedBuilder() {
+                Title = "🔊 User Unmuted",
+                Description = $"{badUser.Username}#{badUser.Discriminator} was unmuted!",
+                Color = Color.DarkBlue
+            };
+
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+
+>>>>>>> added time to mute command
         [Command("lock")]
         [Summary("Locks a channel")]
         [RequireContext(ContextType.Guild)]
