@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    [Migration("20200428152959_InitialCreate")]
+    [Migration("20200502011652_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,10 +18,28 @@ namespace Floofbot.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.3");
 
+            modelBuilder.Entity("Floofbot.Services.Repository.Models.AdminConfig", b =>
+                {
+                    b.Property<ulong>("ServerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("MuteRoleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ServerId");
+
+                    b.ToTable("AdminConfig");
+                });
+
             modelBuilder.Entity("Floofbot.Services.Repository.Models.LogConfig", b =>
                 {
+                    b.Property<ulong>("ServerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsOn")
-                        .HasColumnType("INT");
+                        .HasColumnType("INTEGER");
 
                     b.Property<ulong>("MemberUpdatesChannel")
                         .HasColumnType("INTEGER");
@@ -30,10 +48,6 @@ namespace Floofbot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("MessageUpdatedChannel")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<ulong>("ServerId")
-                        .HasColumnName("ServerID")
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("UserBannedChannel")
@@ -57,6 +71,8 @@ namespace Floofbot.Migrations
                     b.Property<ulong>("UserUnmutedChannel")
                         .HasColumnType("INTEGER");
 
+                    b.HasKey("ServerId");
+
                     b.ToTable("LogConfigs");
                 });
 
@@ -64,14 +80,12 @@ namespace Floofbot.Migrations
                 {
                     b.Property<ulong>("TagId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnName("TagID")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Content")
                         .HasColumnType("TEXT");
 
                     b.Property<ulong>("UserId")
-                        .HasColumnName("UserID")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("TagId");
@@ -82,6 +96,7 @@ namespace Floofbot.Migrations
             modelBuilder.Entity("Floofbot.Services.Repository.Models.Warning", b =>
                 {
                     b.Property<ulong>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateAdded")

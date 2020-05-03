@@ -8,6 +8,18 @@ namespace Floofbot.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AdminConfig",
+                columns: table => new
+                {
+                    ServerId = table.Column<ulong>(nullable: false),
+                    MuteRoleId = table.Column<ulong>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AdminConfig", x => x.ServerId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LogConfigs",
                 columns: table => new
                 {
@@ -26,6 +38,7 @@ namespace Floofbot.Migrations
                 },
                 constraints: table =>
                 {
+                    
                 });
 
             migrationBuilder.CreateTable(
@@ -63,6 +76,9 @@ namespace Floofbot.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AdminConfig");
+
             migrationBuilder.DropTable(
                 name: "LogConfigs");
 

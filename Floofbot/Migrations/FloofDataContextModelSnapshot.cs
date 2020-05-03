@@ -16,6 +16,20 @@ namespace Floofbot.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.3");
 
+            modelBuilder.Entity("Floofbot.Services.Repository.Models.AdminConfig", b =>
+                {
+                    b.Property<ulong>("ServerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("MuteRoleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ServerId");
+
+                    b.ToTable("AdminConfig");
+                });
+
             modelBuilder.Entity("Floofbot.Services.Repository.Models.LogConfig", b =>
                 {
                     b.Property<ulong>("ServerId")
