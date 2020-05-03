@@ -1,32 +1,35 @@
 using System;
+using System.Collections.Generic;
 using Discord.WebSocket;
+using Floofbot.Configs;
 
-class RandomResponseGenerator {
-    private static readonly double AWOO_PROBABILITY = 0.1;
-    private static readonly double OWO_PROBABILITY = 0.025;
-    private static readonly double UWU_PROBABILITY = 0.025;
-    private static readonly double LOL_PROBABILITY = 0.25;
+class RandomResponseGenerator
+{
+    public string generateResponse(SocketUserMessage userMessage)
+    {
+        List<BotRandomResponse> responses = BotConfigFactory.Config.RandomResponses;
+        if (responses == null || responses.Count == 0)
+        {
+            return string.Empty;
+        }
 
-    public string generateResponse(SocketUserMessage userMessage) {
         string loweredMessageContent = userMessage.Content.ToLower();
         Random rand = new Random();
         double val = rand.NextDouble();
 
-        if (val < AWOO_PROBABILITY
-            && loweredMessageContent.Contains("awoo")) {
-            return "Legalize Awoo!";
-        }
-        if (val < OWO_PROBABILITY
-            && loweredMessageContent.Contains("owo")) {
-            return "UwU";
-        }
-        if (val < UWU_PROBABILITY
-            && loweredMessageContent.Contains("uwu")) {
-            return "OwO";
-        }
-        if (val < LOL_PROBABILITY
-            && loweredMessageContent == "lol") {
-            return "lol";
+        foreach (var response in responses)
+        {
+            // A lowercase version of the input required
+            // to get a potential response from the bot
+            string loweredRequiredInput = response.Input.ToLower();
+            if ((response.RequireExact && loweredMessageContent == loweredRequiredInput)
+                || loweredMessageContent.Contains(loweredRequiredInput))
+            {
+                if (val < response.Probability)
+                {
+                    return response.Response;
+                }
+            }
         }
 
         return string.Empty;

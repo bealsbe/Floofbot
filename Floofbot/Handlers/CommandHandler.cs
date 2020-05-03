@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Configuration;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.WebSocket;
 using Discord.Commands;
+using Floofbot.Configs;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,8 +46,18 @@ namespace Floofbot.Handlers
                 return;
 
             var context = new SocketCommandContext(_client, msg);
-            string prefix = ConfigurationManager.AppSettings["Prefix"];
             int argPos = 0;
+            string prefix;
+
+            if (string.IsNullOrEmpty(BotConfigFactory.Config.Prefix))
+            {
+                prefix = ".";
+                Log.Warning($"Defaulting to prefix '{prefix}' since no prefix specified!");
+            }
+            else
+            {
+                prefix = BotConfigFactory.Config.Prefix;
+            }
 
             if (msg.HasStringPrefix(prefix, ref argPos))
             {

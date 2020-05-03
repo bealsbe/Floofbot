@@ -1,5 +1,5 @@
 using System;
-using System.Configuration;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -19,9 +19,11 @@ namespace Floofbot
         static async Task Main(string[] args)
         {
             InitialiseLogger();
+            InitialiseConfig();
 
-            string token = ConfigurationManager.AppSettings["Token"];
-            if (string.IsNullOrEmpty(token)) {
+            string token = BotConfigFactory.Config.Token;
+            if (string.IsNullOrEmpty(token))
+            {
                 Console.WriteLine("Error: the Token field in app.config must contain a valid Discord bot token.");
                 Environment.Exit(1);
             }
@@ -42,6 +44,12 @@ namespace Floofbot
                 .CreateLogger();
         }
 
+        private static void InitialiseConfig()
+        {
+            string botDirectory = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            BotConfigFactory.Initialize(botDirectory + "/app.config");
+        }
+
         public async Task MainAsync(string token)
         {
             _client = new DiscordSocketClient(
@@ -50,6 +58,7 @@ namespace Floofbot
                       LogLevel = LogSeverity.Info,
                       MessageCacheSize = 100
                   });
+
             try
             {
                 var _EventLoggerService = new EventLoggerService(_client);
@@ -63,6 +72,7 @@ namespace Floofbot
                 Console.ReadKey();
                 Environment.Exit(1);
             };
+
             _client.Log += (LogMessage msg) =>
             {
                 Log.Information("{Source}: {Message}", msg.Source, msg.Message);
@@ -71,7 +81,10 @@ namespace Floofbot
             _botDatabase = new BotDatabase();
             _handler = new CommandHandler(_client);
 
-            await _client.SetActivityAsync(new BotActivity());
+            if (BotConfigFactory.Config.Activity != null)
+            {
+                await _client.SetActivityAsync(BotConfigFactory.Config.Activity);
+            }
             await Task.Delay(-1);
         }
     }
