@@ -8,6 +8,11 @@ class RandomResponseGenerator
     public string generateResponse(SocketUserMessage userMessage)
     {
         List<BotRandomResponse> responses = BotConfigFactory.Config.RandomResponses;
+        if (responses == null || responses.Count == 0)
+        {
+            return string.Empty;
+        }
+
         string loweredMessageContent = userMessage.Content.ToLower();
         Random rand = new Random();
         double val = rand.NextDouble();
@@ -23,10 +28,6 @@ class RandomResponseGenerator
                 if (val < response.Probability)
                 {
                     return response.Response;
-                }
-                else
-                {
-                    break;
                 }
             }
         }

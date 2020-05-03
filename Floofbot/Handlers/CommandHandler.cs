@@ -46,8 +46,18 @@ namespace Floofbot.Handlers
                 return;
 
             var context = new SocketCommandContext(_client, msg);
-            string prefix = BotConfigFactory.Config.Prefix;
             int argPos = 0;
+            string prefix;
+
+            if (string.IsNullOrEmpty(BotConfigFactory.Config.Prefix))
+            {
+                prefix = ".";
+                Log.Warning($"Defaulting to prefix '{prefix}' since no prefix specified!");
+            }
+            else
+            {
+                prefix = BotConfigFactory.Config.Prefix;
+            }
 
             if (msg.HasStringPrefix(prefix, ref argPos))
             {

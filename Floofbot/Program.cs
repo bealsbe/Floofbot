@@ -22,7 +22,8 @@ namespace Floofbot
             InitialiseConfig();
 
             string token = BotConfigFactory.Config.Token;
-            if (string.IsNullOrEmpty(token)) {
+            if (string.IsNullOrEmpty(token))
+            {
                 Console.WriteLine("Error: the Token field in app.config must contain a valid Discord bot token.");
                 Environment.Exit(1);
             }
@@ -57,6 +58,7 @@ namespace Floofbot
                       LogLevel = LogSeverity.Info,
                       MessageCacheSize = 100
                   });
+
             try
             {
                 var _EventLoggerService = new EventLoggerService(_client);
@@ -70,6 +72,7 @@ namespace Floofbot
                 Console.ReadKey();
                 Environment.Exit(1);
             };
+
             _client.Log += (LogMessage msg) =>
             {
                 Log.Information("{Source}: {Message}", msg.Source, msg.Message);
@@ -78,7 +81,10 @@ namespace Floofbot
             _botDatabase = new BotDatabase();
             _handler = new CommandHandler(_client);
 
-            await _client.SetActivityAsync(BotConfigFactory.Config.Activity);
+            if (BotConfigFactory.Config.Activity != null)
+            {
+                await _client.SetActivityAsync(BotConfigFactory.Config.Activity);
+            }
             await Task.Delay(-1);
         }
     }
