@@ -60,7 +60,7 @@ namespace Floofbot.Services
 
         }
 
-        public async Task ReactionCallback(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
+        public async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
             var msg = message.Value as IUserMessage;
 
