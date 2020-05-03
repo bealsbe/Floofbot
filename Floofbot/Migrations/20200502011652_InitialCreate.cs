@@ -11,8 +11,7 @@ namespace Floofbot.Migrations
                 name: "AdminConfig",
                 columns: table => new
                 {
-                    ServerId = table.Column<ulong>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    ServerId = table.Column<ulong>(nullable: false),
                     MuteRoleId = table.Column<ulong>(nullable: false)
                 },
                 constraints: table =>
