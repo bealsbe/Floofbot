@@ -165,9 +165,10 @@ namespace Floofbot.Modules
 
 
         [Command("mute")]
+        [Summary("Applys a mute role to a user")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task MuteUser(string user, string time = null)
+        public async Task MuteUser([Summary("user")]string user, [Summary("Time")]string time = null)
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
@@ -207,7 +208,12 @@ namespace Floofbot.Modules
                 }
             }
 
-            await Context.Guild.GetUser(badUser.Id).AddRoleAsync(mute_role);
+            if (Context.Guild.GetUser(badUser.Id).Roles.Contains(mute_role)) {
+                await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is already muted!");
+                return;
+            }
+
+                await Context.Guild.GetUser(badUser.Id).AddRoleAsync(mute_role);
 
             EmbedBuilder builder = new EmbedBuilder() {
                 Title = "🔇 User Muted",
@@ -215,6 +221,7 @@ namespace Floofbot.Modules
                 Color = Color.DarkBlue
             };
 
+            string durationNotifyString = null;
             if (time != null) {
                 var m = Regex.Match(time, @"^((?<days>\d+)d)?((?<hours>\d+)h)?((?<minutes>\d+)m)?((?<seconds>\d+)s)?$", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.RightToLeft);
 
@@ -227,12 +234,36 @@ namespace Floofbot.Modules
 
                 if (seconds > 0) {
                     TimeSpan duration = TimeSpan.FromSeconds(seconds);
-                    builder.AddField("Duration", $"Days: {duration.Days} Hours: {duration.Hours} Minutes: {duration.Minutes} Seconds: {duration.Seconds}");
 
-                 DateTime expires  =  DateTime.Now.AddSeconds(seconds);
-                    builder.AddField("Expires", $"{expires.ToString("dddd, dd MMMM yyyy hh:mm tt")} PDT \n {expires.ToUniversalTime().ToString("dddd, dd MMMM yyyy hh:mm tt")} UTC");
+                    string delyString = "";
 
+                    if (duration.Days > 0)
+                        delyString += $"Days: {duration.Days} ";
+                    if (duration.Hours > 0)
+                        delyString += $"Hours: {duration.Hours} ";
+                    if (duration.Minutes > 0)
+                        delyString += $"Minutes: {duration.Minutes} ";
+                    if (duration.Seconds > 0)
+                        delyString += $"Seconds: {duration.Seconds} ";
 
+                    durationNotifyString = delyString;
+                    builder.AddField("Duration", delyString);
+                    //unmute user after duration has expired
+                    Task.Run(async () => {
+                        await Task.Delay(duration);
+
+                        if (Context.Guild.GetUser(badUser.Id).Roles.Contains(mute_role)) {
+                            await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(mute_role);
+
+                            //notify user that they were unmuted
+                            builder = new EmbedBuilder();
+                            builder.Title = "🔊  Unmute Notification";
+                            builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
+                            builder.Color = Color.DarkBlue;
+                            await badUser.SendMessageAsync("", false, builder.Build());
+                        }
+
+                    });
 
                 }
                 else {
@@ -242,6 +273,17 @@ namespace Floofbot.Modules
 
             }
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+
+            //notify user that they were muted
+            builder = new EmbedBuilder();
+            builder.Title = "🔇  Mute Notification";
+            builder.Description = $"You have been muted on {Context.Guild.Name}";
+
+            if (durationNotifyString != null)
+                builder.AddField("Duration", durationNotifyString);
+
+            builder.Color = Color.DarkBlue;
+            await badUser.SendMessageAsync("", false, builder.Build());
         }
 
         public async Task<IRole> createMuteRole()
@@ -263,9 +305,10 @@ namespace Floofbot.Modules
         }
 
         [Command("unmute")]
+        [Summary("Removes a mute role to a user")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task UnMuteUser(string user)
+        public async Task UnMuteUser([Summary("user")]string user)
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
@@ -284,7 +327,13 @@ namespace Floofbot.Modules
                 return;
             }
 
-            await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(mute_role);
+            if (Context.Guild.GetUser(badUser.Id).Roles.Contains(mute_role)) {
+                await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(mute_role);
+            }
+            else {
+                await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is not muted");
+                return;
+            }
 
             EmbedBuilder builder = new EmbedBuilder() {
                 Title = "🔊 User Unmuted",
@@ -293,6 +342,13 @@ namespace Floofbot.Modules
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+
+            //notify user that they were unmuted
+            builder = new EmbedBuilder();
+            builder.Title = "🔊  Unmute Notification";
+            builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
+            builder.Color = Color.DarkBlue;
+            await badUser.SendMessageAsync("", false, builder.Build());
         }
 
         [Command("lock")]
