@@ -167,7 +167,7 @@ namespace Floofbot.Modules
         [Command("mute")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task MuteUser(string user)
+        public async Task MuteUser(string user, string time = null)
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
@@ -215,9 +215,6 @@ namespace Floofbot.Modules
                 Color = Color.DarkBlue
             };
 
-<<<<<<< HEAD
-=======
-
             if (time != null) {
                 var m = Regex.Match(time, @"^((?<days>\d+)d)?((?<hours>\d+)h)?((?<minutes>\d+)m)?((?<seconds>\d+)s)?$", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.RightToLeft);
 
@@ -244,8 +241,6 @@ namespace Floofbot.Modules
                 }
 
             }
-
->>>>>>> added time to mute command
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
@@ -267,8 +262,6 @@ namespace Floofbot.Modules
             return mute_role;
         }
 
-<<<<<<< HEAD
-=======
         [Command("unmute")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -302,7 +295,6 @@ namespace Floofbot.Modules
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
->>>>>>> added time to mute command
         [Command("lock")]
         [Summary("Locks a channel")]
         [RequireContext(ContextType.Guild)]
