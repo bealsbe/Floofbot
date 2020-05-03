@@ -26,7 +26,7 @@ namespace Floofbot.Services
         {
             _floofDb = floofDb;
         }
-        private async Task<ITextChannel> GetChannel(Discord.IGuild guild, ulong channelId)
+        private async Task<ITextChannel> GetChannel(IGuild guild, ulong channelId)
         {
             return await guild.GetTextChannelAsync(channelId);
         }
