@@ -24,8 +24,7 @@ namespace Floofbot.Migrations
                 name: "LogConfigs",
                 columns: table => new
                 {
-                    ServerId = table.Column<ulong>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    ServerID = table.Column<ulong>(nullable: false),
                     MessageUpdatedChannel = table.Column<ulong>(nullable: false),
                     MessageDeletedChannel = table.Column<ulong>(nullable: false),
                     UserBannedChannel = table.Column<ulong>(nullable: false),
@@ -36,33 +35,32 @@ namespace Floofbot.Migrations
                     UserKickedChannel = table.Column<ulong>(nullable: false),
                     UserMutedChannel = table.Column<ulong>(nullable: false),
                     UserUnmutedChannel = table.Column<ulong>(nullable: false),
-                    IsOn = table.Column<bool>(nullable: false)
+                    IsOn = table.Column<bool>(type: "INT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LogConfigs", x => x.ServerId);
+                    
                 });
 
             migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
-                    TagId = table.Column<ulong>(nullable: false)
+                    TagID = table.Column<ulong>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<ulong>(nullable: false),
+                    UserID = table.Column<ulong>(nullable: false),
                     Content = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tags", x => x.TagId);
+                    table.PrimaryKey("PK_Tags", x => x.TagID);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Warnings",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<ulong>(nullable: false),
                     DateAdded = table.Column<DateTime>(nullable: false),
                     Forgiven = table.Column<bool>(nullable: false),
                     ForgivenBy = table.Column<ulong>(nullable: false),
