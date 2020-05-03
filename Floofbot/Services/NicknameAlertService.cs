@@ -162,8 +162,6 @@ namespace Floofbot.Services
                     }
                     alertMessageIdsDic.Remove(msg.Id);
                 }
-                else
-                    return;
                 return;
             }
         }
