@@ -1,15 +1,18 @@
 ﻿using Discord.Commands;
 using Discord;
+using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Floofbot.Modules
 {
     [Summary("Fun commands")]
     public class Fun : ModuleBase<SocketCommandContext>
     {
+        private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;
         private static readonly int MAX_NUM_DICE = 20;
         private static readonly int MAX_NUM_SIDES = 1000;
 
@@ -45,8 +48,46 @@ namespace Floofbot.Modules
             builder.Title = "Magic 8 Ball";
             builder.AddField("Question", question);
             builder.AddField("Answer", responses[randomNumber]);
-            builder.Color = Color.DarkOrange;
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            builder.Color = EMBED_COLOR;
+            await SendEmbed(builder.Build());
+        }
+
+        [Command("xkcd")]
+        [Summary("Get an xkcd comic by id. If no id given, get the latest one.")]
+        public async Task xkcd([Summary("comic id")] string comic_id = "")
+        {
+            int parsed_comic_id;
+            if (!int.TryParse(comic_id, out parsed_comic_id) || parsed_comic_id <= 0)
+            {
+                await Context.Channel.SendMessageAsync("Comic id must be a positive integer less than or equal to Int32.MaxValue.");
+                return;
+            }
+
+            HtmlWeb web = new HtmlWeb();
+            HtmlDocument document = web.Load($"https://xkcd.com/{comic_id}");
+            HtmlNode comicNode = document.GetElementbyId("comic");
+            if (comicNode == null)
+            {
+                await Context.Channel.SendMessageAsync("Comic not found.");
+                return;
+            }
+            HtmlNode comicImg = comicNode.SelectSingleNode(".//img");
+            HtmlAttributeCollection comicAttributes = comicImg.Attributes;
+            string imgLink = "https:" + comicAttributes["src"].Value;
+            string imgHoverText = HttpUtility.HtmlDecode(comicAttributes["title"].Value);
+            string comicTitle = HttpUtility.HtmlDecode(comicAttributes["alt"].Value);
+
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.Title = comicTitle;
+            builder.WithImageUrl(imgLink);
+            builder.WithFooter(imgHoverText);
+            builder.Color = EMBED_COLOR;
+            await SendEmbed(builder.Build());
+        }
+
+        private Task SendEmbed(Embed embed)
+        {
+            return Context.Channel.SendMessageAsync("", false, embed);
         }
 
         [Command("roll")]
