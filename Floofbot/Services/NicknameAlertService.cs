@@ -91,9 +91,8 @@ namespace Floofbot.Services
                         Log.Error("Unable to ban user for bad name: " + ex);
                     }
                     alertMessageIdsDic.Remove(msg.Id);
-                    return;
                 }
-                if (reaction.Emote.Name.Equals(WARN_EMOJI.Name))
+                else if (reaction.Emote.Name.Equals(WARN_EMOJI.Name))
                 {
                     try
                     {
@@ -126,7 +125,7 @@ namespace Floofbot.Services
                     alertMessageIdsDic.Remove(msg.Id);
                     return;
                 }
-                if (reaction.Emote.Name.Equals(KICK_EMOJI.Name))
+                else if (reaction.Emote.Name.Equals(KICK_EMOJI.Name))
                 {
                     try
                     {
@@ -148,9 +147,8 @@ namespace Floofbot.Services
                         Log.Error("Unable to kick user for bad name: " + ex);
                     }
                     alertMessageIdsDic.Remove(msg.Id);
-                    return;
                 }
-                if (reaction.Emote.Name.Equals(REMOVE_EMOJI.Name))
+                else if (reaction.Emote.Name.Equals(REMOVE_EMOJI.Name))
                 {
                     try
                     {
@@ -163,10 +161,10 @@ namespace Floofbot.Services
                         Log.Error("Unable to remove nickname for bad name: " + ex);
                     }
                     alertMessageIdsDic.Remove(msg.Id);
-                    return;
                 }
                 else
                     return;
+                return;
             }
         }
 
