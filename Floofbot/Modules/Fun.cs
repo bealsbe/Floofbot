@@ -196,7 +196,7 @@ namespace Floofbot.Modules
             Gameboard game = new Gameboard(gridx, gridy, bombs);
             EmbedBuilder builder = new EmbedBuilder();
             builder.Title = ":bomb: Minesweeper";
-            builder.Color = Discord.Color.Magenta;
+            builder.Color = EMBED_COLOR;
             builder.Description = game.getBoard();
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
