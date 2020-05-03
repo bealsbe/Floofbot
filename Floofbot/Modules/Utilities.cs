@@ -16,8 +16,7 @@ namespace Floofbot
             sw.Stop();
             await msg.DeleteAsync();
 
-            EmbedBuilder builder = new EmbedBuilder()
-            {
+            EmbedBuilder builder = new EmbedBuilder(){
                 Title = "Butts!",
                 Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
                 Color = Color.Magenta
@@ -50,8 +49,7 @@ namespace Floofbot
                  $"**Guild Join Date** : {user.JoinedAt?.ToString("MM/dd/yyyy")}\n" +
                  $"**Status** : {user.Status}\n";
 
-            EmbedBuilder builder = new EmbedBuilder
-            {
+            EmbedBuilder builder = new EmbedBuilder{
                 ThumbnailUrl = avatar,
                 Description = infostring,
                 Color = Color.Magenta
@@ -69,8 +67,7 @@ namespace Floofbot
                 user = (IGuildUser)Context.User;
 
             var avatarUrl = user.GetAvatarUrl(ImageFormat.Auto, 512);
-            EmbedBuilder builder = new EmbedBuilder()
-            {
+            EmbedBuilder builder = new EmbedBuilder(){
                 Description = $"🖼️ **Avatar for:** {user.Mention}\n",
                 ImageUrl = avatarUrl,
                 Color = Color.Magenta
