@@ -8,10 +8,14 @@ using Discord;
 using Discord.Commands;
 using Floofbot.Handlers;
 using Microsoft.Extensions.DependencyInjection;
+using Discord.Addons.Interactive;
+using System.Collections;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.VisualBasic;
 
 namespace Floofbot
 {
-    public class Utilities : ModuleBase<SocketCommandContext>
+    public class Utilities : InteractiveBase
     {
         private readonly IServiceProvider _services;
         private readonly CommandService _commands;
@@ -28,19 +32,11 @@ namespace Floofbot
             {
                 List<CommandInfo> commands = _commands.Commands.ToList();
                 List<ModuleInfo> modules = _commands.Modules.ToList();
-                EmbedBuilder embedBuilder = new EmbedBuilder();
-                bool stopped = false;
-                while (!stopped)
-                foreach (ModuleInfo module in modules)
-                {
-                    EmbedBuilder embed = new EmbedBuilder();
+                List <EmbedFieldBuilder> listOfFields = new List<EmbedFieldBuilder>();
 
-                    embed.WithTitle(module.Name);
-                    embed.WithDescription("``" + module.Summary ?? "No module description available" + "``");
-                    embed.WithColor(Color.Green);
-                    foreach (CommandInfo command in commands)
-                    {
-                        if (command.Module == module)
+                foreach (ModuleInfo module in modules)
+                {                     
+                        foreach (CommandInfo command in commands)
                         {
                             string aliases;
                             if (command.Aliases != null)
@@ -48,11 +44,21 @@ namespace Floofbot
                             else
                                 aliases = "None";
 
-                            embed.AddField($"{command.Name} (aliases: {aliases})", module.Summary ?? "No command description available");
+                        listOfFields.Add(new EmbedFieldBuilder()
+                        {
+                            Name = module.Name,
+                            Value = $"{command.Name} (aliases: {aliases})\n -> " + command.Summary ?? "No command description available",
+                            IsInline = false
+                        });
                         }
-                    }
-                    await Context.Channel.SendMessageAsync("", false, embed.Build());
                 }
+                PaginatedMessage message = new PaginatedMessage
+                {
+                    Color = Discord.Color.Green,
+                    Pages = listOfFields
+                };
+                await PagedReplyAsync(message, true);
+
             }
             catch (Exception ex)
             {
