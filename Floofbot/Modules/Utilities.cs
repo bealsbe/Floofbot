@@ -82,7 +82,7 @@ namespace Floofbot
         }
 
         [Command("say")]
-        [Summary("Reapeats a message")]
+        [Summary("Repeats a message")]
         public async Task RepeatMessage([Remainder] string message =null)
         {
             EmbedBuilder builder = new EmbedBuilder()
