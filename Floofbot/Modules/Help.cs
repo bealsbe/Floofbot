@@ -22,15 +22,16 @@ namespace Floofbot.Modules
         [Command("help")]
         public async Task HelpCommand()
         {
-            try
-            {
-                List<CommandInfo> commands = _commands.Commands.ToList();
-                List<ModuleInfo> modules = _commands.Modules.ToList();
-                List<EmbedFieldBuilder> listOfFields = new List<EmbedFieldBuilder>();
+            List<CommandInfo> commands = _commands.Commands.ToList();
+            List<ModuleInfo> modules = _commands.Modules.ToList();
+            List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
+            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
 
-                foreach (ModuleInfo module in modules)
+            foreach (ModuleInfo module in modules)
+            {
+                foreach (CommandInfo command in commands)
                 {
-                    foreach (CommandInfo command in commands)
+                    if (command.Module == module)
                     {
                         string aliases;
                         if (command.Aliases != null)
@@ -38,26 +39,39 @@ namespace Floofbot.Modules
                         else
                             aliases = "None";
 
-                        listOfFields.Add(new EmbedFieldBuilder()
+                        fields.Add(new EmbedFieldBuilder()
                         {
-                            Name = module.Name,
-                            Value = $"{command.Name} (aliases: {aliases})\n -> " + command.Summary ?? "No command description available",
+                            Name = $"{command.Name} (aliases: {aliases})",
+                            Value = command.Summary ?? "No command description available",
                             IsInline = false
                         });
                     }
                 }
-                PaginatedMessage message = new PaginatedMessage
+                pages.Add(new PaginatedMessage.Page
                 {
-                    Color = Discord.Color.Green,
-                    Pages = listOfFields
-                };
-                await PagedReplyAsync(message, true);
-
+                    Author = new EmbedAuthorBuilder { Name = module.Name },
+                    Fields = new List<EmbedFieldBuilder>(fields),
+                    Description = module.Summary ?? "No module description available"
+                });
+                fields.Clear();
             }
-            catch (Exception ex)
+            var pager = new PaginatedMessage
             {
-                Console.Write(ex);
-            }
+                Pages = pages,
+                Color = Color.DarkGreen,
+                Content = Context.User.Mention,
+                FooterOverride = null,
+                ThumbnailUrl = Context.Client.CurrentUser.GetAvatarUrl(),
+                Options = PaginatedAppearanceOptions.Default,
+                TimeStamp = DateTimeOffset.UtcNow
+            };
+            await PagedReplyAsync(pager, new ReactionList
+            {
+                Forward = true,
+                Backward = true,
+                Jump = true,
+                Trash = true
+            });
         }
     }
 }
