@@ -15,7 +15,7 @@ namespace Floofbot.Services
     {
         private FloofDataContext _floofDb;
         
-        private Dictionary<ulong, SocketGuildUser> messageDic = new Dictionary<ulong, SocketGuildUser>(); 
+        private Dictionary<ulong, SocketGuildUser> alertMessageIdsDic = new Dictionary<ulong, SocketGuildUser>(); 
         private ITextChannel _channel;
         private static readonly Emoji BAN_EMOJI = new Emoji("🔨");
         private static readonly Emoji WARN_EMOJI = new Emoji("⚠️");
@@ -56,7 +56,7 @@ namespace Floofbot.Services
             await message.AddReactionAsync(WARN_EMOJI);
             await message.AddReactionAsync(BAN_EMOJI);
 
-            messageDic.Add(message.Id, badUser);
+            alertMessageIdsDic.Add(message.Id, badUser);
 
         }
 
@@ -64,10 +64,10 @@ namespace Floofbot.Services
         {
             var msg = message.Value as IUserMessage;
 
-            if (messageDic.ContainsKey(msg.Id))
+            if (alertMessageIdsDic.ContainsKey(msg.Id))
             {
                 SocketGuildUser badUser;
-                messageDic.TryGetValue(msg.Id, out badUser);
+                alertMessageIdsDic.TryGetValue(msg.Id, out badUser);
                 var moderator = badUser.Guild.GetUser(reaction.UserId);
 
                 if (reaction.Emote.Name.Equals(BAN_EMOJI.Name))
@@ -91,7 +91,7 @@ namespace Floofbot.Services
                         await channel.SendMessageAsync("Unable to ban user. Do I have the permissions?");
                         Log.Error("Unable to ban user for bad name: " + ex);
                     }
-                    messageDic.Remove(msg.Id);
+                    alertMessageIdsDic.Remove(msg.Id);
                     return;
                 }
                 if (reaction.Emote.Name.Equals(WARN_EMOJI.Name))
@@ -124,7 +124,7 @@ namespace Floofbot.Services
                         await channel.SendMessageAsync("Unable to warn user. Do I have the permissions?");
                         Log.Error("Unable to warn user for bad name: " + ex);
                     }
-                    messageDic.Remove(msg.Id);
+                    alertMessageIdsDic.Remove(msg.Id);
                     return;
                 }
                 if (reaction.Emote.Name.Equals(KICK_EMOJI.Name))
@@ -148,7 +148,7 @@ namespace Floofbot.Services
                         await channel.SendMessageAsync("Unable to kick user. Do I have the permissions?");
                         Log.Error("Unable to kick user for bad name: " + ex);
                     }
-                    messageDic.Remove(msg.Id);
+                    alertMessageIdsDic.Remove(msg.Id);
                     return;
                 }
                 if (reaction.Emote.Name.Equals(REMOVE_EMOJI.Name))
@@ -163,7 +163,7 @@ namespace Floofbot.Services
                         await channel.SendMessageAsync("Unable to remove their nickname. Do I have the permissions?");
                         Log.Error("Unable to remove nickname for bad name: " + ex);
                     }
-                    messageDic.Remove(msg.Id);
+                    alertMessageIdsDic.Remove(msg.Id);
                     return;
                 }
                 else
