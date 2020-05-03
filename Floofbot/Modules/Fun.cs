@@ -65,13 +65,12 @@ namespace Floofbot.Modules
 
             HtmlWeb web = new HtmlWeb();
             HtmlDocument document = web.Load($"https://xkcd.com/{comic_id}");
-            HtmlNode comicNode = document.GetElementbyId("comic");
-            if (comicNode == null)
+            HtmlNode comicImg = document.GetElementbyId("comic")?.SelectSingleNode(".//img");
+            if (comicImg == null)
             {
                 await Context.Channel.SendMessageAsync("Comic not found.");
                 return;
             }
-            HtmlNode comicImg = comicNode.SelectSingleNode(".//img");
             HtmlAttributeCollection comicAttributes = comicImg.Attributes;
             string imgLink = "https:" + comicAttributes["src"].Value;
             string imgHoverText = HttpUtility.HtmlDecode(comicAttributes["title"].Value);
