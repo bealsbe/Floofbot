@@ -143,5 +143,30 @@ namespace Floofbot.Modules
                 await Context.Channel.SendMessageAsync(string.Join(" ", rolls));
             }
         }
+
+        [Command("catfact")]
+        [Summary("Responds with a random cat fact")]
+        public async Task RequestCatFact()
+        {
+            string json;
+            using (WebClient wc = new WebClient())
+            {
+                try
+                {
+                    json = wc.DownloadString("https://catfact.ninja/fact");
+                }
+                catch (Exception)
+                {
+                    await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
+                    return;
+                }
+            }
+            string fact;
+            using (JsonDocument jsonDocument = JsonDocument.Parse(json))
+            {
+                fact = jsonDocument.RootElement.GetProperty("fact").ToString();
+            }
+            await Context.Channel.SendMessageAsync(fact);
+        }
     }
 }
