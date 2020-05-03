@@ -173,6 +173,14 @@ namespace Floofbot.Modules
         [Summary("Minesweeper minigame")]
         public async Task Minesweeper([Summary("grid x")]int gridx, [Summary("grid y")]int gridy, [Summary("bomb count")]int bombs)
         {
+           
+            //no negative numbers!
+            if(gridx < 1 || gridy < 1 || bombs < 0)
+            {
+                await Context.Channel.SendMessageAsync("Invalid grid size or bomb count");
+                return;
+            }
+            
             //limits the size of the board
             if(gridx > 10 || gridy > 10)
             {
