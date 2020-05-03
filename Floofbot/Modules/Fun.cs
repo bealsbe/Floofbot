@@ -108,17 +108,15 @@ namespace Floofbot.Modules
                 }
                 catch (Exception)
                 {
-                    await Context.Channel.SendMessageAsync("The Catfacts feature is currently unavailable.");
+                    await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
                     return;
                 }
             }
-
             string fact;
             using (JsonDocument jsonDocument = JsonDocument.Parse(json))
             {
                 fact = jsonDocument.RootElement.GetProperty("fact").ToString();
             }
-
             await Context.Channel.SendMessageAsync(fact);
         }
     }
