@@ -13,6 +13,8 @@ namespace Floofbot.Modules
     public class Administration : ModuleBase<SocketCommandContext>
     {
         private FloofDataContext _floofDB;
+        private static readonly Color ADMIN_COLOR = Color.DarkOrange;
+
         public Administration(FloofDataContext floofDB) => _floofDB = floofDB;
 
         [Command("ban")]
@@ -35,7 +37,7 @@ namespace Floofbot.Modules
             builder.Title = "⚖️ Ban Notification";
             builder.Description = $"You have been banned from {Context.Guild.Name}";
             builder.AddField("Reason", reason);
-            builder.Color = Color.DarkOrange;
+            builder.Color = ADMIN_COLOR;
             await badUser.SendMessageAsync("", false, builder.Build());
 
             //bans the user
@@ -43,7 +45,7 @@ namespace Floofbot.Modules
 
             builder = new EmbedBuilder();
             builder.Title = (":shield: User Banned");
-            builder.Color = Color.DarkOrange;
+            builder.Color = ADMIN_COLOR;
             builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
             builder.AddField("User ID", badUser.Id);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
@@ -71,14 +73,14 @@ namespace Floofbot.Modules
             builder.Title = "🥾 Kick Notification";
             builder.Description = $"You have been Kicked from {Context.Guild.Name}";
             builder.AddField("Reason", reason);
-            builder.Color = Color.DarkOrange;
+            builder.Color = ADMIN_COLOR;
             await badUser.SendMessageAsync("", false, builder.Build());
 
             //kicks users
             await Context.Guild.GetUser(badUser.Id).KickAsync(reason);
             builder = new EmbedBuilder();
             builder.Title = ("🥾 User Kicked");
-            builder.Color = Color.DarkOrange;
+            builder.Color = ADMIN_COLOR;
             builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been kicked from {Context.Guild.Name}";
             builder.AddField("User ID", badUser.Id);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
@@ -125,12 +127,12 @@ namespace Floofbot.Modules
             builder.Title = "⚖️ Warn Notification";
             builder.Description = $"You have recieved a warning in {Context.Guild.Name}";
             builder.AddField("Reason", reason);
-            builder.Color = Color.DarkOrange;
+            builder.Color = ADMIN_COLOR;
             await badUser.SendMessageAsync("", false, builder.Build());
 
             builder = new EmbedBuilder();
             builder.Title = (":shield: User Warned");
-            builder.Color = Color.DarkOrange;
+            builder.Color = ADMIN_COLOR;
             builder.AddField("User ID", badUser.Id);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
@@ -219,7 +221,7 @@ namespace Floofbot.Modules
             EmbedBuilder builder = new EmbedBuilder() {
                 Title = "🔇 User Muted",
                 Description = $"{badUser.Username}#{badUser.Discriminator} Muted!",
-                Color = Color.DarkBlue
+                Color = ADMIN_COLOR
             };
 
             string durationNotifyString = null;
@@ -261,7 +263,7 @@ namespace Floofbot.Modules
                             builder = new EmbedBuilder();
                             builder.Title = "🔊  Unmute Notification";
                             builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
-                            builder.Color = Color.DarkBlue;
+                            builder.Color = ADMIN_COLOR;
                             await badUser.SendMessageAsync("", false, builder.Build());
                         }
 
@@ -284,7 +286,7 @@ namespace Floofbot.Modules
             if (durationNotifyString != null)
                 builder.AddField("Duration", durationNotifyString);
 
-            builder.Color = Color.DarkBlue;
+            builder.Color = ADMIN_COLOR;
             await badUser.SendMessageAsync("", false, builder.Build());
         }
 
@@ -340,7 +342,7 @@ namespace Floofbot.Modules
             EmbedBuilder builder = new EmbedBuilder() {
                 Title = "🔊 User Unmuted",
                 Description = $"{badUser.Username}#{badUser.Discriminator} was unmuted!",
-                Color = Color.DarkBlue
+                Color = ADMIN_COLOR
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -349,7 +351,7 @@ namespace Floofbot.Modules
             builder = new EmbedBuilder();
             builder.Title = "🔊  Unmute Notification";
             builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
-            builder.Color = Color.DarkBlue;
+            builder.Color = ADMIN_COLOR;
             await badUser.SendMessageAsync("", false, builder.Build());
         }
 
