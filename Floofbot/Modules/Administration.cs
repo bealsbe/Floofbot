@@ -214,7 +214,7 @@ namespace Floofbot.Modules
                 return;
             }
 
-                await Context.Guild.GetUser(badUser.Id).AddRoleAsync(mute_role);
+            await Context.Guild.GetUser(badUser.Id).AddRoleAsync(mute_role);
 
             EmbedBuilder builder = new EmbedBuilder() {
                 Title = "🔇 User Muted",
@@ -250,7 +250,8 @@ namespace Floofbot.Modules
                     durationNotifyString = delyString;
                     builder.AddField("Duration", delyString);
                     //unmute user after duration has expired
-                    Task.Run(async () => {
+                    Task.Run(async () =>
+                    {
                         await Task.Delay(duration);
 
                         if (Context.Guild.GetUser(badUser.Id).Roles.Contains(mute_role)) {
