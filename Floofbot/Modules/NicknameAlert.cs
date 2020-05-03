@@ -18,7 +18,7 @@ namespace Floofbot.Modules
             _floofDB = floofDB;
         }
 
-        protected void CheckServerEntryExists(ulong server)
+        private void CheckServerEntryExists(ulong server)
         {
             // checks if server exists in database and adds if not
             var serverConfig = _floofDB.NicknameAlertConfigs.Find(server);
