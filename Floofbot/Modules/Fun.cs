@@ -1,7 +1,9 @@
-﻿using Discord.Commands;
-using Discord;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -10,6 +12,7 @@ namespace Floofbot.Modules
     [Summary("Fun commands")]
     public class Fun : ModuleBase<SocketCommandContext>
     {
+        private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;
         private static readonly int MAX_NUM_DICE = 20;
         private static readonly int MAX_NUM_SIDES = 1000;
 
@@ -45,8 +48,56 @@ namespace Floofbot.Modules
             builder.Title = "Magic 8 Ball";
             builder.AddField("Question", question);
             builder.AddField("Answer", responses[randomNumber]);
-            builder.Color = Color.DarkOrange;
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            builder.Color = EMBED_COLOR;
+            await SendEmbed(builder.Build());
+        }
+
+        [Command("xkcd")]
+        [Summary("Get an xkcd comic by ID. If no ID given, get the latest one.")]
+        public async Task xkcd([Summary("Comic ID")] string comicId = "")
+        {
+            int parsedComicId;
+            if (!int.TryParse(comicId, out parsedComicId) || parsedComicId <= 0)
+            {
+                await Context.Channel.SendMessageAsync("Comic ID must be a positive integer less than or equal to Int32.MaxValue.");
+                return;
+            }
+
+            string json;
+            using (WebClient wc = new WebClient())
+            {
+                try
+                {
+                    json = wc.DownloadString(new Uri($"https://xkcd.com/{comicId}/info.0.json"));
+                }
+                catch (Exception)
+                {
+                    await Context.Channel.SendMessageAsync("404 Not Found");
+                    return;
+                }
+            }
+
+            string imgLink;
+            string imgHoverText;
+            string comicTitle;
+            using (JsonDocument parsedJson = JsonDocument.Parse(json))
+            {
+                imgLink = parsedJson.RootElement.GetProperty("img").ToString();
+                imgHoverText = parsedJson.RootElement.GetProperty("alt").ToString();
+                comicTitle = parsedJson.RootElement.GetProperty("safe_title").ToString();
+            }
+
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.Title = comicTitle;
+            builder.WithImageUrl(imgLink);
+            builder.WithFooter(imgHoverText);
+            builder.Color = EMBED_COLOR;
+            await SendEmbed(builder.Build());
+        }
+
+        private Task SendEmbed(Embed embed)
+        {
+            return Context.Channel.SendMessageAsync("", false, embed);
         }
 
         [Command("roll")]
