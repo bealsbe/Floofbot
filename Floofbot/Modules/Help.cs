@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Floofbot.Modules
 {
+    [Summary("Commands for Listing Available Commands")]
     public class Help : InteractiveBase
     {
         private readonly IServiceProvider _services;
@@ -19,6 +20,7 @@ namespace Floofbot.Modules
             _commands = commands;
         }
 
+        [Summary("Show all available commands")]
         [Command("help")]
         public async Task HelpCommand()
         {
@@ -72,6 +74,75 @@ namespace Floofbot.Modules
                 Jump = true,
                 Trash = true
             });
+        }
+
+        [Summary("Show help for a specific module")]
+        [Command("help")]
+        public async Task HelpCommand([Summary("module")]string requestedModule)
+        {
+            try
+            {
+                List<string> moduleNames = new List<string>();
+                List<CommandInfo> commands = _commands.Commands.ToList();
+                List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
+                List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+
+                // put available module names into a list instead of their object
+                foreach (ModuleInfo module in _commands.Modules.ToList())
+                    moduleNames.Add(module.Name.ToLower());
+
+                if (!moduleNames.Contains(requestedModule.ToLower())) // no such cmd
+                {
+                    await Context.Channel.SendMessageAsync("Unable to find that command");
+                    return;
+                }
+
+                foreach (CommandInfo cmd in commands)
+                {
+                    if (cmd.Module.Name.ToLower() == requestedModule.ToLower())
+                    {
+                        List<ParameterInfo> parameters = cmd.Parameters.ToList(); // get all params
+
+                        foreach (ParameterInfo param in parameters)
+                        {
+                            fields.Add(new EmbedFieldBuilder()
+                            {
+                                Name = $"{param.Name}",
+                                Value = param.Summary ?? "No parameter description available",
+                                IsInline = false
+                            });
+                        }
+                        pages.Add(new PaginatedMessage.Page
+                        {
+                            Author = new EmbedAuthorBuilder { Name = cmd.Name },
+                            Fields = new List<EmbedFieldBuilder>(fields),
+                            Description = cmd.Summary ?? "No command description available"
+                        });
+                        fields.Clear();
+                    }
+                }
+                var pager = new PaginatedMessage
+                {
+                    Pages = pages,
+                    Color = Color.DarkGreen,
+                    Content = $"{Context.User.Mention} here are the commands available for {requestedModule}!",
+                    FooterOverride = null,
+                    ThumbnailUrl = Context.Client.CurrentUser.GetAvatarUrl(),
+                    Options = PaginatedAppearanceOptions.Default,
+                    TimeStamp = DateTimeOffset.UtcNow
+                };
+                await PagedReplyAsync(pager, new ReactionList
+                {
+                    Forward = true,
+                    Backward = true,
+                    Jump = true,
+                    Trash = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex);
+            }
         }
     }
 }
