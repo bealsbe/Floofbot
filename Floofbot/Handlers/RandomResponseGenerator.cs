@@ -14,17 +14,26 @@ class RandomResponseGenerator
             return string.Empty;
         }
 
-        string loweredMessageContent = userMessage.Content.ToLower();
         Random rand = new Random();
         double val = rand.NextDouble();
-
         foreach (var response in responses)
         {
             Regex requiredInput = new Regex(response.Input, RegexOptions.IgnoreCase);
-            Match match = requiredInput.Match(loweredMessageContent);
+            Match match = requiredInput.Match(userMessage.Content);
             if (match.Success && val < response.Probability)
             {
-                return response.Response;
+                if (match.Groups.Count == 1) {
+                    // no regex needed for the output
+                    return response.Response;
+                }
+
+                List<string> matchedValues = new List<string>(match.Groups.Count - 1);
+                for (int i = 1; i < match.Groups.Count; i++) 
+                {
+                    matchedValues.Add(match.Groups[i].Value);
+                }
+                string formattedResponse = string.Format(response.Response, matchedValues.ToArray());
+                return formattedResponse;
             }
         }
         return string.Empty;
