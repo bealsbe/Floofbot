@@ -124,7 +124,7 @@ namespace Floofbot
 
             embed.WithDescription(createdAt)
                  .WithColor(new Discord.Color(colour))
-                 .AddField("Users", $"{onlineUsers}/{totalMembers}", true)
+                 .AddField("Users (Online/Total)", $"{onlineUsers}/{totalMembers}", true)
                  .AddField("Text Channels", numberTextChannels, true)
                  .AddField("Voice Channels", numberVoiceChannels, true)
                  .AddField("Roles", numberRoles, true)
