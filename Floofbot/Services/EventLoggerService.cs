@@ -361,11 +361,12 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    if (before == null || after == null) // empty user params
+                        return;
+
                     if (after.IsBot)
                         return;
 
-                    if (before == null || after == null) // empty user params
-                        return;
                     var user = after as SocketGuildUser;
 
                     if ((IsToggled(user.Guild) == false)) // turned off
