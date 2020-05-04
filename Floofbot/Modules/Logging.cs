@@ -4,15 +4,10 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Data.Sqlite;
-using System.Data.Common;
-using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Linq;
 
 namespace Floofbot.Modules
 {

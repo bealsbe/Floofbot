@@ -14,7 +14,6 @@ namespace Floofbot
     {
         private DiscordSocketClient _client;
         private CommandHandler _handler;
-        private BotDatabase _botDatabase;
 
         static async Task Main(string[] args)
         {
@@ -78,7 +77,6 @@ namespace Floofbot
                 Log.Information("{Source}: {Message}", msg.Source, msg.Message);
                 return Task.CompletedTask;
             };
-            _botDatabase = new BotDatabase();
             _handler = new CommandHandler(_client);
 
             if (BotConfigFactory.Config.Activity != null)

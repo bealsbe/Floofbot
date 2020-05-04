@@ -1,11 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
-using Microsoft.Data.Sqlite;
+using Floofbot.Services.Repository;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Tag = Floofbot.Services.Repository.Models.Tag;
 
 namespace Floofbot.Modules
 {
@@ -16,16 +18,17 @@ namespace Floofbot.Modules
     public class TagCommands : ModuleBase<SocketCommandContext>
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
-
-        private SqliteConnection dbConnection;
-
-        public TagCommands()
+        private static readonly int TAGS_PER_PAGE = 50;
+        private static readonly List<string> SUPPORTED_IMAGE_EXTENSIONS = new List<string>
         {
-            dbConnection = new SqliteConnection(new SqliteConnectionStringBuilder
-            {
-                DataSource = "botdata.db"
-            }.ToString());
-            dbConnection.Open();
+            "jpg", "png", "jpeg", "webp", "gifv", "gif", "mp4"
+        };
+
+        private FloofDataContext _floofDb;
+
+        public TagCommands(FloofDataContext floofDb)
+        {
+            _floofDb = floofDb;
         }
 
         [Command("add")]
@@ -35,32 +38,33 @@ namespace Floofbot.Modules
             [Summary("Tag name")] string tag,
             [Summary("Tag content")] [Remainder] string content = null)
         {
-            try
+            if (content != null)
             {
-                if (content != null)
+                Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                tag = rgx.Replace(tag, "").ToLower();
+                string tagName = $"{tag.ToString()}:{Context.Guild.Id}";
+
+                try
                 {
-                    Regex rgx = new Regex("[^a-zA-Z0-9 -]");
-                    tag = rgx.Replace(tag, "").ToLower();
-                    string sql = @"INSERT into Tags (TagID,UserID, Content)
-                            VALUES ($TagId, $UserID, $Content)";
-
-                    string tagId = $"{tag.ToString()}:{Context.Guild.Id.ToString()}";
-                    SqliteCommand command = new SqliteCommand(sql, dbConnection);
-                    command.Parameters.Add(new SqliteParameter("$TagId", tagId));
-                    command.Parameters.Add(new SqliteParameter("$UserID", Context.User.Id.ToString()));
-                    command.Parameters.Add(new SqliteParameter("$Content", content));
-                    var result = command.ExecuteScalar();
-
+                    _floofDb.Add(new Tag
+                    {
+                        TagName = tagName,
+                        ServerId = Context.Guild.Id,
+                        UserId = Context.User.Id,
+                        TagContent = content
+                    });
+                    _floofDb.SaveChanges();
                     await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{tag}`"));
                 }
-                else
+                catch (DbUpdateException e)
                 {
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag add [name] [content]`"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{tag}` Already Exists"));
+                    Console.WriteLine(e);
                 }
             }
-            catch (SqliteException)
+            else
             {
-                await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{tag}` Already Exists"));
+                await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag add [name] [content]`"));
             }
         }
 
@@ -71,26 +75,16 @@ namespace Floofbot.Modules
             await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag add [name] [content]`"));
         }
 
-        //TODO: Fix me
         [Command("list")]
         [Summary("Lists all tags")]
         public async Task ListTags([Remainder] string content = null)
         {
-            string guildId = $"{Context.Guild.Id}";
-            string sql = $"SELECT tagID FROM Tags WHERE tagID LIKE '%:$guildId%'";
-            SqliteCommand command = new SqliteCommand(sql, dbConnection);
-            command.Parameters.Add(new SqliteParameter("$guildId", guildId));
-            var result = command.ExecuteReader();
-
-            List<string> tags = new List<string>();
+            List<Tag> tags = _floofDb.Tags.AsQueryable()
+                .Where(x => x.ServerId == Context.Guild.Id)
+                .OrderBy(x => x.TagName)
+                .ToList();
             List<string> pages = new List<string>();
 
-            while (result.Read())
-            {
-                tags.Add(result.GetString(0).Split(':')[0]);
-            }
-
-            tags = tags.OrderBy(x => x).ToList();
             int index = 0;
             for (int i = 1; i <= (tags.Count / 50) + 1; i++)
             {
@@ -100,7 +94,7 @@ namespace Floofbot.Modules
                 {
                     if (index < tags.Count)
                     {
-                        text += $"[{index}] - {tags[index].ToLower()}\n";
+                        text += $"[{index}] - {tags[index].TagName}\n";
                     }
                 }
 
@@ -116,20 +110,20 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task Remove([Summary("Tag name")] string tag)
         {
-            string tagId = $"{tag.ToString()}:{Context.Guild.Id.ToString()}";
-
-            string select = @"SELECT COUNT(*) FROM Tags WHERE TagID = $TagId";
-            SqliteCommand command = new SqliteCommand(select, dbConnection);
-            command.Parameters.Add(new SqliteParameter("$TagId", tagId));
-
-            if (Convert.ToInt32(command.ExecuteScalar()) > 0)
+            string tagName = $"{tag.ToLower()}:{Context.Guild.Id}";
+            Tag tagToRemove = _floofDb.Tags.FirstOrDefault(x => x.TagName == tagName);
+            if (tagToRemove != null)
             {
-                string delete = @"DELETE FROM Tags WHERE TagID = $TagId";
-                command = new SqliteCommand(delete, dbConnection);
-                command.Parameters.Add(new SqliteParameter("$TagId", tagId));
-                command.ExecuteScalar();
-
-                await SendEmbed(CreateDescriptionEmbed($"💾 Tag: `{tag}` Removed"));
+                try
+                {
+                    _floofDb.Remove(tagToRemove);
+                    await _floofDb.SaveChangesAsync();
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Tag: `{tag}` Removed"));
+                }
+                catch (DbUpdateException)
+                {
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Unable to remove Tag: `{tag}`"));
+                }
             }
             else
             {
@@ -149,33 +143,20 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task GetTag([Summary("Tag name")] string tag = "")
         {
-            if (!string.IsNullOrWhiteSpace(tag))
+            if (!string.IsNullOrEmpty(tag))
             {
-                string TagID = $"{tag}:{Context.Guild.Id}".ToLower();
-                string sql = @"SELECT Content FROM Tags
-                                Where TagID = $TagID";
-                SqliteCommand command = new SqliteCommand(sql, dbConnection);
-                command.Parameters.Add(new SqliteParameter("$TagID", TagID));
-                var result = command.ExecuteScalar();
+                string tagName = $"{tag.ToLower()}:{Context.Guild.Id}";
+                Tag selectedTag = _floofDb.Tags.AsQueryable().FirstOrDefault(x => x.TagName == tagName);
 
-                if (result != null)
+                if (selectedTag != null)
                 {
-                    string mentionless_tag = result.ToString().Replace("@", "[at]");
+                    string mentionlessTagContent = selectedTag.TagContent.Replace("@", "[at]");
 
                     bool isImage = false;
-                    if (Uri.IsWellFormedUriString(mentionless_tag, UriKind.RelativeOrAbsolute))
+                    if (Uri.IsWellFormedUriString(mentionlessTagContent, UriKind.RelativeOrAbsolute))
                     {
-                        string ext = mentionless_tag.Split('.').Last().ToLower();
-                        List<string> imageExtensions = new List<string> {
-                            "jpg",
-                            "png",
-                            "jpeg",
-                            "webp",
-                            "gifv",
-                            "gif",
-                            "mp4"
-                        };
-                        isImage = imageExtensions.Contains(ext);
+                        string ext = mentionlessTagContent.Split('.').Last().ToLower();
+                        isImage = SUPPORTED_IMAGE_EXTENSIONS.Contains(ext);
                     }
 
                     // tag found, so post it
@@ -183,15 +164,15 @@ namespace Floofbot.Modules
                     {
                         EmbedBuilder builder = new EmbedBuilder()
                         {
-                            Title = "💾  " + mentionless_tag,
-                            Color = Color.Magenta
+                            Title = "💾  " + tag.ToLower(),
+                            Color = EMBED_COLOR
                         };
-                        builder.WithImageUrl(mentionless_tag);
+                        builder.WithImageUrl(mentionlessTagContent);
                         await SendEmbed(builder.Build());
                     }
                     else
                     {
-                        await Context.Channel.SendMessageAsync(mentionless_tag);
+                        await Context.Channel.SendMessageAsync(mentionlessTagContent);
                     }
                 }
                 else
