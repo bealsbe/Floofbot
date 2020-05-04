@@ -3,14 +3,16 @@ using System;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    partial class FloofDataContextModelSnapshot : ModelSnapshot
+    [Migration("20200503231617_AlterTagTable")]
+    partial class AlterTagTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
