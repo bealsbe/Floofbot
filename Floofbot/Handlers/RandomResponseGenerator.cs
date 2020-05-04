@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Discord.WebSocket;
 using Floofbot.Configs;
 
@@ -19,19 +20,13 @@ class RandomResponseGenerator
 
         foreach (var response in responses)
         {
-            // A lowercase version of the input required
-            // to get a potential response from the bot
-            string loweredRequiredInput = response.Input.ToLower();
-            if ((response.RequireExact && loweredMessageContent == loweredRequiredInput)
-                || loweredMessageContent.Contains(loweredRequiredInput))
+            Regex requiredInput = new Regex(response.Input, RegexOptions.IgnoreCase);
+            Match match = requiredInput.Match(loweredMessageContent);
+            if (match.Success && val < response.Probability)
             {
-                if (val < response.Probability)
-                {
-                    return response.Response;
-                }
+                return response.Response;
             }
         }
-
         return string.Empty;
     }
 }

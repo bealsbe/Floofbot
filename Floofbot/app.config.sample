@@ -18,20 +18,19 @@ Activity:
 Token: ""
 
 # The list of random responses the bot gives out
-# Input: the user input, not case sensitive
-# Response: the bot response, case sensitive
+# Input: a regex of the user input, case *insensitive*
+# Response: the bot response, case *sensitive*
 # Probability: the probability of the response occuring, between 0 and 1
-# RequireExact:
-#   True -- if we need the user to type exactly the non-case-sensitive
-#   string in $Input for the bot to respond,
-#   False -- if we only need the user to type text that contains the
-#   non-case-sensitive string in $Input for the bot to respond
 RandomResponses:
-  - Input: "Hi"
-    Response: "Hi!"
-    Probability: 0.25
-    RequireExact: False
-  - Input: "Bye"
-    Response: "Bye!"
-    Probability: 0.15
-    RequireExact: False
+  - Input: "\\bawo[o]+\\b"
+    Response: "Legalize Awoo!"
+    Probability: 0.05
+  - Input: "\\bOwO\\b"
+    Response: "UwU"
+    Probability: 0.01
+  - Input: "\\bUwU\\b"
+    Response: "OwO"
+    Probability: 0.01
+  - Input: "^lol$"
+    Response: "lol"
+    Probability: 0.1
