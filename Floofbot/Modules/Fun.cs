@@ -19,7 +19,7 @@ namespace Floofbot.Modules
         private static readonly int MAX_SUPPORTED_EMBED_FETCH_ATTEMPTS = 5;
         private static readonly List<string> SUPPORTED_EMBED_EXTENSIONS = new List<string>
         {
-            ".jpg", ".gif"
+            ".jpg", ".gif", ".png"
         };
 
         [Command("8ball")]
@@ -154,10 +154,14 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat fact")]
         public async Task RequestCatFact()
         {
-            string fact = RequestStringFromApi("catfact", "https://catfact.ninja/fact", "fact");
+            string fact = RequestStringFromApi("https://catfact.ninja/fact", "fact");
             if (!string.IsNullOrEmpty(fact))
             {
                 await Context.Channel.SendMessageAsync(fact);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
             }
         }
 
@@ -165,7 +169,7 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat")]
         public async Task RequestCat()
         {
-            string fileUrl = RequestEmbeddableUrlFromApi("cat", "https://aws.random.cat/meow", "file");
+            string fileUrl = RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
             if (!string.IsNullOrEmpty(fileUrl))
             {
                 EmbedBuilder builder = new EmbedBuilder()
@@ -176,7 +180,7 @@ namespace Floofbot.Modules
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"The cat command is currently unavailable.");
+                await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
             }
         }
 
@@ -184,7 +188,7 @@ namespace Floofbot.Modules
         [Summary("Responds with a random dog")]
         public async Task RequestDog()
         {
-            string fileUrl = RequestEmbeddableUrlFromApi("dog", "https://random.dog/woof.json", "url");
+            string fileUrl = RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
             if (!string.IsNullOrEmpty(fileUrl))
             {
                 EmbedBuilder builder = new EmbedBuilder()
@@ -195,7 +199,7 @@ namespace Floofbot.Modules
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"The dog command is currently unavailable.");
+                await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
             }
         }
 
@@ -203,7 +207,7 @@ namespace Floofbot.Modules
         [Summary("Responds with a random fox")]
         public async Task RequestFox()
         {
-            string fileUrl = RequestEmbeddableUrlFromApi("fox", "https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+            string fileUrl = RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
             if (!string.IsNullOrEmpty(fileUrl))
             {
                 EmbedBuilder builder = new EmbedBuilder()
@@ -214,16 +218,36 @@ namespace Floofbot.Modules
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"The fox command is currently unavailable.");
+                await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
             }
         }
 
-        private string RequestEmbeddableUrlFromApi(string commandName, string apiUrl, string key)
+        [Command("birb")]
+        [Summary("Responds with a random birb")]
+        public async Task RequestBirb()
+        {
+            string fileUrl = RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                fileUrl = "https://random.birb.pw/img/" + fileUrl;
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(":bird:")
+                    .WithColor(EMBED_COLOR)
+                    .WithImageUrl(fileUrl);
+                await SendEmbed(builder.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
+            }
+        }
+
+        private string RequestEmbeddableUrlFromApi(string apiUrl, string key)
         {
             string url;
             for (int attempts = 0; attempts < MAX_SUPPORTED_EMBED_FETCH_ATTEMPTS; attempts++)
             {
-                url = RequestStringFromApi(commandName, apiUrl, key);
+                url = RequestStringFromApi(apiUrl, key);
                 if (!string.IsNullOrEmpty(url) && SUPPORTED_EMBED_EXTENSIONS.Any(ext => url.EndsWith(ext)))
                 {
                     return url;
@@ -232,7 +256,7 @@ namespace Floofbot.Modules
             return string.Empty;
         }
 
-        private string RequestStringFromApi(string commandName, string apiUrl, string key)
+        private string RequestStringFromApi(string apiUrl, string key)
         {
             string json;
             using (WebClient wc = new WebClient())
