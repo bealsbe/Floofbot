@@ -2,6 +2,7 @@
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -15,6 +16,11 @@ namespace Floofbot.Modules
         private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;
         private static readonly int MAX_NUM_DICE = 20;
         private static readonly int MAX_NUM_SIDES = 1000;
+        private static readonly int MAX_SUPPORTED_EMBED_FETCH_ATTEMPTS = 5;
+        private static readonly List<string> SUPPORTED_EMBED_EXTENSIONS = new List<string>
+        {
+            ".jpg", ".gif"
+        };
 
         [Command("8ball")]
         [Summary("Ask the Magic 8-Ball a question")]
@@ -148,7 +154,7 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat fact")]
         public async Task RequestCatFact()
         {
-            string fact = await RequestFromOnlineJson("catfact", "https://catfact.ninja/fact", "fact");
+            string fact = RequestStringFromApi("catfact", "https://catfact.ninja/fact", "fact");
             if (!string.IsNullOrEmpty(fact))
             {
                 await Context.Channel.SendMessageAsync(fact);
@@ -156,10 +162,10 @@ namespace Floofbot.Modules
         }
 
         [Command("cat")]
-        [Summary("Responds with a random cat jpg or gif")]
+        [Summary("Responds with a random cat")]
         public async Task RequestCat()
         {
-            string fileUrl = await RequestFromOnlineJson("cat", "https://aws.random.cat/meow", "file");
+            string fileUrl = RequestEmbeddableUrlFromApi("cat", "https://aws.random.cat/meow", "file");
             if (!string.IsNullOrEmpty(fileUrl))
             {
                 EmbedBuilder builder = new EmbedBuilder()
@@ -168,20 +174,17 @@ namespace Floofbot.Modules
                     .WithImageUrl(fileUrl);
                 await SendEmbed(builder.Build());
             }
+            else
+            {
+                await Context.Channel.SendMessageAsync($"The cat command is currently unavailable.");
+            }
         }
 
         [Command("dog")]
-        [Summary("Responds with a random dog jpg")]
+        [Summary("Responds with a random dog")]
         public async Task RequestDog()
         {
-            string fileUrl;
-            // we don't want large videos, so loop until we get a jpg
-            do
-            {
-                fileUrl = await RequestFromOnlineJson("dog", "https://random.dog/woof.json", "url");
-            }
-            while (fileUrl.EndsWith("mp4"));
-
+            string fileUrl = RequestEmbeddableUrlFromApi("dog", "https://random.dog/woof.json", "url");
             if (!string.IsNullOrEmpty(fileUrl))
             {
                 EmbedBuilder builder = new EmbedBuilder()
@@ -190,13 +193,17 @@ namespace Floofbot.Modules
                     .WithImageUrl(fileUrl);
                 await SendEmbed(builder.Build());
             }
+            else
+            {
+                await Context.Channel.SendMessageAsync($"The dog command is currently unavailable.");
+            }
         }
 
         [Command("fox")]
-        [Summary("Responds with a random fox jpg")]
+        [Summary("Responds with a random fox")]
         public async Task RequestFox()
         {
-            string fileUrl = await RequestFromOnlineJson("fox", "https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+            string fileUrl = RequestEmbeddableUrlFromApi("fox", "https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
             if (!string.IsNullOrEmpty(fileUrl))
             {
                 EmbedBuilder builder = new EmbedBuilder()
@@ -205,20 +212,37 @@ namespace Floofbot.Modules
                     .WithImageUrl(fileUrl);
                 await SendEmbed(builder.Build());
             }
+            else
+            {
+                await Context.Channel.SendMessageAsync($"The fox command is currently unavailable.");
+            }
         }
 
-        private async Task<string> RequestFromOnlineJson(string commandName, string url, string key)
+        private string RequestEmbeddableUrlFromApi(string commandName, string apiUrl, string key)
+        {
+            string url;
+            for (int attempts = 0; attempts < MAX_SUPPORTED_EMBED_FETCH_ATTEMPTS; attempts++)
+            {
+                url = RequestStringFromApi(commandName, apiUrl, key);
+                if (!string.IsNullOrEmpty(url) && SUPPORTED_EMBED_EXTENSIONS.Any(ext => url.EndsWith(ext)))
+                {
+                    return url;
+                }
+            }
+            return string.Empty;
+        }
+
+        private string RequestStringFromApi(string commandName, string apiUrl, string key)
         {
             string json;
             using (WebClient wc = new WebClient())
             {
                 try
                 {
-                    json = wc.DownloadString(url);
+                    json = wc.DownloadString(apiUrl);
                 }
                 catch (Exception)
                 {
-                    await Context.Channel.SendMessageAsync($"The {commandName} command is currently unavailable.");
                     return string.Empty;
                 }
             }
