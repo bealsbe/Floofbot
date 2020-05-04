@@ -2,6 +2,7 @@
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -15,6 +16,11 @@ namespace Floofbot.Modules
         private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;
         private static readonly int MAX_NUM_DICE = 20;
         private static readonly int MAX_NUM_SIDES = 1000;
+        private static readonly int MAX_SUPPORTED_EMBED_FETCH_ATTEMPTS = 5;
+        private static readonly List<string> SUPPORTED_EMBED_EXTENSIONS = new List<string>
+        {
+            ".jpg", ".gif", ".png"
+        };
 
         [Command("8ball")]
         [Summary("Ask the Magic 8-Ball a question")]
@@ -148,25 +154,128 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat fact")]
         public async Task RequestCatFact()
         {
+            string fact = RequestStringFromApi("https://catfact.ninja/fact", "fact");
+            if (!string.IsNullOrEmpty(fact))
+            {
+                await Context.Channel.SendMessageAsync(fact);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
+            }
+        }
+
+        [Command("cat")]
+        [Summary("Responds with a random cat")]
+        public async Task RequestCat()
+        {
+            string fileUrl = RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(":cat:")
+                    .WithColor(EMBED_COLOR)
+                    .WithImageUrl(fileUrl);
+                await SendEmbed(builder.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
+            }
+        }
+
+        [Command("dog")]
+        [Summary("Responds with a random dog")]
+        public async Task RequestDog()
+        {
+            string fileUrl = RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(":dog:")
+                    .WithColor(EMBED_COLOR)
+                    .WithImageUrl(fileUrl);
+                await SendEmbed(builder.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
+            }
+        }
+
+        [Command("fox")]
+        [Summary("Responds with a random fox")]
+        public async Task RequestFox()
+        {
+            string fileUrl = RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(":fox:")
+                    .WithColor(EMBED_COLOR)
+                    .WithImageUrl(fileUrl);
+                await SendEmbed(builder.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
+            }
+        }
+
+        [Command("birb")]
+        [Summary("Responds with a random birb")]
+        public async Task RequestBirb()
+        {
+            string fileUrl = RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                fileUrl = "https://random.birb.pw/img/" + fileUrl;
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(":bird:")
+                    .WithColor(EMBED_COLOR)
+                    .WithImageUrl(fileUrl);
+                await SendEmbed(builder.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
+            }
+        }
+
+        private string RequestEmbeddableUrlFromApi(string apiUrl, string key)
+        {
+            string url;
+            for (int attempts = 0; attempts < MAX_SUPPORTED_EMBED_FETCH_ATTEMPTS; attempts++)
+            {
+                url = RequestStringFromApi(apiUrl, key);
+                if (!string.IsNullOrEmpty(url) && SUPPORTED_EMBED_EXTENSIONS.Any(ext => url.EndsWith(ext)))
+                {
+                    return url;
+                }
+            }
+            return string.Empty;
+        }
+
+        private string RequestStringFromApi(string apiUrl, string key)
+        {
             string json;
             using (WebClient wc = new WebClient())
             {
                 try
                 {
-                    json = wc.DownloadString("https://catfact.ninja/fact");
+                    json = wc.DownloadString(apiUrl);
                 }
                 catch (Exception)
                 {
-                    await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
-                    return;
+                    return string.Empty;
                 }
             }
-            string fact;
+            string info;
             using (JsonDocument jsonDocument = JsonDocument.Parse(json))
             {
-                fact = jsonDocument.RootElement.GetProperty("fact").ToString();
+                info = jsonDocument.RootElement.GetProperty(key).ToString();
             }
-            await Context.Channel.SendMessageAsync(fact);
+            return info;
         }
     }
 }
