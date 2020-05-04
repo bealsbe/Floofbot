@@ -7,6 +7,8 @@ namespace Floofbot
 {
     public class Utilities : ModuleBase<SocketCommandContext>
     {
+        private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
+
         [Command("ping")]
         [Summary("Responds with the ping in milliseconds")]
         public async Task Ping()
@@ -16,10 +18,11 @@ namespace Floofbot
             sw.Stop();
             await msg.DeleteAsync();
 
-            EmbedBuilder builder = new EmbedBuilder(){
+            EmbedBuilder builder = new EmbedBuilder()
+            {
                 Title = "Butts!",
                 Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
-                Color = Color.Magenta
+                Color = EMBED_COLOR
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -49,10 +52,11 @@ namespace Floofbot
                  $"**Guild Join Date** : {user.JoinedAt?.ToString("MM/dd/yyyy")}\n" +
                  $"**Status** : {user.Status}\n";
 
-            EmbedBuilder builder = new EmbedBuilder{
+            EmbedBuilder builder = new EmbedBuilder
+            {
                 ThumbnailUrl = avatar,
                 Description = infostring,
-                Color = Color.Magenta
+                Color = EMBED_COLOR
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -67,14 +71,33 @@ namespace Floofbot
                 user = (IGuildUser)Context.User;
 
             var avatarUrl = user.GetAvatarUrl(ImageFormat.Auto, 512);
-            EmbedBuilder builder = new EmbedBuilder(){
+            EmbedBuilder builder = new EmbedBuilder()
+            {
                 Description = $"🖼️ **Avatar for:** {user.Mention}\n",
                 ImageUrl = avatarUrl,
-                Color = Color.Magenta
+                Color = EMBED_COLOR
 
             };
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
 
+        [Command("say")]
+        [Summary("Repeats a message")]
+        public async Task RepeatMessage([Remainder] string message =null)
+        {
+            if (message != null)
+            {
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Description = message,
+                    Color = EMBED_COLOR
+                };
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Usage: `.say [message]`");
+            }
         }
     }
 }
