@@ -6,28 +6,52 @@ namespace Floofbot.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<ulong>(
-                name: "ServerId",
-                table: "Tags",
-                nullable: false,
-                defaultValue: 0ul);
+            migrationBuilder.CreateTable(
+                name: "TagsNext",
+                columns: table => new
+                {
+                    TagId = table.Column<ulong>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    TagName = table.Column<string>(nullable: false, defaultValue: ""),
+                    ServerId = table.Column<ulong>(nullable: false, defaultValue: 0ul),
+                    UserId = table.Column<ulong>(nullable: false, defaultValue: 0ul),
+                    TagContent = table.Column<string>(nullable: false, defaultValue: "")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.TagId);
+                });
 
-            migrationBuilder.AddColumn<string>(
-                name: "TagName",
-                table: "Tags",
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.Sql(@"INSERT INTO TagsNext (UserId, TagContent)
+                SELECT UserID, Content
+                FROM Tags");
+
+            migrationBuilder.DropTable("Tags");
+            migrationBuilder.RenameTable("TagsNext", null, "Tags", null);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ServerId",
-                table: "Tags");
+            migrationBuilder.CreateTable(
+                name: "TagsPrev",
+                columns: table => new
+                {
+                    TagID = table.Column<ulong>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserID = table.Column<ulong>(nullable: false, defaultValue: 0ul),
+                    Content = table.Column<string>(nullable: false, defaultValue: "")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.TagID);
+                });
 
-            migrationBuilder.DropColumn(
-                name: "TagName",
-                table: "Tags");
+            migrationBuilder.Sql(@"INSERT INTO TagsPrev (UserID, Content)
+                SELECT UserId, TagContent
+                FROM Tags");
+
+            migrationBuilder.DropTable("Tags");
+            migrationBuilder.RenameTable("TagsPrev", null, "Tags", null);
         }
     }
 }

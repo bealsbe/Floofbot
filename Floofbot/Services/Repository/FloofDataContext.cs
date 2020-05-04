@@ -1,7 +1,5 @@
-﻿using System;
-using Floofbot.Services.Repository.Models;
+﻿using Floofbot.Services.Repository.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Floofbot.Services.Repository
 {

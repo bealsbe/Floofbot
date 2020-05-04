@@ -38,7 +38,6 @@ namespace Floofbot.Migrations
                 },
                 constraints: table =>
                 {
-                    
                 });
 
             migrationBuilder.CreateTable(
