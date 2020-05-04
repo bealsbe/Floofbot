@@ -110,8 +110,11 @@ namespace Floofbot
             SocketGuild guild = Context.Guild;
             int numberTextChannels = guild.TextChannels.Count;
             int numberVoiceChannels = guild.VoiceChannels.Count;
+            int daysOld = Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days;
             string createdAt = $"Created {guild.CreatedAt.DateTime.ToShortDateString()}. " +
-                               $"That's over {Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days} days ago!";
+                               $"That's " +
+                               ((daysOld > 1) ? $"over {daysOld} days" : $"{daysOld} day") +
+                               " ago!";
             int totalMembers = guild.MemberCount;
             int onlineUsers = guild.Users.Where(mem => mem.Status == UserStatus.Online).Count();
             int numberRoles = guild.Roles.Count;
