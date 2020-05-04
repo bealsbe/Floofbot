@@ -148,25 +148,86 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat fact")]
         public async Task RequestCatFact()
         {
+            string fact = await RequestFromOnlineJson("catfact", "https://catfact.ninja/fact", "fact");
+            if (!string.IsNullOrEmpty(fact))
+            {
+                await Context.Channel.SendMessageAsync(fact);
+            }
+        }
+
+        [Command("cat")]
+        [Summary("Responds with a random cat jpg or gif")]
+        public async Task RequestCat()
+        {
+            string fileUrl = await RequestFromOnlineJson("cat", "https://aws.random.cat/meow", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(":cat:")
+                    .WithColor(EMBED_COLOR)
+                    .WithImageUrl(fileUrl);
+                await SendEmbed(builder.Build());
+            }
+        }
+
+        [Command("dog")]
+        [Summary("Responds with a random dog jpg")]
+        public async Task RequestDog()
+        {
+            string fileUrl;
+            // we don't want large videos, so loop until we get a jpg
+            do
+            {
+                fileUrl = await RequestFromOnlineJson("dog", "https://random.dog/woof.json", "url");
+            }
+            while (fileUrl.EndsWith("mp4"));
+
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(":dog:")
+                    .WithColor(EMBED_COLOR)
+                    .WithImageUrl(fileUrl);
+                await SendEmbed(builder.Build());
+            }
+        }
+
+        [Command("fox")]
+        [Summary("Responds with a random fox jpg")]
+        public async Task RequestFox()
+        {
+            string fileUrl = await RequestFromOnlineJson("fox", "https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(":fox:")
+                    .WithColor(EMBED_COLOR)
+                    .WithImageUrl(fileUrl);
+                await SendEmbed(builder.Build());
+            }
+        }
+
+        private async Task<string> RequestFromOnlineJson(string commandName, string url, string key)
+        {
             string json;
             using (WebClient wc = new WebClient())
             {
                 try
                 {
-                    json = wc.DownloadString("https://catfact.ninja/fact");
+                    json = wc.DownloadString(url);
                 }
                 catch (Exception)
                 {
-                    await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
-                    return;
+                    await Context.Channel.SendMessageAsync($"The {commandName} command is currently unavailable.");
+                    return string.Empty;
                 }
             }
-            string fact;
+            string info;
             using (JsonDocument jsonDocument = JsonDocument.Parse(json))
             {
-                fact = jsonDocument.RootElement.GetProperty("fact").ToString();
+                info = jsonDocument.RootElement.GetProperty(key).ToString();
             }
-            await Context.Channel.SendMessageAsync(fact);
+            return info;
         }
     }
 }
