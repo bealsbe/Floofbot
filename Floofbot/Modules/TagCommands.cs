@@ -13,13 +13,13 @@ namespace Floofbot.Modules
     [Summary("Tag commands")]
     [RequireContext(ContextType.Guild)]
     [RequireUserPermission(Discord.GuildPermission.AttachFiles)]
-    public class Tag : ModuleBase<SocketCommandContext>
+    public class TagCommands : ModuleBase<SocketCommandContext>
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
 
         private SqliteConnection dbConnection;
 
-        public Tag()
+        public TagCommands()
         {
             dbConnection = new SqliteConnection(new SqliteConnectionStringBuilder
             {
