@@ -96,7 +96,7 @@ namespace Floofbot
             }
             else
             {
-                await Context.Channel.SendMessageAsync("Usage: `.say [message]);
+                await Context.Channel.SendMessageAsync("Usage: `.say [message]`");
             }
         }
     }
