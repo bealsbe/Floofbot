@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Serilog;
@@ -61,6 +62,9 @@ namespace Floofbot.Services
                     if (messageBefore == null)
                         return;
 
+                    if (after.Author.IsBot)
+                        return;
+
                     var channel = chan as ITextChannel; // channel null, dm message?
                     if (channel == null)
                         return;
@@ -109,12 +113,16 @@ namespace Floofbot.Services
                     if (message == null)
                         return;
 
+                    if (message.Author.IsBot)
+                        return;
+
                     var channel = chan as ITextChannel; // channel null, dm message?
                     if (channel == null)
                         return;
 
                     if ((IsToggled(channel.Guild)) == false) // not toggled on
                         return;
+
 
                     Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageDeletedChannel");
                     if (logChannel == null)
@@ -148,6 +156,9 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    if (before.Author.IsBot)
+                        return;
+
                     // deal with empty message
                     if (before.Content == null)
                         return;
@@ -191,6 +202,9 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    if (user.IsBot)
+                        return;
+
                     if ((IsToggled(guild)) == false)
                         return;
 
@@ -233,6 +247,9 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    if (user.IsBot)
+                        return;
+
                     if ((IsToggled(guild)) == false)
                         return;
 
@@ -267,8 +284,12 @@ namespace Floofbot.Services
                 var _ = Task.Run(async () => { 
                 try
                 {
-                    if ((IsToggled(user.Guild)) == false)
+                    if (user.IsBot)
                         return;
+
+                    if ((IsToggled(user.Guild)) == false)
+                    return;
+
                     Discord.ITextChannel channel = await GetChannel(user.Guild, "UserJoinedChannel");
                     if (channel == null)
                         return;
@@ -302,6 +323,9 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    if (user.IsBot)
+                        return;
+
                     if ((IsToggled(user.Guild)) == false)
                         return;
 
@@ -339,6 +363,10 @@ namespace Floofbot.Services
                 {
                     if (before == null || after == null) // empty user params
                         return;
+
+                    if (after.IsBot)
+                        return;
+
                     var user = after as SocketGuildUser;
 
                     if ((IsToggled(user.Guild) == false)) // turned off
@@ -458,6 +486,9 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    if (user.IsBot)
+                        return;
+
                     if ((IsToggled(guild)) == false)
                         return;
 
@@ -493,6 +524,8 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    if (user.IsBot)
+                        return;
                     if ((IsToggled(guild)) == false)
                         return;
 
@@ -529,6 +562,9 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    if (user.IsBot)
+                        return;
+
                     if ((IsToggled(guild)) == false)
                         return;
 
