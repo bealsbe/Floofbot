@@ -1,7 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 namespace Floofbot
 {
@@ -98,6 +103,42 @@ namespace Floofbot
             {
                 await Context.Channel.SendMessageAsync("Usage: `.say [message]`");
             }
+        }
+
+        [Command("serverinfo")]
+        [Summary("Returns information about the current server")]
+        public async Task ServerInfo()
+        {
+            SocketGuild guild = Context.Guild;
+            int numberTextChannels = guild.TextChannels.Count;
+            int numberVoiceChannels = guild.VoiceChannels.Count;
+            string createdAt = $"Created {guild.CreatedAt.DateTime.ToShortDateString()}. " +
+                               $"That's over {Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days} days ago!";
+            int totalMembers = guild.MemberCount;
+            int onlineUsers = guild.Users.Where(mem => mem.Status == UserStatus.Online).Count();
+            int numberRoles = guild.Roles.Count;
+            int numberEmojis = guild.Emotes.Count;
+            uint colour = (uint)new Random().Next(0x1000000); // random hex
+
+            EmbedBuilder embed = new EmbedBuilder();
+
+            embed.WithDescription(createdAt)
+                 .WithColor(new Discord.Color(colour))
+                 .AddField("Users", $"{onlineUsers}/{totalMembers}", true)
+                 .AddField("Text Channels", numberTextChannels, true)
+                 .AddField("Voice Channels", numberVoiceChannels, true)
+                 .AddField("Roles", numberRoles, true)
+                 .AddField("Emojis", numberEmojis, true)
+                 .AddField("Owner", $"{guild.Owner.Username}#{guild.Owner.Discriminator}", true)
+                 .WithFooter($"Server ID: {guild.Id}")
+                 .WithAuthor(guild.Name)
+                 .WithCurrentTimestamp();
+
+            if (Uri.IsWellFormedUriString(guild.IconUrl, UriKind.Absolute))
+                embed.WithThumbnailUrl(guild.IconUrl);
+
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+
         }
     }
 }
