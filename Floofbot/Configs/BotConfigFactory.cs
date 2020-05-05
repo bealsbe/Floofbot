@@ -10,6 +10,7 @@ namespace Floofbot.Configs
     {
         private static BotConfig _config;
         private static string _filename;
+        private static string _token;
 
         public static BotConfig Config
         {
@@ -19,14 +20,34 @@ namespace Floofbot.Configs
                 if (_config == null)
                 {
                     _config = BotConfigParser.ParseFromFile(_filename);
+                    _token = _config.Token;
                 }
                 return _config;
+            }
+            [MethodImpl(MethodImplOptions.Synchronized)]
+            private set
+            {
+                _config = value;
             }
         }
 
         public static void Initialize(string filename)
         {
             _filename = filename;
+        }
+
+        public static void Reinitialize()
+        {
+            BotConfig config = BotConfigParser.ParseFromFile(_filename);
+            // sanity check to make sure the token was not changed upon reload
+            if (config.Token == _token)
+            {
+                _config = config;
+            }
+            else
+            {
+                throw new InvalidDataException("Failed to reinitialize config file. Was the token field changed?");
+            }
         }
 
         class BotConfigParser

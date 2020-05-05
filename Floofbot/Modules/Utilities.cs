@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Floofbot.Configs;
 
 namespace Floofbot
 {
+    [Summary("Utility Commands")]
     public class Utilities : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
@@ -141,6 +144,30 @@ namespace Floofbot
             await Context.Channel.SendMessageAsync("", false, embed.Build());
 
         }
+
+
+        [RequireOwner]
+        [Command("reloadconfig")]
+        [Summary("Reloads the config file")]
+        public async Task ReloadConfig()
+        {
+            try
+            {
+                BotConfigFactory.Reinitialize();
+            }
+            catch (InvalidDataException e)
+            {
+                await Context.Channel.SendMessageAsync(e.Message);
+                return;
+            }
+
+            if (BotConfigFactory.Config.Activity != null)
+            {
+                await Context.Client.SetActivityAsync(BotConfigFactory.Config.Activity);
+            }
+            await Context.Channel.SendMessageAsync("Config reloaded successfully");
+        }
+
         [Command("serverlist")]
         [Summary("Returns a list of servers that the bot is in")]
         [RequireOwner]
