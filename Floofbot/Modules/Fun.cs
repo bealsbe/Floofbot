@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Floofbot.Modules.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -277,5 +278,40 @@ namespace Floofbot.Modules
             }
             return info;
         }
+
+        [Command("minesweeper")]
+        [Summary("Minesweeper minigame")]
+        public async Task Minesweeper([Summary("width")]int width, [Summary("height")]int height, [Summary("bomb count")]int bombs)
+        {
+           
+            //no negative numbers!
+            if(width < 1 || height < 1 || bombs < 0)
+            {
+                await Context.Channel.SendMessageAsync("Invalid grid size or bomb count");
+                return;
+            }
+            
+            //limits the size of the board
+            if(width > 10 || height > 10)
+            {
+                await Context.Channel.SendMessageAsync("Max Grid Size: 10 x 10");
+                return;
+            }
+            else if(bombs >= height * width)
+            {
+                await Context.Channel.SendMessageAsync("Too many bombs!");
+                return;
+            }
+
+            GameBoard game = new GameBoard(height, width, bombs);
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.Title = ":bomb: Minesweeper";
+            builder.Color = EMBED_COLOR;
+            builder.Description = game.getBoard();
+
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
     }
 }
+
+     
