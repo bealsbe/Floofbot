@@ -1,11 +1,12 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Floofbot.Services.Repository;
+using Floofbot.Services.Repository.Models;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
@@ -14,6 +15,8 @@ namespace Floofbot.Services
     {
 
         private DiscordSocketClient _client;
+        private WordFilterService _wordFilterService;
+
         public EventLoggerService(DiscordSocketClient client)
         {
             _client = client;
@@ -21,9 +24,11 @@ namespace Floofbot.Services
             _client.MessageDeleted += MessageDeleted;
             _client.UserBanned += UserBanned;
             _client.UserUnbanned += UserUnbanned;
-            _client.UserJoined +=UserJoined;
+            _client.UserJoined += UserJoined;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
+
+            _wordFilterService = new WordFilterService();
         }
         public async Task<ITextChannel> GetChannel(Discord.IGuild guild, string eventName = null)
         {
@@ -38,6 +43,7 @@ namespace Floofbot.Services
             var textChannel = await guild.GetTextChannelAsync(logChannel);
             return textChannel;
         }
+
         public bool IsToggled(IGuild guild)
         {
             // check if the logger is toggled on in this server
@@ -107,7 +113,7 @@ namespace Floofbot.Services
             var _ = Task.Run(async () =>
             {
                 try
-                { 
+                {
                     // deal with empty message
                     var message = (before.HasValue ? before.Value : null) as IUserMessage;
                     if (message == null)
@@ -280,15 +286,16 @@ namespace Floofbot.Services
 
         }
         public Task UserJoined(IGuildUser user)
+        {
+            var _ = Task.Run(async () =>
             {
-                var _ = Task.Run(async () => { 
                 try
                 {
                     if (user.IsBot)
                         return;
 
                     if ((IsToggled(user.Guild)) == false)
-                    return;
+                        return;
 
                     Discord.ITextChannel channel = await GetChannel(user.Guild, "UserJoinedChannel");
                     if (channel == null)
@@ -594,6 +601,38 @@ namespace Floofbot.Services
                 }
             });
             return Task.CompletedTask;
+        }
+
+        class WordFilterService
+        {
+            List<FilteredWord> _wordfilterList;
+
+            bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId)
+            {
+                // whitelist means we don't have the filter on for this channel
+                if (floofDb.FilterChannelWhitelists.AsQueryable()
+                    .Any(x => x.ChannelId == channelId && x.ServerId == serverId))
+                {
+                    return false;
+                }
+
+                if (_wordfilterList == null)
+                {
+                    _wordfilterList = floofDb.FilteredWords.AsQueryable()
+                        .Where(x => x.ServerId == serverId).ToList();
+                }
+
+                foreach (var filteredWord in _wordfilterList)
+                {
+                    Regex r = new Regex($"\\b{filteredWord.Word}\\b",
+                        RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                    if (r.IsMatch(messageContent))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
     }
 }
