@@ -19,6 +19,9 @@ namespace Floofbot.Services.Repository
         public virtual DbSet<Warning> Warnings { get; set; }
         public virtual DbSet<AdminConfig> AdminConfig { get; set; }
         public virtual DbSet<NicknameAlertConfig> NicknameAlertConfigs { get; set; }
+        public virtual DbSet<FilterConfig> FilterConfigs { get; set; }
+        public virtual DbSet<FilteredWord> FilteredWords { get; set; }
+        public virtual DbSet<FilterChannelWhitelist> FilterChannelWhitelists { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

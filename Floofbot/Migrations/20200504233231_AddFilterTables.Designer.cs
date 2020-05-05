@@ -3,14 +3,16 @@ using System;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    partial class FloofDataContextModelSnapshot : ModelSnapshot
+    [Migration("20200504233231_AddFilterTables")]
+    partial class AddFilterTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -19,7 +21,6 @@ namespace Floofbot.Migrations
             modelBuilder.Entity("Floofbot.Services.Repository.Models.AdminConfig", b =>
                 {
                     b.Property<ulong>("ServerId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("MuteRoleId")
@@ -33,7 +34,6 @@ namespace Floofbot.Migrations
             modelBuilder.Entity("Floofbot.Services.Repository.Models.FilterChannelWhitelist", b =>
                 {
                     b.Property<ulong>("ChannelId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("ServerId")
@@ -47,7 +47,6 @@ namespace Floofbot.Migrations
             modelBuilder.Entity("Floofbot.Services.Repository.Models.FilterConfig", b =>
                 {
                     b.Property<ulong>("ServerId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsOn")
@@ -78,7 +77,6 @@ namespace Floofbot.Migrations
             modelBuilder.Entity("Floofbot.Services.Repository.Models.LogConfig", b =>
                 {
                     b.Property<ulong>("ServerId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsOn")
@@ -122,7 +120,6 @@ namespace Floofbot.Migrations
             modelBuilder.Entity("Floofbot.Services.Repository.Models.NicknameAlertConfig", b =>
                 {
                     b.Property<ulong>("ServerId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("Channel")
@@ -139,7 +136,6 @@ namespace Floofbot.Migrations
             modelBuilder.Entity("Floofbot.Services.Repository.Models.Tag", b =>
                 {
                     b.Property<ulong>("TagId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("ServerId")
