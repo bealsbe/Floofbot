@@ -156,7 +156,14 @@ namespace Floofbot.Modules
                 .Where(u => u.UserId == badUser.Id && u.GuildId == Context.Guild.Id)
                 .OrderByDescending(x => x.DateAdded).Take(24);
 
+            if (warnings.Count() == 0)
+            {
+                await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings!");
+                return;
+            }
+
             EmbedBuilder builder = new EmbedBuilder();
+            builder.Color = ADMIN_COLOR;
             int warningCount = 0;
             builder.WithTitle($"Warnings for {badUser.Username}#{badUser.Discriminator}");
             foreach (Warning warning in warnings) {
