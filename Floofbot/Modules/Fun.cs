@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Floofbot.Modules.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -171,167 +172,35 @@ namespace Floofbot.Modules
 
         [Command("minesweeper")]
         [Summary("Minesweeper minigame")]
-        public async Task Minesweeper([Summary("grid x")]int gridx, [Summary("grid y")]int gridy, [Summary("bomb count")]int bombs)
+        public async Task Minesweeper([Summary("width")]int width, [Summary("height")]int height, [Summary("bomb count")]int bombs)
         {
            
             //no negative numbers!
-            if(gridx < 1 || gridy < 1 || bombs < 0)
+            if(width < 1 || height < 1 || bombs < 0)
             {
                 await Context.Channel.SendMessageAsync("Invalid grid size or bomb count");
                 return;
             }
             
             //limits the size of the board
-            if(gridx > 10 || gridy > 10)
+            if(width > 10 || height > 10)
             {
                 await Context.Channel.SendMessageAsync("Max Grid Size: 10 x 10");
                 return;
             }
-            else if(bombs >= gridy * gridx)
+            else if(bombs >= height * width)
             {
                 await Context.Channel.SendMessageAsync("Too many bombs!");
                 return;
             }
 
-            Gameboard game = new Gameboard(gridx, gridy, bombs);
+            GameBoard game = new GameBoard(height, width, bombs);
             EmbedBuilder builder = new EmbedBuilder();
             builder.Title = ":bomb: Minesweeper";
             builder.Color = EMBED_COLOR;
             builder.Description = game.getBoard();
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
-        }
-
-        public class Gameboard
-        {
-            private string[,] grid;
-            private int x;
-            private int y;
-            private int bombCount;
-
-            public Gameboard(int _x, int _y, int _bombCount)
-            {
-                x = _x;
-                y = _y;
-                bombCount = _bombCount;
-                grid = new string[x, y];
-                plantBombs();
-
-
-                for (int i = 0; i < x; i++)
-                {
-                    for (int j = 0; j < y; j++)
-                    {
-                        if (grid[i, j] != "||:bomb:||")
-                        {
-                            grid[i, j] = getBombCount(i, j).ToString();
-                        }
-                    }
-                }
-            }
-
-            public int getBombCount(int _x, int _y)
-            {
-                int count = 0;
-
-                for (int i = -1; i <= 1; i++)
-                {
-                    for (int j = -1; j <= 1; j++)
-                    {
-                        if (!(i == 0 && j == 0))
-                        {
-                            try
-                            {
-                                if (grid[_x + i, _y + j] == "||:bomb:||")
-                                {
-                                    count++;
-                                }
-                            }
-                            catch { } //stupid but works I  guess
-                        }
-                    }
-                }
-
-                return count;
-            }
-
-            public void plantBombs()
-            {
-                Random rnd = new Random();
-
-                for (int i = 0; i < bombCount; i++)
-                {
-                    bool isGood = false;
-                    while (!isGood)
-                    {
-                        int randX = rnd.Next(0, x);
-                        int randY = rnd.Next(0, y);
-
-                        if (grid[randX, randY] != "||:bomb:||")
-                        {
-                            isGood = true;
-                            grid[randX, randY] = "||:bomb:||";
-                        }
-                    }
-                }
-            }
-            public string getBoard()
-            {
-                string board = "";
-                for (int i = 0; i < x; i++)
-                {
-                    for (int j = 0; j < y; j++)
-                    {
-                        if (grid[i, j] == "1")
-                        {
-                            board += "||:one:||";
-                        }
-                        else if (grid[i, j] == "2")
-                        {
-                            board += "||:two:||";
-                        }
-                        else if (grid[i, j] == "3")
-                        {
-                            board += "||:three:||";
-                        }
-                        else if (grid[i, j] == "4")
-                        {
-                            board += "||:four:||";
-                        }
-                        else if (grid[i, j] == "5")
-                        {
-                            board += "||:five:||";
-                        }
-                        else if (grid[i, j] == "6")
-                        {
-                            board += "||:six:||";
-                        }
-                        else if (grid[i, j] == "7")
-                        {
-                            board += "||:seven:||";
-                        }
-                        else if (grid[i, j] == "8")
-                        {
-                            board += "||:eight:||";
-                        }
-                        else if (grid[i, j] == "9")
-                        {
-                            board += "||:nine:||";
-                        }
-                        else if (grid[i, j] == "0")
-                        {
-                            board += "||:zero:||";
-                        }
-                        else
-                        {
-                            board += grid[i, j];
-                        }
-                    }
-                    board += "\n";
-                }
-                return board;
-            }
-
         }
     }
 }
