@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ namespace Floofbot.Modules
     [Summary("Tag commands")]
     [RequireContext(ContextType.Guild)]
     [RequireUserPermission(Discord.GuildPermission.AttachFiles)]
-    public class TagCommands : ModuleBase<SocketCommandContext>
+    public class TagCommands : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
         private static readonly int TAGS_PER_PAGE = 50;
@@ -83,26 +84,52 @@ namespace Floofbot.Modules
                 .Where(x => x.ServerId == Context.Guild.Id)
                 .OrderBy(x => x.TagName)
                 .ToList();
-            List<string> pages = new List<string>();
 
-            int index = 0;
-            for (int i = 1; i <= (tags.Count / 50) + 1; i++)
+            if (tags.Count == 0)
             {
-                string text = "```glsl\n";
-                int pagebreak = index;
-                for (; index < pagebreak + 50; index++)
+                await Context.Channel.SendMessageAsync("No tags have been added yet");
+                return;
+            }
+
+            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+            int numPages = (int)Math.Ceiling((double)tags.Count / TAGS_PER_PAGE);
+            int index;
+            string actualName;
+            for (int i = 0; i < numPages; i++)
+            {
+                string text = "```\n";
+                for (int j = 0; j < TAGS_PER_PAGE; j++)
                 {
+                    index = i * TAGS_PER_PAGE + j;
                     if (index < tags.Count)
                     {
-                        text += $"[{index}] - {tags[index].TagName}\n";
+                        actualName = tags[index].TagName.Split(":")[0];
+                        text += $"{index + 1}. {actualName}\n";
                     }
                 }
-
                 text += "\n```";
-                pages.Add(text);
+                pages.Add(new PaginatedMessage.Page
+                {
+                    Description = text
+                });
             };
 
-            // await PagedReplyAsync(pages);
+            var pager = new PaginatedMessage
+            {
+                Pages = pages,
+                Color = EMBED_COLOR,
+                Content = Context.User.Mention,
+                FooterOverride = null,
+                Options = PaginatedAppearanceOptions.Default,
+                TimeStamp = DateTimeOffset.UtcNow
+            };
+            await PagedReplyAsync(pager, new ReactionList
+            {
+                Forward = true,
+                Backward = true,
+                Jump = true,
+                Trash = true
+            });
         }
 
         [Command("remove")]
