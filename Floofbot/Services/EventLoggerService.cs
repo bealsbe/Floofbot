@@ -605,10 +605,16 @@ namespace Floofbot.Services
 
         class WordFilterService
         {
-            List<FilteredWord> _wordfilterList;
 
             bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId)
             {
+                // return false if none of the serverIds match or filtering has been disabled for the server
+                if (!floofDb.FilterConfigs.AsQueryable()
+                    .Any(x => x.ServerId == serverId && x.IsOn))
+                {
+                    return false;
+                }
+
                 // whitelist means we don't have the filter on for this channel
                 if (floofDb.FilterChannelWhitelists.AsQueryable()
                     .Any(x => x.ChannelId == channelId && x.ServerId == serverId))
@@ -616,11 +622,8 @@ namespace Floofbot.Services
                     return false;
                 }
 
-                if (_wordfilterList == null)
-                {
-                    _wordfilterList = floofDb.FilteredWords.AsQueryable()
-                        .Where(x => x.ServerId == serverId).ToList();
-                }
+                List<FilteredWord> _wordfilterList = floofDb.FilteredWords.AsQueryable()
+                    .Where(x => x.ServerId == serverId).ToList();
 
                 foreach (var filteredWord in _wordfilterList)
                 {
