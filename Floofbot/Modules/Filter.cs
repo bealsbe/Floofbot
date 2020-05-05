@@ -44,7 +44,7 @@ namespace Floofbot.Modules
         {
             // checks if a word exists in the filter db
             bool wordEntry = _floofDb.FilteredWords.AsQueryable().Where(w => w.ServerId == guild.Id).Where(w => w.Word == word).Any();
-            return (wordEntry == true) ? true : false;
+            return wordEntry;
         }
         [Command("toggle")]
         [Summary("Toggles the word filter")]
