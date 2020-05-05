@@ -605,6 +605,8 @@ namespace Floofbot.Services
 
         class WordFilterService
         {
+            List<FilteredWord> _filteredWords;
+            DateTime _lastRefreshedTime;
 
             bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId)
             {
@@ -622,10 +624,15 @@ namespace Floofbot.Services
                     return false;
                 }
 
-                List<FilteredWord> _wordfilterList = floofDb.FilteredWords.AsQueryable()
-                    .Where(x => x.ServerId == serverId).ToList();
+                DateTime currentTime = DateTime.Now;
+                if (_lastRefreshedTime == null || currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
+                {
+                    _filteredWords = floofDb.FilteredWords.AsQueryable()
+                        .Where(x => x.ServerId == serverId).ToList();
+                    _lastRefreshedTime = currentTime;
+                }
 
-                foreach (var filteredWord in _wordfilterList)
+                foreach (var filteredWord in _filteredWords)
                 {
                     Regex r = new Regex($"\\b{filteredWord.Word}\\b",
                         RegexOptions.IgnoreCase | RegexOptions.Singleline);
