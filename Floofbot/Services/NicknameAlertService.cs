@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Floofbot.Services
 {
-    public class NicknameAlertService : InteractiveBase
+    public class NicknameAlertService
     {
         private FloofDataContext _floofDb;
         
