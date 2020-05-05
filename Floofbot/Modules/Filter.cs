@@ -47,7 +47,7 @@ namespace Floofbot.Modules
             return wordEntry;
         }
         [Command("toggle")]
-        [Summary("Toggles the word filter")]
+        [Summary("Toggles the server/channel-level word filter")]
         public async Task Toggle()
         {
             await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `filter toggle channel/server`", Color = EMBED_COLOR }.Build());
@@ -55,7 +55,7 @@ namespace Floofbot.Modules
 
         [Command("toggle")]
         [Summary("Toggles the word filter")]
-        public async Task Toggle([Summary("channel/server")]string toggleType)
+        public async Task Toggle([Summary("Either 'channel' or 'server'")]string toggleType)
         {
             if (toggleType == "server")
             {
