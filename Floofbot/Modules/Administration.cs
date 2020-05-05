@@ -163,11 +163,11 @@ namespace Floofbot.Modules
             }
 
             EmbedBuilder builder = new EmbedBuilder();
+            builder.Color = ADMIN_COLOR;
             int warningCount = 0;
             builder.WithTitle($"Warnings for {badUser.Username}#{badUser.Discriminator}");
             foreach (Warning warning in warnings) {
                 builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy-MM-dd")}", $"```{warning.Reason}```");
-                builder.Color = ADMIN_COLOR;
                 warningCount++;
             }
             await Context.Channel.SendMessageAsync("", false, builder.Build());
