@@ -34,7 +34,7 @@ namespace Floofbot.Migrations
                 name: "FilteredWords",
                 columns: table => new
                 {
-                    Id = table.Column<ulong>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ServerId = table.Column<ulong>(nullable: false),
                     Word = table.Column<string>(nullable: false)
