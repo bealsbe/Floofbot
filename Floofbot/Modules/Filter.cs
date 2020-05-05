@@ -98,8 +98,7 @@ namespace Floofbot.Modules
                     }
                     else
                     {
-                        FilterChannelWhitelist channelConfig = _floofDb.FilterChannelWhitelists.Find(Context.Channel.Id);
-                        _floofDb.FilterChannelWhitelists.Remove(channelConfig);
+                        _floofDb.FilterChannelWhitelists.Remove(channelData);
                         _floofDb.SaveChanges();
                         channelInDatabase = false;
                     }
