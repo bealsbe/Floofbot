@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Floofbot.Configs;
@@ -11,7 +13,7 @@ using Floofbot.Configs;
 namespace Floofbot
 {
     [Summary("Utility Commands")]
-    public class Utilities : ModuleBase<SocketCommandContext>
+    public class Utilities : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
 
@@ -143,6 +145,7 @@ namespace Floofbot
 
         }
 
+
         [RequireOwner]
         [Command("reloadconfig")]
         [Summary("Reloads the config file")]
@@ -163,6 +166,62 @@ namespace Floofbot
                 await Context.Client.SetActivityAsync(BotConfigFactory.Config.Activity);
             }
             await Context.Channel.SendMessageAsync("Config reloaded successfully");
+        }
+
+        [Command("serverlist")]
+        [Summary("Returns a list of servers that the bot is in")]
+        [RequireOwner]
+        public async Task ServerList()
+        {
+            List<SocketGuild> guilds = new List<SocketGuild>(Context.Client.Guilds);
+            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+
+            foreach (SocketGuild g in guilds)
+            {
+                List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
+
+                fields.Add(new EmbedFieldBuilder()
+                {
+                    Name = $"Owner",
+                    Value = $"{g.Owner.Username}#{g.Owner.Discriminator} | ``{g.Owner.Id}``",
+                    IsInline = false
+                });
+                fields.Add(new EmbedFieldBuilder()
+                {
+                    Name = $"Server ID",
+                    Value = g.Id,
+                    IsInline = false
+                });
+                fields.Add(new EmbedFieldBuilder()
+                {
+                    Name = $"Members",
+                    Value = g.MemberCount,
+                    IsInline = false
+                });
+
+                pages.Add(new PaginatedMessage.Page
+                {
+                    Author = new EmbedAuthorBuilder { Name = g.Name },
+                    Fields = new List<EmbedFieldBuilder>(fields),
+                    ThumbnailUrl = (Uri.IsWellFormedUriString(g.IconUrl, UriKind.Absolute) ? g.IconUrl : null)
+                });
+            }
+            var pager = new PaginatedMessage
+            {
+                Pages = pages,
+                Color = Color.DarkGreen,
+                Content = "Here are a list of servers that I am in!",
+                FooterOverride = null,
+                Options = PaginatedAppearanceOptions.Default,
+                TimeStamp = DateTimeOffset.UtcNow
+            };
+            await PagedReplyAsync(pager, new ReactionList
+            {
+                Forward = true,
+                Backward = true,
+                Jump = true,
+                Trash = true
+            }, true);
         }
     }
 }
