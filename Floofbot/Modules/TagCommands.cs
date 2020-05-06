@@ -232,9 +232,9 @@ namespace Floofbot.Modules
             return builder.Build();
         }
 
-        private Task SendEmbed(Embed embed)
+        private async Task SendEmbed(Embed embed)
         {
-            return Context.Channel.SendMessageAsync("", false, embed);
+            await Context.Channel.SendMessageAsync("", false, embed);
         }
     }
 }
