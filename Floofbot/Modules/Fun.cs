@@ -26,7 +26,7 @@ namespace Floofbot.Modules
 
         public static string QuestionEightBall(string message)
         {
-            string response = EightBall.Response();
+            string response = EightBall.GetRandomResponse();
             return $"> {message}\n{response}";
         }
 
@@ -37,7 +37,7 @@ namespace Floofbot.Modules
             EmbedBuilder builder = new EmbedBuilder();
             builder.Title = "Magic 8 Ball";
             builder.AddField("Question", question);
-            builder.AddField("Answer", EightBall.Response());
+            builder.AddField("Answer", EightBall.GetRandomResponse());
             builder.Color = EMBED_COLOR;
             await SendEmbed(builder.Build());
         }
