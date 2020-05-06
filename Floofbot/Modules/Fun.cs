@@ -52,20 +52,10 @@ namespace Floofbot.Modules
             return responses[randomNumber];
         }
 
-        public static string RespondEightBall(string question)
+        public static string QuestionEightBall(string message)
         {
-            Regex questionRe = new Regex(@"^.*\?$");
-            if(questionRe.IsMatch(question)) {
-                string response = Floofbot.Modules.Fun.EightBallResponse();
-                if (!string.IsNullOrEmpty(response))
-                {
-                    string reply = $"> {question}";
-                    reply += "\n";
-                    reply += $"{response}";
-                    return reply;
-                }
-            }
-            return "";
+            string response = EightBallResponse();
+            return $"> {message}\n{response}";
         }
 
         [Command("8ball")]
