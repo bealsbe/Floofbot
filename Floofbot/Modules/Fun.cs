@@ -24,38 +24,20 @@ namespace Floofbot.Modules
             ".jpg", ".gif", ".png"
         };
 
+        public static string QuestionEightBall(string message)
+        {
+            string response = EightBall.GetRandomResponse();
+            return $"> {message}\n{response}";
+        }
+
         [Command("8ball")]
         [Summary("Ask the Magic 8-Ball a question")]
         public async Task AskEightBall([Summary("question")][Remainder] string question)
         {
-            var responses = new List<string> {
-                 "As I see it, yes.",
-                 "Ask again later.",
-                 "Better not tell you now.",
-                 "Cannot predict now.",
-                 "Concentrate and ask again.",
-                 "Don’t count on it.",
-                 "It is certain.",
-                 "It is decidedly so.",
-                 "Most likely.",
-                 "My reply is no.",
-                 "My sources say no.",
-                 "Outlook not so good.",
-                 "Outlook good.",
-                 "Reply hazy, try again.",
-                 "Signs point to yes.",
-                 "Very doubtful.",
-                 "Without a doubt.",
-                 "Yes.",
-                 "Yes – definitely.",
-                 "You may rely on it."
-            };
-            Random random = new Random();
-            int randomNumber = random.Next(responses.Count);
             EmbedBuilder builder = new EmbedBuilder();
             builder.Title = "Magic 8 Ball";
             builder.AddField("Question", question);
-            builder.AddField("Answer", responses[randomNumber]);
+            builder.AddField("Answer", EightBall.GetRandomResponse());
             builder.Color = EMBED_COLOR;
             await SendEmbed(builder.Build());
         }

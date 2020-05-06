@@ -67,6 +67,11 @@ namespace Floofbot.Handlers
                 {
                     Log.Error(result.ErrorReason);
                 }
+
+                if (result.Error == CommandError.UnknownCommand && msg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.ToString().EndsWith("?")) {
+                    string response = Floofbot.Modules.Fun.QuestionEightBall(msg.ToString());
+                    await context.Channel.SendMessageAsync(response);
+                }
             }
             else if (msg.Source == MessageSource.User)
             {
