@@ -9,6 +9,7 @@ namespace Floofbot.Modules
 {
     [Summary("Nickname alert configuration commands")]
     [Discord.Commands.Name("NicknameAlert")]
+    [RequireUserPermission(GuildPermission.BanMembers)]
     [Group("nicknamealert")]
     public class NicknameAlert : ModuleBase<SocketCommandContext>
     {
