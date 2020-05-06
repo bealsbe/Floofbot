@@ -68,7 +68,7 @@ namespace Floofbot.Services
         {
             await msg.DeleteAsync();
             var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} watch your language! You've said a bad word!");
-            Thread.Sleep(5000);
+            await Task.Delay(5000);
             await botMsg.DeleteAsync();
         }
         public Task OnMessage(SocketMessage msg)
