@@ -64,6 +64,9 @@ namespace Floofbot.Services
         {
             var msg = message.Value as IUserMessage;
 
+            if (reaction.User.Value.IsBot)
+                return;
+
             if (alertMessageIdsDic.ContainsKey(msg.Id))
             {
                 SocketGuildUser badUser;
