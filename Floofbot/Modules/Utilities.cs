@@ -12,7 +12,8 @@ using Floofbot.Configs;
 
 namespace Floofbot
 {
-    [Summary("Utility Commands")]
+    [Summary("Utility commands")]
+    [Discord.Commands.Name("Utilities")]
     public class Utilities : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;

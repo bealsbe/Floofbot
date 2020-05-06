@@ -11,9 +11,10 @@ using Serilog;
 
 namespace Floofbot.Modules
 {
-    [Summary("Logging commands")]
     public class Logging
     {
+        [Summary("Logging commands")]
+        [Discord.Commands.Name("Logger")]
         [Group("logger")]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireContext(ContextType.Guild)]
@@ -26,7 +27,7 @@ namespace Floofbot.Modules
                 _floofDB = floofDB;
             }
 
-            protected void CheckServer(ulong server)
+            private void CheckServer(ulong server)
             {
                 // checks if server exists in database and adds if not
                 var serverConfig = _floofDB.LogConfigs.Find(server);
@@ -51,7 +52,7 @@ namespace Floofbot.Modules
                 }
             }
 
-            protected async Task SetChannel(string tableName, Discord.IChannel channel, Discord.IGuild guild)
+            private async Task SetChannel(string tableName, Discord.IChannel channel, Discord.IGuild guild)
             {
                 CheckServer(guild.Id);
 
@@ -62,8 +63,11 @@ namespace Floofbot.Modules
             }
 
 
-            [Command("setchannel")] // update into a group
-            public async Task Channel(string messageType, Discord.IChannel channel)
+            [Summary("Applies a channel type onto a channel")]
+            [Command("setchannel")]
+            public async Task Channel(
+                [Summary("channel type")] string messageType,
+                [Summary("channel")] Discord.IChannel channel)
             {
                 var MessageTypes = new List<string> {
                             "MessageUpdatedChannel",
@@ -95,6 +99,7 @@ namespace Floofbot.Modules
                 }
             }
 
+            [Summary("Enable/disable the logger")]
             [Command("toggle")]
             public async Task Toggle()
             {

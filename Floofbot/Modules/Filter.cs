@@ -12,11 +12,12 @@ using System.Collections.Generic;
 
 namespace Floofbot.Modules
 {
+    [Summary("Settings that control the automatic word filtering in a server")]
+    [Discord.Commands.Name("Filter")]
     [Group("filter")]
     [Alias("f")]
     [RequireContext(ContextType.Guild)]
     [RequireUserPermission(GuildPermission.BanMembers)]
-    [Summary("Settings that control the automatic word filtering in a server")]
     public class Filter : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
@@ -46,16 +47,10 @@ namespace Floofbot.Modules
             bool wordEntry = _floofDb.FilteredWords.AsQueryable().Where(w => w.ServerId == guild.Id).Where(w => w.Word == word).Any();
             return wordEntry;
         }
-        [Command("toggle")]
-        [Summary("Toggles the server/channel-level word filter")]
-        public async Task Toggle()
-        {
-            await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `filter toggle channel/server`", Color = EMBED_COLOR }.Build());
-        }
 
         [Command("toggle")]
-        [Summary("Toggles the word filter")]
-        public async Task Toggle([Summary("Either 'channel' or 'server'")]string toggleType)
+        [Summary("Toggles the server/channel-level word filter")]
+        public async Task Toggle([Summary("Either 'channel' or 'server'")] string toggleType = null)
         {
             if (toggleType == "server")
             {
@@ -115,8 +110,8 @@ namespace Floofbot.Modules
             {
                 await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `filter toggle channel/server`", Color = EMBED_COLOR }.Build());
             }
-            return;
         }
+
         [Summary("Adds a new filtered word")]
         [Command("add")]
         public async Task AddFilteredWord([Summary("filtered word")]string word)

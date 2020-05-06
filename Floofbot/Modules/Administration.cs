@@ -10,6 +10,7 @@ using System.Linq;
 namespace Floofbot.Modules
 {
     [Summary("Administration commands")]
+    [Discord.Commands.Name("Administration")]
     public class Administration : ModuleBase<SocketCommandContext>
     {
         private FloofDataContext _floofDB;
