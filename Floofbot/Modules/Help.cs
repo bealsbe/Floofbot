@@ -4,12 +4,12 @@ using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Floofbot.Modules
 {
-    [Summary("Commands for Listing Available Commands")]
+    [Summary("Commands for listing available commands")]
+    [Discord.Commands.Name("Help")]
     public class Help : InteractiveBase
     {
         private readonly IServiceProvider _services;

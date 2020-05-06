@@ -12,11 +12,12 @@ using System.Collections.Generic;
 
 namespace Floofbot.Modules
 {
+    [Summary("Settings that control the automatic word filtering in a server")]
+    [Discord.Commands.Name("Filter")]
     [Group("filter")]
     [Alias("f")]
     [RequireContext(ContextType.Guild)]
     [RequireUserPermission(GuildPermission.BanMembers)]
-    [Summary("Settings that control the automatic word filtering in a server")]
     public class Filter : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;

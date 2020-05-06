@@ -12,8 +12,9 @@ using Tag = Floofbot.Services.Repository.Models.Tag;
 
 namespace Floofbot.Modules
 {
-    [Group("tag")]
     [Summary("Tag commands")]
+    [Discord.Commands.Name("Tag")]
+    [Group("tag")]
     [RequireContext(ContextType.Guild)]
     [RequireUserPermission(Discord.GuildPermission.AttachFiles)]
     public class TagCommands : InteractiveBase
@@ -33,13 +34,13 @@ namespace Floofbot.Modules
         }
 
         [Command("add")]
-        [Priority(0)]
+        [Summary("Adds a tag to the server")]
         [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task Add(
-            [Summary("Tag name")] string tag,
+            [Summary("Tag name")] string tag = null,
             [Summary("Tag content")] [Remainder] string content = null)
         {
-            if (content != null)
+            if (!string.IsNullOrEmpty(tag) && !string.IsNullOrEmpty(content))
             {
                 Regex rgx = new Regex("[^a-zA-Z0-9 -]");
                 tag = rgx.Replace(tag, "").ToLower();
@@ -69,15 +70,8 @@ namespace Floofbot.Modules
             }
         }
 
-        [Command("add")]
-        [Priority(1)]
-        public async Task Add()
-        {
-            await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag add [name] [content]`"));
-        }
-
         [Command("list")]
-        [Summary("Lists all tags")]
+        [Summary("Lists all tags on the server")]
         public async Task ListTags([Remainder] string content = null)
         {
             List<Tag> tags = _floofDb.Tags.AsQueryable()
@@ -133,39 +127,39 @@ namespace Floofbot.Modules
         }
 
         [Command("remove")]
-        [Summary("Removes a tag")]
+        [Summary("Removes a tag from the server")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task Remove([Summary("Tag name")] string tag)
+        public async Task Remove([Summary("Tag name")] string tag = null)
         {
-            string tagName = $"{tag.ToLower()}:{Context.Guild.Id}";
-            Tag tagToRemove = _floofDb.Tags.FirstOrDefault(x => x.TagName == tagName);
-            if (tagToRemove != null)
+            if (!string.IsNullOrEmpty(tag))
             {
-                try
+                string tagName = $"{tag.ToLower()}:{Context.Guild.Id}";
+                Tag tagToRemove = _floofDb.Tags.FirstOrDefault(x => x.TagName == tagName);
+                if (tagToRemove != null)
                 {
-                    _floofDb.Remove(tagToRemove);
-                    await _floofDb.SaveChangesAsync();
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Tag: `{tag}` Removed"));
+                    try
+                    {
+                        _floofDb.Remove(tagToRemove);
+                        await _floofDb.SaveChangesAsync();
+                        await SendEmbed(CreateDescriptionEmbed($"💾 Tag: `{tag}` Removed"));
+                    }
+                    catch (DbUpdateException)
+                    {
+                        await SendEmbed(CreateDescriptionEmbed($"💾 Unable to remove Tag: `{tag}`"));
+                    }
                 }
-                catch (DbUpdateException)
+                else
                 {
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Unable to remove Tag: `{tag}`"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{tag}`"));
                 }
             }
             else
             {
-                await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{tag}`"));
+                await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag remove [name]`"));
             }
         }
 
-        [Command("remove")]
-        [Priority(1)]
-        public async Task Remove()
-        {
-            await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag remove [name]`"));
-        }
-
-        [Command]
+        [Command("")]
         [Summary("Displays a tag")]
         [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task GetTag([Summary("Tag name")] string tag = "")
