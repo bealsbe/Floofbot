@@ -1,3 +1,4 @@
+using Discord;
 ﻿using Discord.Commands;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
