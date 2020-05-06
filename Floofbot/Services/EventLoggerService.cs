@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
@@ -16,10 +17,17 @@ namespace Floofbot.Services
 
         private DiscordSocketClient _client;
         private WordFilterService _wordFilterService;
+        private NicknameAlertService _nicknameAlertService;
 
         public EventLoggerService(DiscordSocketClient client)
         {
             _client = client;
+
+            // assisting handlers
+            _wordFilterService = new WordFilterService();
+            _nicknameAlertService = new NicknameAlertService(new FloofDataContext());
+
+            // event handlers
             _client.MessageUpdated += MessageUpdated;
             _client.MessageDeleted += MessageDeleted;
             _client.UserBanned += UserBanned;
@@ -27,8 +35,8 @@ namespace Floofbot.Services
             _client.UserJoined += UserJoined;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
-
-            _wordFilterService = new WordFilterService();
+            _client.MessageReceived += OnMessage;
+            _client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
         }
         public async Task<ITextChannel> GetChannel(Discord.IGuild guild, string eventName = null)
         {
@@ -56,7 +64,34 @@ namespace Floofbot.Services
 
             return ServerConfig.IsOn;
         }
-
+        private async Task HandleBadMessage(SocketUser user, SocketMessage msg)
+        {
+            await msg.DeleteAsync();
+            var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} watch your language! You've said a bad word!");
+            Thread.Sleep(5000);
+            await botMsg.DeleteAsync();
+        }
+        public Task OnMessage(SocketMessage msg)
+        {
+            var _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if (msg.Author.IsBot)
+                        return;
+                    var channel = msg.Channel as ITextChannel;
+                    bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
+                    if (hasBadWord)
+                        await HandleBadMessage(msg.Author, msg);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error with the on message event handler: " + ex);
+                    return;
+                }
+            });
+            return Task.CompletedTask;
+        }
         public Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel chan)
         {
             var _ = Task.Run(async () =>
@@ -99,6 +134,10 @@ namespace Floofbot.Services
                         embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
 
                     await logChannel.SendMessageAsync("", false, embed.Build());
+
+                    bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Content, channel.Guild.Id, channel.Id);
+                    if (hasBadWord)
+                        await HandleBadMessage(after.Author, after);
                 }
                 catch (Exception ex)
                 {
@@ -398,6 +437,10 @@ namespace Floofbot.Services
                         if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(user.GetAvatarUrl());
 
+                        bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Username, channel.Guild.Id);
+                        if (hasBadWord)
+                            await _nicknameAlertService.HandleBadNickname(user, user.Guild);
+
                     }
                     else if (before.Nickname != after.Nickname)
                     {
@@ -419,6 +462,12 @@ namespace Floofbot.Services
 
                         if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(user.GetAvatarUrl());
+                        if (after.Nickname != null)
+                        {
+                            bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Nickname, channel.Guild.Id);
+                            if (hasBadWord)
+                                await _nicknameAlertService.HandleBadNickname(user, user.Guild);
+                        }
 
                     }
                     else if (before.AvatarId != after.AvatarId)
@@ -608,7 +657,35 @@ namespace Floofbot.Services
             List<FilteredWord> _filteredWords;
             DateTime _lastRefreshedTime;
 
-            bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId)
+            public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId) // names
+            {
+                // return false if none of the serverIds match or filtering has been disabled for the server
+                if (!floofDb.FilterConfigs.AsQueryable()
+                    .Any(x => x.ServerId == serverId && x.IsOn))
+                {
+                    return false;
+                }
+
+                DateTime currentTime = DateTime.Now;
+                if (_lastRefreshedTime == null || currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
+                {
+                    _filteredWords = floofDb.FilteredWords.AsQueryable()
+                        .Where(x => x.ServerId == serverId).ToList();
+                    _lastRefreshedTime = currentTime;
+                }
+
+                foreach (var filteredWord in _filteredWords)
+                {
+                    Regex r = new Regex($"{filteredWord.Word}",
+                        RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                    if (r.IsMatch(messageContent))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId) // messages
             {
                 // return false if none of the serverIds match or filtering has been disabled for the server
                 if (!floofDb.FilterConfigs.AsQueryable()
