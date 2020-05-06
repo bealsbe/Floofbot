@@ -170,7 +170,7 @@ namespace Floofbot.Modules
             }
             else
             {
-                GameBoard game = new GameBoard(height, width, bombs);
+                MinesweeperBoard game = new MinesweeperBoard(height, width, bombs);
                 EmbedBuilder builder = new EmbedBuilder();
                 builder.Title = ":bomb: Minesweeper";
                 builder.Color = EMBED_COLOR;

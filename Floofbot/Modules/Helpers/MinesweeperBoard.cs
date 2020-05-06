@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Floofbot.Modules.Helpers
 {
-    public class GameBoard
+    public class MinesweeperBoard
     {
         private static readonly string BOMB_SQUARE = "||:bomb:||";
         private string[,] grid;
@@ -11,7 +11,7 @@ namespace Floofbot.Modules.Helpers
         private int width;
         private int bombCount;
 
-        public GameBoard(int height, int width, int bombCount)
+        public MinesweeperBoard(int height, int width, int bombCount)
         {
             this.height = height;
             this.width = width;
