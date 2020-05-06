@@ -103,7 +103,7 @@ namespace Floofbot.Services
                             Forgiven = false,
                             GuildId = badUser.Guild.Id,
                             Moderator = $"{moderator.Username}#{moderator.Discriminator}",
-                            ModeratorId = msg.Author.Id,
+                            ModeratorId = moderator.Id,
                             Reason = $"{moderator.Username}#{moderator.Discriminator} -> Warned by BOT for an inappropriate name",
                             UserId = badUser.Id
                         });
