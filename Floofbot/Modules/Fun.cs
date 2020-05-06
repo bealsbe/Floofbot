@@ -24,37 +24,9 @@ namespace Floofbot.Modules
             ".jpg", ".gif", ".png"
         };
 
-        public static string EightBallResponse() {
-            var responses = new List<string> {
-                 "As I see it, yes.",
-                 "Ask again later.",
-                 "Better not tell you now.",
-                 "Cannot predict now.",
-                 "Concentrate and ask again.",
-                 "Don’t count on it.",
-                 "It is certain.",
-                 "It is decidedly so.",
-                 "Most likely.",
-                 "My reply is no.",
-                 "My sources say no.",
-                 "Outlook not so good.",
-                 "Outlook good.",
-                 "Reply hazy, try again.",
-                 "Signs point to yes.",
-                 "Very doubtful.",
-                 "Without a doubt.",
-                 "Yes.",
-                 "Yes – definitely.",
-                 "You may rely on it."
-            };
-            Random random = new Random();
-            int randomNumber = random.Next(responses.Count);
-            return responses[randomNumber];
-        }
-
         public static string QuestionEightBall(string message)
         {
-            string response = EightBallResponse();
+            string response = EightBall.Response();
             return $"> {message}\n{response}";
         }
 
@@ -65,7 +37,7 @@ namespace Floofbot.Modules
             EmbedBuilder builder = new EmbedBuilder();
             builder.Title = "Magic 8 Ball";
             builder.AddField("Question", question);
-            builder.AddField("Answer", EightBallResponse());
+            builder.AddField("Answer", EightBall.Response());
             builder.Color = EMBED_COLOR;
             await SendEmbed(builder.Build());
         }
