@@ -106,6 +106,11 @@ namespace Floofbot.Modules
                 return;
             }
 
+            if(reason.Length > 500) {
+                await Context.Channel.SendMessageAsync("Warnings can not exceed 500 characters");
+                return;
+            }
+
             IUser badUser = resolveUser(user);
             if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
@@ -116,7 +121,8 @@ namespace Floofbot.Modules
                 DateAdded = DateTime.Now,
                 Forgiven = false,
                 GuildId = Context.Guild.Id,
-                Moderator = Context.User.Id,
+                Moderator =  $"{Context.User.Username}#{Context.User.Discriminator}",
+                ModeratorId = Context.User.Id,
                 Reason = reason,
                 UserId = badUser.Id
             });
@@ -154,7 +160,7 @@ namespace Floofbot.Modules
 
             var warnings = _floofDB.Warnings.AsQueryable()
                 .Where(u => u.UserId == badUser.Id && u.GuildId == Context.Guild.Id)
-                .OrderByDescending(x => x.DateAdded).Take(24);
+                .OrderByDescending(x => x.DateAdded).Take(10);
 
             if (warnings.Count() == 0)
             {
@@ -167,7 +173,7 @@ namespace Floofbot.Modules
             int warningCount = 0;
             builder.WithTitle($"Warnings for {badUser.Username}#{badUser.Discriminator}");
             foreach (Warning warning in warnings) {
-                builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy-MM-dd")}", $"```{warning.Reason}```");
+                builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"```{warning.Reason}```");
                 warningCount++;
             }
             await Context.Channel.SendMessageAsync("", false, builder.Build());

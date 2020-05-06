@@ -102,7 +102,8 @@ namespace Floofbot.Services
                             DateAdded = DateTime.Now,
                             Forgiven = false,
                             GuildId = badUser.Guild.Id,
-                            Moderator = msg.Author.Id,
+                            Moderator = $"{moderator.Username}#{moderator.Discriminator}",
+                            ModeratorId = moderator.Id,
                             Reason = $"{moderator.Username}#{moderator.Discriminator} -> Warned by BOT for an inappropriate name",
                             UserId = badUser.Id
                         });

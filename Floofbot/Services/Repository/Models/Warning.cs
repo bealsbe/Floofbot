@@ -11,7 +11,8 @@ namespace Floofbot.Services.Repository.Models
         public bool Forgiven { get; set; }
         public ulong ForgivenBy { get; set; }
         public ulong GuildId { get; set; }
-        public ulong Moderator { get; set; }
+        public ulong ModeratorId { get; set; }
+        public string Moderator { get; set; }
         public string Reason { get; set; }
         public ulong UserId { get; set; }
     }
