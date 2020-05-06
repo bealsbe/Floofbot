@@ -61,6 +61,12 @@ namespace Floofbot.Handlers
 
             if (msg.HasStringPrefix(prefix, ref argPos) || msg.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
+                if(!msg.HasStringPrefix(prefix, ref argPos)) {
+                    string response = Floofbot.Modules.Fun.RespondEightBall(msg.ToString());
+                    if(response != "") {
+                        await context.Channel.SendMessageAsync(response);
+                    }
+                }
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 
                 if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)

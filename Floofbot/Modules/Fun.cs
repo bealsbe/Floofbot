@@ -24,10 +24,7 @@ namespace Floofbot.Modules
             ".jpg", ".gif", ".png"
         };
 
-        [Command("8ball")]
-        [Summary("Ask the Magic 8-Ball a question")]
-        public async Task AskEightBall([Summary("question")][Remainder] string question)
-        {
+        public static string EightBallResponse() {
             var responses = new List<string> {
                  "As I see it, yes.",
                  "Ask again later.",
@@ -52,10 +49,33 @@ namespace Floofbot.Modules
             };
             Random random = new Random();
             int randomNumber = random.Next(responses.Count);
+            return responses[randomNumber];
+        }
+
+        public static string RespondEightBall(string question)
+        {
+            Regex questionRe = new Regex(@"^.*\?$");
+            if(questionRe.IsMatch(question)) {
+                string response = Floofbot.Modules.Fun.EightBallResponse();
+                if (!string.IsNullOrEmpty(response))
+                {
+                    string reply = $"> {question}";
+                    reply += "\n";
+                    reply += $"{response}";
+                    return reply;
+                }
+            }
+            return "";
+        }
+
+        [Command("8ball")]
+        [Summary("Ask the Magic 8-Ball a question")]
+        public async Task AskEightBall([Summary("question")][Remainder] string question)
+        {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Title = "Magic 8 Ball";
             builder.AddField("Question", question);
-            builder.AddField("Answer", responses[randomNumber]);
+            builder.AddField("Answer", EightBallResponse());
             builder.Color = EMBED_COLOR;
             await SendEmbed(builder.Build());
         }
