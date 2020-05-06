@@ -20,7 +20,7 @@ namespace Floofbot.Modules
     public class TagCommands : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
-        private static readonly int TAGS_PER_PAGE = 50;
+        private static readonly int TAGS_PER_PAGE = 20;
         private static readonly List<string> SUPPORTED_IMAGE_EXTENSIONS = new List<string>
         {
             "jpg", "png", "jpeg", "webp", "gifv", "gif", "mp4"
