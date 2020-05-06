@@ -25,7 +25,7 @@ namespace Floofbot.Handlers
             _services = BuildServiceProvider(client);
             var context = _services.GetRequiredService<FloofDataContext>();
             context.Database.Migrate(); // apply all migrations
-            _commands = new CommandService();
+            _commands = new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false });
             _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
             _client.MessageReceived += HandleCommandAsync;
         }
