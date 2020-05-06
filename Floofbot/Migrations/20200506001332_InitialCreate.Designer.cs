@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    [Migration("20200502011652_InitialCreate")]
+    [Migration("20200506001332_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,51 @@ namespace Floofbot.Migrations
                     b.HasKey("ServerId");
 
                     b.ToTable("AdminConfig");
+                });
+
+            modelBuilder.Entity("Floofbot.Services.Repository.Models.FilterChannelWhitelist", b =>
+                {
+                    b.Property<ulong>("ChannelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("ServerId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ChannelId");
+
+                    b.ToTable("FilterChannelWhitelists");
+                });
+
+            modelBuilder.Entity("Floofbot.Services.Repository.Models.FilterConfig", b =>
+                {
+                    b.Property<ulong>("ServerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsOn")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ServerId");
+
+                    b.ToTable("FilterConfigs");
+                });
+
+            modelBuilder.Entity("Floofbot.Services.Repository.Models.FilteredWord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("ServerId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Word")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FilteredWords");
                 });
 
             modelBuilder.Entity("Floofbot.Services.Repository.Models.LogConfig", b =>
@@ -76,13 +121,36 @@ namespace Floofbot.Migrations
                     b.ToTable("LogConfigs");
                 });
 
+            modelBuilder.Entity("Floofbot.Services.Repository.Models.NicknameAlertConfig", b =>
+                {
+                    b.Property<ulong>("ServerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("Channel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsOn")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ServerId");
+
+                    b.ToTable("NicknameAlertConfigs");
+                });
+
             modelBuilder.Entity("Floofbot.Services.Repository.Models.Tag", b =>
                 {
                     b.Property<ulong>("TagId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Content")
+                    b.Property<ulong>("ServerId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TagContent")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TagName")
                         .HasColumnType("TEXT");
 
                     b.Property<ulong>("UserId")
@@ -111,7 +179,10 @@ namespace Floofbot.Migrations
                     b.Property<ulong>("GuildId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong>("Moderator")
+                    b.Property<string>("Moderator")
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("ModeratorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Reason")
