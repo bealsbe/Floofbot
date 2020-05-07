@@ -57,8 +57,8 @@ namespace Floofbot
                  $"**Username** : {user.Username}#{user.Discriminator}\n" +
                  $"**Nickname** : {user.Nickname ?? user.Username}\n" +
                  $"**ID** : {user.Id}\n" +
-                 $"**Discord Join Date** : {user.CreatedAt:MM/dd/yyyy} \n" +
-                 $"**Guild Join Date** : {user.JoinedAt?.ToString("MM/dd/yyyy")}\n" +
+                 $"**Discord Join Date** : {user.CreatedAt.ToString("ddd, dd MMM yyyy")}\n" +
+                 $"**Guild Join Date** : {user.JoinedAt?.ToString("ddd, dd MMM yyyy")}\n" +
                  $"**Status** : {user.Status}\n";
 
             EmbedBuilder builder = new EmbedBuilder
@@ -118,7 +118,7 @@ namespace Floofbot
             int numberVoiceChannels = guild.VoiceChannels.Count;
             int daysOld = Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days;
             string daysAgo = $" That's " + ((daysOld == 0) ? "today!" : (daysOld == 1) ? $"yesterday!" : $"{daysOld} days ago!");
-            string createdAt = $"Created {guild.CreatedAt.DateTime.ToShortDateString()}." + daysAgo;
+            string createdAt = $"Created {guild.CreatedAt.ToString("ddd, dd MMM yyyy")}." + daysAgo;
             int totalMembers = guild.MemberCount;
             int onlineUsers = guild.Users.Where(mem => mem.Status == UserStatus.Online).Count();
             int numberRoles = guild.Roles.Count;
