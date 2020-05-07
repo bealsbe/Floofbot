@@ -57,8 +57,8 @@ namespace Floofbot
                  $"**Username** : {user.Username}#{user.Discriminator}\n" +
                  $"**Nickname** : {user.Nickname ?? user.Username}\n" +
                  $"**ID** : {user.Id}\n" +
-                 $"**Discord Join Date** : {user.CreatedAt:MM/dd/yyyy} \n" +
-                 $"**Guild Join Date** : {user.JoinedAt?.ToString("MM/dd/yyyy")}\n" +
+                 $"**Discord Join Date** : {user.CreatedAt.ToString("ddd, dd MMM yyyy")}\n" +
+                 $"**Guild Join Date** : {user.JoinedAt?.ToString("ddd, dd MMM yyyy")}\n" +
                  $"**Status** : {user.Status}\n";
 
             EmbedBuilder builder = new EmbedBuilder
