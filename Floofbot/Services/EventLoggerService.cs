@@ -345,8 +345,8 @@ namespace Floofbot.Services
                     embed.WithTitle($"✅ User Joined | {user.Username}#{user.Discriminator}")
                          .WithColor(Color.Green)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
-                         .AddField("Joined Server", user.JoinedAt, true)
-                         .AddField("Joined Discord", user.CreatedAt, true)
+                         .AddField("Joined Server", user.JoinedAt?.ToString("ddd, dd MMM yyyy"), true)
+                         .AddField("Joined Discord", user.CreatedAt.ToString("ddd, dd MMM yyyy"), true)
                          .WithFooter($"user_join user_joinlog {user.Id}")
                          .WithCurrentTimestamp();
 
