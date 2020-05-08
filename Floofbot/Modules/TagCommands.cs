@@ -20,7 +20,7 @@ namespace Floofbot.Modules
     public class TagCommands : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
-        private static readonly int TAGS_PER_PAGE = 50;
+        private static readonly int TAGS_PER_PAGE = 20;
         private static readonly List<string> SUPPORTED_IMAGE_EXTENSIONS = new List<string>
         {
             "jpg", "png", "jpeg", "webp", "gifv", "gif", "mp4"
@@ -71,8 +71,8 @@ namespace Floofbot.Modules
         }
 
         [Command("list")]
-        [Summary("Lists all tags on the server")]
-        public async Task ListTags([Remainder] string content = null)
+        [Summary("Lists all tags on the server, optionally filtering by keywords")]
+        public async Task ListTags([Summary("Keywords to use")][Remainder] string keywords = null)
         {
             List<Tag> tags = _floofDb.Tags.AsQueryable()
                 .Where(x => x.ServerId == Context.Guild.Id)
@@ -85,20 +85,33 @@ namespace Floofbot.Modules
                 return;
             }
 
+            // filter tags by keywords if applicable
+            if (!string.IsNullOrEmpty(keywords))
+            {
+                keywords = keywords.ToLower();
+                tags = tags.Where(tag => tag.TagName.Split(":")[0].ToLower().Contains(keywords)).ToList();
+            }
+
+            if (tags.Count == 0)
+            {
+                await Context.Channel.SendMessageAsync("No tags found with the given keyword(s)");
+                return;
+            }
+
             List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
             int numPages = (int)Math.Ceiling((double)tags.Count / TAGS_PER_PAGE);
-            int index;
+            int tagIndex;
             string actualName;
             for (int i = 0; i < numPages; i++)
             {
                 string text = "```\n";
                 for (int j = 0; j < TAGS_PER_PAGE; j++)
                 {
-                    index = i * TAGS_PER_PAGE + j;
-                    if (index < tags.Count)
+                    tagIndex = i * TAGS_PER_PAGE + j;
+                    if (tagIndex < tags.Count)
                     {
-                        actualName = tags[index].TagName.Split(":")[0];
-                        text += $"{index + 1}. {actualName}\n";
+                        actualName = tags[tagIndex].TagName.Split(":")[0];
+                        text += $"{tagIndex + 1}. {actualName}\n";
                     }
                 }
                 text += "\n```";
@@ -219,9 +232,9 @@ namespace Floofbot.Modules
             return builder.Build();
         }
 
-        private Task SendEmbed(Embed embed)
+        private async Task SendEmbed(Embed embed)
         {
-            return Context.Channel.SendMessageAsync("", false, embed);
+            await Context.Channel.SendMessageAsync("", false, embed);
         }
     }
 }
