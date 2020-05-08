@@ -6,7 +6,7 @@ using Floofbot.Configs;
 
 class RandomResponseGenerator
 {
-    public string generateResponse(SocketUserMessage userMessage)
+    public static string GenerateResponse(SocketUserMessage userMessage)
     {
         List<BotRandomResponse> responses = BotConfigFactory.Config.RandomResponses;
         if (responses == null || responses.Count == 0)
@@ -32,8 +32,7 @@ class RandomResponseGenerator
                 {
                     matchedValues.Add(match.Groups[i].Value);
                 }
-                string formattedResponse = string.Format(response.Response, matchedValues.ToArray());
-                return formattedResponse;
+                return string.Format(response.Response, matchedValues.ToArray());
             }
         }
         return string.Empty;

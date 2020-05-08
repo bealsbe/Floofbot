@@ -68,16 +68,15 @@ namespace Floofbot.Handlers
                     Log.Error(result.ErrorReason);
                 }
 
-                if (result.Error == CommandError.UnknownCommand && msg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.ToString().EndsWith("?")) {
-                    string response = Floofbot.Modules.Fun.QuestionEightBall(msg.ToString());
-                    await context.Channel.SendMessageAsync(response);
+                if (result.Error == CommandError.UnknownCommand && msg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.ToString().EndsWith("?"))
+                {
+                    string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
+                    await context.Channel.SendMessageAsync($"> {msg}\n{eightBallResponse}");
                 }
             }
             else if (msg.Source == MessageSource.User)
             {
-                var generator = new RandomResponseGenerator();
-                string randomResponse = generator.generateResponse(msg);
-
+                string randomResponse = RandomResponseGenerator.GenerateResponse(msg);
                 if (!string.IsNullOrEmpty(randomResponse))
                 {
                     await context.Channel.SendMessageAsync(randomResponse);

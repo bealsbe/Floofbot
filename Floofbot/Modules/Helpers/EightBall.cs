@@ -28,7 +28,8 @@ namespace Floofbot.Modules.Helpers
             "You may rely on it."
         };
 
-        public static string GetRandomResponse() {
+        public static string GetRandomResponse()
+        {
             Random random = new Random();
             int randomNumber = random.Next(RESPONSES.Count);
             return RESPONSES[randomNumber];
