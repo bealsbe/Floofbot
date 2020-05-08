@@ -72,6 +72,9 @@ namespace Floofbot.Modules
             }
             catch (ArgumentException e)
             {
+                // This exception occurs when parsing the dice string,
+                // and is meant to be displayed to the user
+                // there is no need to log it
                 await Context.Channel.SendMessageAsync(e.Message);
             }
         }
