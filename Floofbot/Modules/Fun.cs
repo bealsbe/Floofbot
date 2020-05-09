@@ -94,6 +94,21 @@ namespace Floofbot.Modules
             }
         }
 
+        [Command("foxfact")]
+        [Summary("Responds with a random fox fact")]
+        public async Task RequestFoxFact()
+        {
+            string fact = await ApiFetcher.RequestStringFromApi("https://some-random-api.ml/facts/fox", "fact");
+            if (!string.IsNullOrEmpty(fact))
+            {
+                await Context.Channel.SendMessageAsync(fact);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The foxfact command is currently unavailable.");
+            }
+        }
+
         [Command("cat")]
         [Summary("Responds with a random cat")]
         public async Task RequestCat()
