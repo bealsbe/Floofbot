@@ -165,10 +165,10 @@ namespace Floofbot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("RestrictTagsToAdmins")
+                    b.Property<ulong>("ServerId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong>("ServerId")
+                    b.Property<bool>("TagUpdateRequiresAdmin")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");

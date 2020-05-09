@@ -13,7 +13,7 @@ namespace Floofbot.Migrations
                     Id = table.Column<ulong>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ServerId = table.Column<ulong>(nullable: false),
-                    RestrictTagsToAdmins = table.Column<bool>(nullable: false)
+                    TagUpdateRequiresAdmin = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {

@@ -7,6 +7,6 @@ namespace Floofbot.Services.Repository.Models
         [Key]
         public ulong Id { get; set; }
         public ulong ServerId { get; set; }
-        public bool RestrictTagsToAdmins { get; set; }
+        public bool TagUpdateRequiresAdmin { get; set; }
     }
 }

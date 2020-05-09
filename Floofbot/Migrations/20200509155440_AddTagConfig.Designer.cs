@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    [Migration("20200509154025_AddTagConfig")]
+    [Migration("20200509155440_AddTagConfig")]
     partial class AddTagConfig
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,10 +167,10 @@ namespace Floofbot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("RestrictTagsToAdmins")
+                    b.Property<ulong>("ServerId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong>("ServerId")
+                    b.Property<bool>("TagUpdateRequiresAdmin")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
