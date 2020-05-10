@@ -64,14 +64,16 @@ namespace Floofbot.Modules
                     config.TagUpdateRequiresAdmin = parsedRequireAdmin;
                 }
                 await _floofDb.SaveChangesAsync();
-                string message = $"Adding/removing tags now{(parsedRequireAdmin ? " requires " : " does not require ")}admin permission.";
+                string message = "Adding/removing tags now " +
+                    (parsedRequireAdmin ? "requires" : "does not require") +
+                    " admin permission.";
                 await Context.Channel.SendMessageAsync(message);
             }
             catch (DbUpdateException e)
             {
-                string message = $"Unable to make adding/removing tags{(parsedRequireAdmin ? " " : " not ")}require admin permission.";
+                string message = "Error when configuring permissions for adding/removing tags.";
                 await Context.Channel.SendMessageAsync(message);
-                Log.Error(e.ToString());
+                Log.Error(message + Environment.NewLine + e);
             }
         }
 
@@ -109,6 +111,13 @@ namespace Floofbot.Modules
                 tag = rgx.Replace(tag, "").ToLower();
                 string tagName = $"{tag.ToString()}:{Context.Guild.Id}";
 
+                if (_floofDb.Tags.AsQueryable()
+                    .Any(tag => tag.TagName == tagName && tag.ServerId == Context.Guild.Id))
+                {
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{tag}` already exists"));
+                    return;
+                }
+
                 try
                 {
                     _floofDb.Add(new Tag
@@ -121,9 +130,10 @@ namespace Floofbot.Modules
                     _floofDb.SaveChanges();
                     await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{tag}`"));
                 }
-                catch (DbUpdateException)
+                catch (DbUpdateException e)
                 {
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{tag}` Already Exists"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Unable to add Tag `{tag}`"));
+                    Log.Error(e.ToString());
                 }
             }
             else
