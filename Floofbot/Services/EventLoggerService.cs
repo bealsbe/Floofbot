@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
@@ -73,6 +74,8 @@ namespace Floofbot.Services
         }
         public Task OnMessage(SocketMessage msg)
         {
+            var userMsg = msg as SocketUserMessage;
+            int argPos = 0;
             var _ = Task.Run(async () =>
             {
                 try
@@ -80,9 +83,15 @@ namespace Floofbot.Services
                     if (msg.Author.IsBot)
                         return;
                     var channel = msg.Channel as ITextChannel;
+                    string content = msg.Content;
                     bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
                     if (hasBadWord)
                         await HandleBadMessage(msg.Author, msg);
+                    else if (userMsg != null && userMsg.HasMentionPrefix(_client.CurrentUser, ref argPos) && content.EndsWith("?"))
+                    {
+                        string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
+                        await channel.SendMessageAsync($"> {content}\n{eightBallResponse}");
+                    }
                 }
                 catch (Exception ex)
                 {
