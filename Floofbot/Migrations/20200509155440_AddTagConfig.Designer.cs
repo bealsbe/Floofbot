@@ -3,14 +3,16 @@ using System;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    partial class FloofDataContextModelSnapshot : ModelSnapshot
+    [Migration("20200509155440_AddTagConfig")]
+    partial class AddTagConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,23 +161,6 @@ namespace Floofbot.Migrations
                     b.ToTable("Tags");
                 });
 
-
-            modelBuilder.Entity("Floofbot.Services.Repository.Models.UserAssignableRole", b =>
-                {
-                    b.Property<ulong>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<ulong>("RoleId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<ulong>("ServerId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("UserAssignableRoles");
-
             modelBuilder.Entity("Floofbot.Services.Repository.Models.TagConfig", b =>
                 {
                     b.Property<ulong>("Id")
@@ -191,7 +176,6 @@ namespace Floofbot.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TagConfigs");
-
                 });
 
             modelBuilder.Entity("Floofbot.Services.Repository.Models.Warning", b =>
