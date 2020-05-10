@@ -2,13 +2,14 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Floofbot.Services.Repository;
+using Floofbot.Services.Repository.Models;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Tag = Floofbot.Services.Repository.Models.Tag;
 
 namespace Floofbot.Modules
 {
@@ -33,13 +34,75 @@ namespace Floofbot.Modules
             _floofDb = floofDb;
         }
 
+        [Command("requireadmin")]
+        [Summary("Set a server to require admin roles for adding or removing tags")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task RequireAdmin([Summary("True/False")] string requireAdmin = "")
+        {
+            TagConfig config = await _floofDb.TagConfigs.AsQueryable()
+                .Where(config => config.ServerId == Context.Guild.Id).FirstOrDefaultAsync();
+
+            bool parsedRequireAdmin;
+            if (!bool.TryParse(requireAdmin, out parsedRequireAdmin))
+            {
+                await SendEmbed(CreateDescriptionEmbed($"Usage: `.tag requireadmin True/False`"));
+                return;
+            }
+
+            try
+            {
+                if (config == null)
+                {
+                    await _floofDb.TagConfigs.AddAsync(new TagConfig
+                    {
+                        ServerId = Context.Guild.Id,
+                        TagUpdateRequiresAdmin = parsedRequireAdmin,
+                    });
+                }
+                else
+                {
+                    config.TagUpdateRequiresAdmin = parsedRequireAdmin;
+                }
+                await _floofDb.SaveChangesAsync();
+                string message = $"Adding/removing tags now{(parsedRequireAdmin ? " requires " : " does not require ")}admin permission.";
+                await Context.Channel.SendMessageAsync(message);
+            }
+            catch (DbUpdateException e)
+            {
+                string message = $"Unable to make adding/removing tags{(parsedRequireAdmin ? " " : " not ")}require admin permission.";
+                await Context.Channel.SendMessageAsync(message);
+                Log.Error(e.ToString());
+            }
+        }
+
+        private bool GetTagUpdateRequiresAdmin(ulong serverId)
+        {
+            // assume if the record doesn't exist in the DB that we do not need admin permission
+            TagConfig config = _floofDb.TagConfigs.AsQueryable()
+                .FirstOrDefault(config => config.ServerId == serverId);
+            return config == null ? false : config.TagUpdateRequiresAdmin;
+        }
+
+        private bool UserHasTagUpdatePermissions(IGuildUser user)
+        {
+            bool requireAdminPermissions = GetTagUpdateRequiresAdmin(Context.Guild.Id);
+            return !requireAdminPermissions || user.GuildPermissions.Administrator;
+        }
+
         [Command("add")]
         [Summary("Adds a tag to the server")]
         [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task Add(
             [Summary("Tag name")] string tag = null,
-            [Summary("Tag content")] [Remainder] string content = null)
+            [Summary("Tag content")][Remainder] string content = null)
         {
+            IGuildUser user = (IGuildUser)Context.Message.Author;
+            if (!UserHasTagUpdatePermissions(user))
+            {
+                await Context.Channel.SendMessageAsync("You do not have the permission to add tags.");
+                return;
+            }
+
             if (!string.IsNullOrEmpty(tag) && !string.IsNullOrEmpty(content))
             {
                 Regex rgx = new Regex("[^a-zA-Z0-9 -]");
@@ -58,10 +121,9 @@ namespace Floofbot.Modules
                     _floofDb.SaveChanges();
                     await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{tag}`"));
                 }
-                catch (DbUpdateException e)
+                catch (DbUpdateException)
                 {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{tag}` Already Exists"));
-                    Console.WriteLine(e);
                 }
             }
             else
@@ -141,9 +203,16 @@ namespace Floofbot.Modules
 
         [Command("remove")]
         [Summary("Removes a tag from the server")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task Remove([Summary("Tag name")] string tag = null)
         {
+            IGuildUser user = (IGuildUser)Context.Message.Author;
+            if (!UserHasTagUpdatePermissions(user))
+            {
+                await Context.Channel.SendMessageAsync("You do not have the permission to remove tags.");
+                return;
+            }
+
             if (!string.IsNullOrEmpty(tag))
             {
                 string tagName = $"{tag.ToLower()}:{Context.Guild.Id}";
