@@ -3,14 +3,16 @@ using System;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    partial class FloofDataContextModelSnapshot : ModelSnapshot
+    [Migration("20200510152730_UserAssignableRoles")]
+    partial class UserAssignableRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,7 +161,6 @@ namespace Floofbot.Migrations
                     b.ToTable("Tags");
                 });
 
-
             modelBuilder.Entity("Floofbot.Services.Repository.Models.UserAssignableRole", b =>
                 {
                     b.Property<ulong>("ID")
@@ -175,24 +176,6 @@ namespace Floofbot.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("UserAssignableRoles");
-                    });
-
-            modelBuilder.Entity("Floofbot.Services.Repository.Models.TagConfig", b =>
-                {
-                    b.Property<ulong>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<ulong>("ServerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("TagUpdateRequiresAdmin")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TagConfigs");
-
                 });
 
             modelBuilder.Entity("Floofbot.Services.Repository.Models.Warning", b =>

@@ -22,6 +22,7 @@ namespace Floofbot.Services.Repository
         public virtual DbSet<FilterConfig> FilterConfigs { get; set; }
         public virtual DbSet<FilteredWord> FilteredWords { get; set; }
         public virtual DbSet<FilterChannelWhitelist> FilterChannelWhitelists { get; set; }
+        public virtual DbSet<UserAssignableRole> UserAssignableRoles { get; set; }
         public virtual DbSet<TagConfig> TagConfigs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
