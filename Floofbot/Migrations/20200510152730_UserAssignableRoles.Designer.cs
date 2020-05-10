@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    [Migration("20200510093729_UserAssignableRoles")]
+    [Migration("20200510152730_UserAssignableRoles")]
     partial class UserAssignableRoles
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -163,14 +163,17 @@ namespace Floofbot.Migrations
 
             modelBuilder.Entity("Floofbot.Services.Repository.Models.UserAssignableRole", b =>
                 {
-                    b.Property<ulong>("RoleId")
+                    b.Property<ulong>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("RoleId")
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("ServerId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("RoleId");
+                    b.HasKey("ID");
 
                     b.ToTable("UserAssignableRoles");
                 });

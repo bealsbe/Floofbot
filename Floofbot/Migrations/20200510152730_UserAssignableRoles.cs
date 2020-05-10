@@ -10,12 +10,14 @@ namespace Floofbot.Migrations
                 name: "UserAssignableRoles",
                 columns: table => new
                 {
+                    ID = table.Column<ulong>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     RoleId = table.Column<ulong>(nullable: false),
                     ServerId = table.Column<ulong>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserAssignableRoles", x => x.RoleId);
+                    table.PrimaryKey("PK_UserAssignableRoles", x => x.ID);
                 });
         }
 

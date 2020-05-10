@@ -161,14 +161,17 @@ namespace Floofbot.Migrations
 
             modelBuilder.Entity("Floofbot.Services.Repository.Models.UserAssignableRole", b =>
                 {
-                    b.Property<ulong>("RoleId")
+                    b.Property<ulong>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("RoleId")
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("ServerId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("RoleId");
+                    b.HasKey("ID");
 
                     b.ToTable("UserAssignableRoles");
                 });
