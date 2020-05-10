@@ -173,20 +173,27 @@ namespace Floofbot.Modules
         }
 
         [Command("choice")]
-        [Summary("Chooses an option")]
-        public async Task Choice([Summary("Choices, delimited by ;")][Remainder]string choices = "")
+        [Summary("Chooses one item from a list of possible options")]
+        public async Task Choice([Summary("the options, delimited by ';'")][Remainder]string choices = "")
         {
             if (!string.IsNullOrEmpty(choices))
             {
-                string[] splitChoices = choices.Split(";", StringSplitOptions.RemoveEmptyEntries)
-                    .Select(choice => choice.Trim()).ToArray();
+                string[] splitChoices = choices.Split(";")
+                    .Select(choice => choice.Trim())
+                    .Where(choice => !string.IsNullOrEmpty(choice)).ToArray();
                 if (splitChoices.Length != 0)
                 {
                     await Context.Channel.SendMessageAsync(splitChoices[rand.Next(splitChoices.Length)]);
                     return;
                 }
             }
-            await Context.Channel.SendMessageAsync("Not enough options were provided.");
+            string usageString = "Not enough options were provided, or all options were whitespace.\n" +
+                "Example usage: `.choice choiceA; choiceB; choiceC`";
+            EmbedBuilder builder = new EmbedBuilder {
+                Description = usageString,
+                Color = EMBED_COLOR
+            };
+            await SendEmbed(builder.Build());
         }
 
         [Command("minesweeper")]
