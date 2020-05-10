@@ -12,14 +12,18 @@ using Serilog;
 
 namespace Floofbot.Modules
 {
-    [Summary("Join roles that the administrator have allowed you to")]
+    [Summary("Add/Remove allowable roles for yourself")]
     public class UserAssignableRoleCommands : InteractiveBase
     {
         private FloofDataContext _floofDb;
-        private readonly Discord.Color EMBED_COLOUR = new Discord.Color((uint)new Random().Next(0x1000000));
         public UserAssignableRoleCommands(FloofDataContext floofDb)
         {
             _floofDb = floofDb;
+        }
+
+        private Discord.Color GenerateColor()
+        {
+            return new Discord.Color((uint)new Random().Next(0x1000000));
         }
 
         private SocketRole GetRole(string roleName, SocketGuild guild)
@@ -38,13 +42,13 @@ namespace Floofbot.Modules
             return isRoleInDb;
         }
 
-        [Summary("Join a role that the server administrators allow you to")]
+        [Summary("Join a role")]
         [Command("iam")]
-        public async Task IAm([Summary("role name")][Remainder]string roleName)
+        public async Task IAm([Summary("role name")][Remainder]string roleName = null)
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iam [rolename]`", Color = EMBED_COLOUR }.Build());
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iam [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
 
@@ -64,7 +68,6 @@ namespace Floofbot.Modules
                 return;
             }
 
-            // if they have the role we remove it
             IGuildUser usr = Context.User as IGuildUser;
             foreach (ulong r in usr.RoleIds)
             {
@@ -90,13 +93,13 @@ namespace Floofbot.Modules
 
         }
 
-        [Summary("Remove a role that the server administrators allow you to")]
+        [Summary("Remove a role")]
         [Command("iamnot")]
-        public async Task IAmNot([Summary("role name")][Remainder]string roleName)
+        public async Task IAmNot([Summary("role name")][Remainder]string roleName = null)
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iamnot [rolename]`", Color = EMBED_COLOUR }.Build());
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iamnot [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
 
@@ -108,7 +111,7 @@ namespace Floofbot.Modules
                 return;
             }
 
-            // check that they are actually allowed to join the role
+            // check that the role exists in the database as a joinable roll
             bool roleExistsInDb = CheckRoleEntryExists(role, Context.Guild);
             if (roleExistsInDb == false)
             {
@@ -131,7 +134,7 @@ namespace Floofbot.Modules
                     catch (Exception ex)
                     {
                         await Context.Channel.SendMessageAsync("Unable to remove that role. I may not have the permissions.");
-                        Log.Error("Error trying to add a role onto a user: " + ex);
+                        Log.Error("Error trying to remove a role from a user: " + ex);
                         return;
                     }
                 }
@@ -170,11 +173,11 @@ namespace Floofbot.Modules
 
         [Summary("Configure a role as joinable")]
         [Command("add")]
-        public async Task AddRole([Summary("role name")][Remainder]string roleName)
+        public async Task AddRole([Summary("role name")][Remainder]string roleName = null)
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iam add [rolename]`", Color = EMBED_COLOUR }.Build());
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iamconfig add [rolename]`", Color = EMBED_COLOUR }.Build());
                 return;
             }
 
@@ -214,11 +217,11 @@ namespace Floofbot.Modules
 
         [Summary("Configure a role to no longer be joinable")]
         [Command("remove")]
-        public async Task RemoveRole([Summary("role name")][Remainder]string roleName)
+        public async Task RemoveRole([Summary("role name")][Remainder]string roleName = null)
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iam remove [rolename]`", Color = EMBED_COLOUR }.Build());
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iamconfig remove [rolename]`", Color = EMBED_COLOUR }.Build());
                 return;
             }
 
