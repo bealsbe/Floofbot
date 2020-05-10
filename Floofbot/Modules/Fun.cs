@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Floofbot.Modules.Helpers;
 using System;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace Floofbot.Modules
     public class Fun : ModuleBase<SocketCommandContext>
     {
         private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;
+        private static Random rand = new Random();
 
         [Command("8ball")]
         [Summary("Ask the Magic 8-Ball a question")]
@@ -168,6 +170,23 @@ namespace Floofbot.Modules
             {
                 await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
             }
+        }
+
+        [Command("choice")]
+        [Summary("Chooses an option")]
+        public async Task Choice([Summary("Choices, delimited by ;")][Remainder]string choices = "")
+        {
+            if (!string.IsNullOrEmpty(choices))
+            {
+                string[] splitChoices = choices.Split(";", StringSplitOptions.RemoveEmptyEntries)
+                    .Select(choice => choice.Trim()).ToArray();
+                if (splitChoices.Length != 0)
+                {
+                    await Context.Channel.SendMessageAsync(splitChoices[rand.Next(splitChoices.Length)]);
+                    return;
+                }
+            }
+            await Context.Channel.SendMessageAsync("Not enough options were provided.");
         }
 
         [Command("minesweeper")]
