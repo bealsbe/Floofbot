@@ -175,6 +175,7 @@ namespace Floofbot.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("UserAssignableRoles");
+                    });
 
             modelBuilder.Entity("Floofbot.Services.Repository.Models.TagConfig", b =>
                 {
