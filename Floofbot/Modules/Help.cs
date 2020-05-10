@@ -69,14 +69,14 @@ namespace Floofbot.Modules
             await PostHelpPages(message, pages);
         }
 
-        [Summary("Show help for a specific module")]
+        [Summary("Show help for a specific set of commands (a module)")]
         [Command("help")]
-        public async Task HelpCommand([Summary("module")] string requestedModule)
+        public async Task HelpCommand([Summary("module name")] string requestedModule)
         {
             List<string> moduleNames = _commandService.Modules.Select(x => x.Name.ToLower()).ToList();
             if (!moduleNames.Contains(requestedModule.ToLower()))
             {
-                await Context.Channel.SendMessageAsync($"Unable to find the '{requestedModule}' module");
+                await Context.Channel.SendMessageAsync($"Unable to find commands available for '{requestedModule}'");
                 return;
             }
 
@@ -104,7 +104,7 @@ namespace Floofbot.Modules
                 fields.Clear();
             }
 
-            string message = $"{Context.User.Mention} here are the commands available for {requestedModule}!";
+            string message = $"{Context.User.Mention} here are the commands available for '{requestedModule}'!";
             await PostHelpPages(message, pages);
         }
 
