@@ -68,14 +68,6 @@ namespace Floofbot.Handlers
                     Log.Error(result.ErrorReason);
                 }
             }
-            else if (msg.Source == MessageSource.User)
-            {
-                string randomResponse = RandomResponseGenerator.GenerateResponse(msg);
-                if (!string.IsNullOrEmpty(randomResponse))
-                {
-                    await context.Channel.SendMessageAsync(randomResponse);
-                }
-            }
         }
     }
 }
