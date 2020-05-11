@@ -80,17 +80,25 @@ namespace Floofbot.Services
             {
                 try
                 {
-                    if (msg.Author.IsBot)
+                    if (msg == null || msg.Author.IsBot)
                         return;
                     var channel = msg.Channel as ITextChannel;
                     string content = msg.Content;
                     bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
                     if (hasBadWord)
                         await HandleBadMessage(msg.Author, msg);
-                    else if (userMsg != null && userMsg.HasMentionPrefix(_client.CurrentUser, ref argPos) && content.EndsWith("?"))
+                    else if (userMsg.HasMentionPrefix(_client.CurrentUser, ref argPos) && content.EndsWith("?"))
                     {
                         string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
                         await channel.SendMessageAsync($"> {content}\n{eightBallResponse}");
+                    }
+                    else
+                    {
+                        string randomResponse = RandomResponseGenerator.GenerateResponse(userMsg);
+                        if (!string.IsNullOrEmpty(randomResponse))
+                        {
+                            await channel.SendMessageAsync(randomResponse);
+                        }
                     }
                 }
                 catch (Exception ex)
