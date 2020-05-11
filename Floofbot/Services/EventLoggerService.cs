@@ -389,11 +389,18 @@ namespace Floofbot.Services
                         return;
 
                     var embed = new EmbedBuilder();
-
                     embed.WithTitle($"❌ User Left | {user.Username}#{user.Discriminator}")
                          .WithColor(Color.Red)
-                         .WithDescription($"{user.Mention} | ``{user.Id}``")
-                         .WithFooter($"user_leave user_joinlog {user.Id}")
+                         .WithDescription($"{user.Mention} | ``{user.Id}``");
+                    if (user.JoinedAt != null)
+                    {
+                        DateTimeOffset userJoined = ((DateTimeOffset)user.JoinedAt);
+                        TimeSpan interval = DateTime.UtcNow - userJoined.DateTime;
+                        string day_word = interval.Days == 1 ? "day" : "days";
+                        embed.AddField("Joined Server", userJoined.ToString("ddd, dd MMM yyyy"), true);
+                        embed.AddField("Time at Server", $"{interval.Days} {day_word}", true);
+                    }
+                    embed.WithFooter($"user_leave user_joinlog {user.Id}")
                          .WithCurrentTimestamp();
 
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
