@@ -95,7 +95,7 @@ namespace Floofbot.Modules
         [Summary("Adds a tag to the server")]
         [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task Add(
-            [Summary("Tag name")] string tag = null,
+            [Summary("Tag name")] string tagName = null,
             [Summary("Tag content")][Remainder] string content = null)
         {
             IGuildUser user = (IGuildUser)Context.Message.Author;
@@ -105,16 +105,22 @@ namespace Floofbot.Modules
                 return;
             }
 
-            if (!string.IsNullOrEmpty(tag) && !string.IsNullOrEmpty(content))
+            if (!string.IsNullOrEmpty(tagName) && !string.IsNullOrEmpty(content))
             {
-                Regex rgx = new Regex("[^a-zA-Z0-9 -]");
-                tag = rgx.Replace(tag, "").ToLower();
-                string tagName = $"{tag.ToString()}:{Context.Guild.Id}";
-
-                if (_floofDb.Tags.AsQueryable()
-                    .Any(tag => tag.TagName == tagName && tag.ServerId == Context.Guild.Id))
+                Regex rgx = new Regex("[^a-zA-Z0-9-]");
+                string processedTagName = rgx.Replace(tagName, "").ToLower();
+                if (string.IsNullOrEmpty(processedTagName))
                 {
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{tag}` already exists"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Invalid Tag name. " +
+                        "Tag must contain characters within [A-Za-z0-9-]."));
+                    return;
+                }
+
+                bool tagExists = _floofDb.Tags.AsQueryable()
+                    .Any(tag => tag.TagName == processedTagName && tag.ServerId == Context.Guild.Id);
+                if (tagExists)
+                {
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{processedTagName}` already exists"));
                     return;
                 }
 
@@ -122,17 +128,17 @@ namespace Floofbot.Modules
                 {
                     _floofDb.Add(new Tag
                     {
-                        TagName = tagName,
+                        TagName = processedTagName,
                         ServerId = Context.Guild.Id,
                         UserId = Context.User.Id,
                         TagContent = content
                     });
                     _floofDb.SaveChanges();
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{tag}`"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{processedTagName}`"));
                 }
                 catch (DbUpdateException e)
                 {
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Unable to add Tag `{tag}`"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Unable to add Tag `{processedTagName}`"));
                     Log.Error(e.ToString());
                 }
             }
@@ -225,7 +231,7 @@ namespace Floofbot.Modules
 
             if (!string.IsNullOrEmpty(tag))
             {
-                string tagName = $"{tag.ToLower()}:{Context.Guild.Id}";
+                string tagName = tag.ToLower();
                 Tag tagToRemove = _floofDb.Tags.FirstOrDefault(x => x.TagName == tagName);
                 if (tagToRemove != null)
                 {
@@ -254,11 +260,11 @@ namespace Floofbot.Modules
         [Command("")]
         [Summary("Displays a tag")]
         [RequireUserPermission(GuildPermission.AttachFiles)]
-        public async Task GetTag([Summary("Tag name")] string tag = "")
+        public async Task GetTag([Summary("Tag name")] string tagName = "")
         {
-            if (!string.IsNullOrEmpty(tag))
+            if (!string.IsNullOrEmpty(tagName))
             {
-                string tagName = $"{tag.ToLower()}:{Context.Guild.Id}";
+                tagName = tagName.ToLower();
                 Tag selectedTag = _floofDb.Tags.AsQueryable().FirstOrDefault(x => x.TagName == tagName);
 
                 if (selectedTag != null)
@@ -277,7 +283,7 @@ namespace Floofbot.Modules
                     {
                         EmbedBuilder builder = new EmbedBuilder()
                         {
-                            Title = "💾  " + tag.ToLower(),
+                            Title = "💾  " + tagName.ToLower(),
                             Color = EMBED_COLOR
                         };
                         builder.WithImageUrl(mentionlessTagContent);
@@ -291,7 +297,7 @@ namespace Floofbot.Modules
                 else
                 {
                     // tag not found
-                    await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{tag}`"));
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{tagName}`"));
                 }
             }
             else
