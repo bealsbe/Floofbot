@@ -9,6 +9,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Floofbot.Configs;
+using Floofbot.Services;
 
 namespace Floofbot
 {
@@ -17,6 +18,7 @@ namespace Floofbot
     public class Utilities : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
+        private WordFilterService _wordFilterService;
 
         [Command("ping")]
         [Summary("Responds with the ping in milliseconds")]
@@ -101,6 +103,10 @@ namespace Floofbot
                     Description = message,
                     Color = EMBED_COLOR
                 };
+                bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
+                    if (hasBadWord)
+                        await HandleBadMessage(msg.Author, msg);
+
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
             else
