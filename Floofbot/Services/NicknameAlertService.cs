@@ -47,7 +47,7 @@ namespace Floofbot.Services
                 $"{WARN_EMOJI.Name}: Warn\n" +
                 $"{KICK_EMOJI.Name}: Kick\n" +
                 $"{BAN_EMOJI.Name}: Ban\n" +
-                $"{NO_ACTION_EMOJI}: No Action")
+                $"{NO_ACTION_EMOJI.Name}: No Action")
                 .Build();
 
             var message = await _channel.SendMessageAsync($"{badUser.Mention} ({badUser.Username}#{badUser.Discriminator}) has been " +
@@ -160,7 +160,7 @@ namespace Floofbot.Services
                     try
                     {
                         await badUser.Guild.GetUser(badUser.Id).ModifyAsync(user => user.Nickname = "");
-                        await channel.SendMessageAsync($"Got it! I changed {badUser.Username}#{badUser.Discriminator}'s nickname!");
+                        await channel.SendMessageAsync($"Got it! I removed {badUser.Username}#{badUser.Discriminator}'s nickname!");
                     }
                     catch (Exception ex)
                     {
