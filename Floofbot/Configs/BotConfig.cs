@@ -11,6 +11,9 @@ namespace Floofbot.Configs
         [YamlMember(Alias = "Activity", ApplyNamingConventions = false)]
         public BotActivity Activity { get; set; }
 
+        [YamlMember(Alias = "Database", ApplyNamingConventions = false)]
+        public BotDbConnection DbConnection { get; set; }
+
         public List<BotRandomResponse> RandomResponses { get; set; }
     }
 }

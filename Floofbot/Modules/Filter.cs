@@ -27,15 +27,16 @@ namespace Floofbot.Modules
         {
             _floofDb = floofDb;
         }
-        private void CheckServerEntryExists(ulong server)
+        private void CheckServerEntryExists(ulong serverId)
         {
             // checks if server exists in database and adds if not
-            var serverConfig = _floofDb.FilterConfigs.Find(server);
+            var serverConfig = _floofDb.FilterConfigs.AsQueryable()
+                .FirstOrDefault(config => config.ServerId == serverId);
             if (serverConfig == null)
             {
                 _floofDb.Add(new FilterConfig
                 {
-                    ServerId = server,
+                    ServerId = serverId,
                     IsOn = false
                 });
                 _floofDb.SaveChanges();
@@ -44,7 +45,8 @@ namespace Floofbot.Modules
         private bool CheckWordEntryExists(string word, SocketGuild guild)
         {
             // checks if a word exists in the filter db
-            bool wordEntry = _floofDb.FilteredWords.AsQueryable().Where(w => w.ServerId == guild.Id).Where(w => w.Word == word).Any();
+            bool wordEntry = _floofDb.FilteredWords.AsQueryable()
+                .Any(w => w.ServerId == guild.Id && w.Word == word);
             return wordEntry;
         }
 
@@ -59,10 +61,12 @@ namespace Floofbot.Modules
                 {
                     CheckServerEntryExists(Context.Guild.Id);
                     // check the status of server filtering
-                    var ServerConfig = _floofDb.FilterConfigs.Find(Context.Guild.Id);
+                    var ServerConfig = _floofDb.FilterConfigs.AsQueryable()
+                        .First(config => config.ServerId == Context.Guild.Id);
                     ServerConfig.IsOn = !ServerConfig.IsOn;
                     _floofDb.SaveChanges();
-                    await Context.Channel.SendMessageAsync("Server Filtering " + (ServerConfig.IsOn ? "Enabled!" : "Disabled!"));
+                    await Context.Channel.SendMessageAsync("Server Filtering " +
+                        (ServerConfig.IsOn ? "Enabled!" : "Disabled!"));
                 }
                 catch (Exception ex)
                 {
@@ -78,7 +82,10 @@ namespace Floofbot.Modules
                 {
                     CheckServerEntryExists(Context.Guild.Id);
                     // check the status of logger
-                    var channelData = _floofDb.FilterChannelWhitelists.Find(Context.Channel.Id);
+                    var channelData = _floofDb.FilterChannelWhitelists.AsQueryable()
+                        .FirstOrDefault(whitelist =>
+                            whitelist.ServerId == Context.Guild.Id
+                            && whitelist.ChannelId == Context.Channel.Id);
                     bool channelInDatabase = false;
 
                     if (channelData == null)
@@ -97,7 +104,8 @@ namespace Floofbot.Modules
                         _floofDb.SaveChanges();
                         channelInDatabase = false;
                     }
-                    await Context.Channel.SendMessageAsync("Filtering For This Channel Is " + (!channelInDatabase ? "Enabled!" : "Disabled!"));
+                    await Context.Channel.SendMessageAsync("Filtering For This Channel Is " +
+                        (!channelInDatabase ? "Enabled!" : "Disabled!"));
                 }
                 catch (Exception ex)
                 {

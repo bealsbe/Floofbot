@@ -1,9 +1,10 @@
 using Discord;
-﻿using Discord.Commands;
+using Discord.Commands;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Serilog;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Floofbot.Modules
@@ -24,7 +25,8 @@ namespace Floofbot.Modules
         private void CheckServerEntryExists(ulong server)
         {
             // checks if server exists in database and adds if not
-            var serverConfig = _floofDB.NicknameAlertConfigs.Find(server);
+            var serverConfig = _floofDB.NicknameAlertConfigs.AsQueryable()
+                .FirstOrDefault(config => config.ServerId == server);
             if (serverConfig == null)
             {
                 _floofDB.Add(new NicknameAlertConfig
@@ -42,7 +44,8 @@ namespace Floofbot.Modules
         public async Task Channel([Summary("Channel (eg #alerts)")]Discord.IChannel channel)
         {
             CheckServerEntryExists(Context.Guild.Id);
-            var ServerConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
+            var ServerConfig = _floofDB.NicknameAlertConfigs.AsQueryable()
+                .First(config => config.ServerId == Context.Guild.Id);
             ServerConfig.Channel = channel.Id;
             _floofDB.SaveChanges();
             await Context.Channel.SendMessageAsync("Channel updated! I will send nickname alerts to <#" + channel.Id + ">");
@@ -58,7 +61,8 @@ namespace Floofbot.Modules
             {
                 CheckServerEntryExists(Context.Guild.Id);
                 // check the status of logger
-                var ServerConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
+                var ServerConfig = _floofDB.NicknameAlertConfigs.AsQueryable()
+                    .First(config => config.ServerId == Context.Guild.Id);
                 ServerConfig.IsOn = !ServerConfig.IsOn;
                 _floofDB.SaveChanges();
                 await Context.Channel.SendMessageAsync("Nickname Alerts " + (ServerConfig.IsOn ? "Enabled!" : "Disabled!"));

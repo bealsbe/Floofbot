@@ -1,12 +1,11 @@
 ﻿using Discord;
-using Discord.Addons.Interactive;
 using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
@@ -14,8 +13,8 @@ namespace Floofbot.Services
     public class NicknameAlertService
     {
         private FloofDataContext _floofDb;
-        
-        private Dictionary<ulong, SocketGuildUser> alertMessageIdsDic = new Dictionary<ulong, SocketGuildUser>(); 
+
+        private Dictionary<ulong, SocketGuildUser> alertMessageIdsDic = new Dictionary<ulong, SocketGuildUser>();
         private ITextChannel _channel;
         private static readonly Emoji BAN_EMOJI = new Emoji("🔨");
         private static readonly Emoji WARN_EMOJI = new Emoji("⚠️");
@@ -34,7 +33,8 @@ namespace Floofbot.Services
 
         public async Task HandleBadNickname(SocketGuildUser badUser, IGuild guild)
         {
-            var serverConfig = _floofDb.NicknameAlertConfigs.Find(guild.Id);
+            var serverConfig = _floofDb.NicknameAlertConfigs.AsQueryable()
+                .FirstOrDefault(config => config.ServerId == guild.Id);
 
             if (serverConfig == null || !serverConfig.IsOn || serverConfig.Channel == 0) // not configured/disabled
             {
@@ -51,7 +51,7 @@ namespace Floofbot.Services
                 .Build();
 
             var message = await _channel.SendMessageAsync($"{badUser.Mention} ({badUser.Username}#{badUser.Discriminator}) has been " +
-                $"detected with a bad name! What should I do?" + 
+                $"detected with a bad name! What should I do?" +
                 (badUser.Nickname != null ? $"\n\nNickname: {badUser.Nickname}" : $"\n\nUsername: {badUser.Username}#{badUser.Discriminator}"), false, embed);
             await message.AddReactionAsync(REMOVE_NICKNAME_EMOJI);
             await message.AddReactionAsync(KICK_EMOJI);
@@ -177,6 +177,5 @@ namespace Floofbot.Services
                 return;
             }
         }
-
     }
 }

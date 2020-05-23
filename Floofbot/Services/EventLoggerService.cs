@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
@@ -46,7 +45,8 @@ namespace Floofbot.Services
 
             FloofDataContext _floofDb = new FloofDataContext();
 
-            var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
+            var serverConfig = _floofDb.LogConfigs.AsQueryable()
+                .FirstOrDefault(config => config.ServerId == guild.Id);
             System.Reflection.PropertyInfo propertyInfo = serverConfig.GetType().GetProperty(eventName);
             ulong logChannel = (ulong)(propertyInfo.GetValue(serverConfig, null));
             var textChannel = await guild.GetTextChannelAsync(logChannel);
@@ -59,7 +59,8 @@ namespace Floofbot.Services
             // check the status of logger
             FloofDataContext _floofDb = new FloofDataContext();
 
-            var ServerConfig = _floofDb.LogConfigs.Find(guild.Id);
+            var ServerConfig = _floofDb.LogConfigs.AsQueryable()
+                .FirstOrDefault(config => config.ServerId == guild.Id);
             if (ServerConfig == null) // no entry in DB for server - not configured
                 return false;
 

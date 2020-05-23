@@ -1,5 +1,8 @@
-﻿using Floofbot.Services.Repository.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Floofbot.Configs;
+using Floofbot.Services.Repository.Models;
+using Serilog;
+using System;
 
 namespace Floofbot.Services.Repository
 {
@@ -29,7 +32,21 @@ namespace Floofbot.Services.Repository
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("DataSource=floofData.db");
+                try
+                {
+                    BotDbConnection connection = BotConfigFactory.Config.DbConnection;
+                    string connectionString = $"Server={connection.ServerIP};" +
+                        $"Port={connection.Port};" +
+                        $"Database={connection.DatabaseName};" +
+                        $"User Id={connection.Username};" +
+                        $"Password={connection.Password};";
+                    optionsBuilder.UseNpgsql(connectionString);
+                }
+                catch (Exception e)
+                {
+                    Log.Error("Issue occurred with initializing DB connection string. Is app.config set up correctly? " + e);
+                    Environment.Exit(1);
+                }
             }
         }
     }

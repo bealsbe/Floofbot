@@ -34,3 +34,10 @@ RandomResponses:
   - Input: "^lol$"
     Response: "lol"
     Probability: 0.1
+
+Database:
+  ServerIP: "127.0.0.1"
+  Port: "5432"
+  DatabaseName: "FloofbotDB"
+  Username: "username"
+  Password: "password"

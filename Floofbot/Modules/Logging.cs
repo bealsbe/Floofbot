@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -42,7 +43,8 @@ namespace Floofbot.Modules
             private void AddServerIfNotExists(ulong serverId)
             {
                 // checks if server exists in database and adds if not
-                LogConfig serverConfig = _floofDB.LogConfigs.Find(serverId);
+                LogConfig serverConfig = _floofDB.LogConfigs.AsQueryable()
+                    .FirstOrDefault(config => config.ServerId == serverId);
                 if (serverConfig == null)
                 {
                     _floofDB.Add(new LogConfig
@@ -150,7 +152,8 @@ namespace Floofbot.Modules
                 AddServerIfNotExists(Context.Guild.Id);
                 try
                 {
-                    LogConfig serverConfig = _floofDB.LogConfigs.Find(Context.Guild.Id);
+                    LogConfig serverConfig = _floofDB.LogConfigs.AsQueryable()
+                        .First(config => config.ServerId == Context.Guild.Id);
                     serverConfig.IsOn = !serverConfig.IsOn;
                     string statusString = serverConfig.IsOn ? "Enabled" : "Disabled";
                     await Context.Channel.SendMessageAsync($"Logger {statusString}!");

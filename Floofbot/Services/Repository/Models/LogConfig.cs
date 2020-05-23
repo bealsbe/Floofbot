@@ -5,6 +5,7 @@ namespace Floofbot.Services.Repository.Models
     public partial class LogConfig
     {
         [Key]
+        public long Id { get; set; }
         public ulong ServerId { get; set; }
         public ulong MessageUpdatedChannel { get; set; }
         public ulong MessageDeletedChannel { get; set; }

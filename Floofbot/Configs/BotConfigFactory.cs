@@ -63,7 +63,7 @@ namespace Floofbot.Configs
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e.ToString());
+                    Log.Error("There was an error deserializing the file: " + e);
                     return new BotConfig();
                 }
             }
