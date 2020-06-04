@@ -148,6 +148,60 @@ namespace Floofbot.Modules
             }
         }
 
+        [Command("update")]
+        [Summary("Updates an existing tag on the server")]
+        [RequireUserPermission(GuildPermission.AttachFiles)]
+        public async Task Update(
+            [Summary("Tag name")] string tagName = null,
+            [Summary("Tag content")][Remainder] string content = null)
+        {
+            IGuildUser user = (IGuildUser)Context.Message.Author;
+            if (!UserHasTagUpdatePermissions(user))
+            {
+                await Context.Channel.SendMessageAsync("You do not have the permission to update tags.");
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(tagName) && !string.IsNullOrEmpty(content))
+            {
+                Regex rgx = new Regex("[^a-zA-Z0-9-]");
+                string processedTagName = rgx.Replace(tagName, "").ToLower();
+                if (string.IsNullOrEmpty(processedTagName))
+                {
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Invalid Tag name. " +
+                        "Tag must contain characters within [A-Za-z0-9-]."));
+                    return;
+                }
+
+                Tag tag = _floofDb.Tags.AsQueryable()
+                    .Where(tag => tag.TagName == processedTagName && tag.ServerId == Context.Guild.Id)
+                    .FirstOrDefault();
+                if (tag == null)
+                {
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{processedTagName}` does not exist. " +
+                        "Please use the `tag add` command"));
+                    return;
+                }
+
+                try
+                {
+                    tag.UserId = Context.User.Id;
+                    tag.TagContent = content;
+                    _floofDb.SaveChanges();
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Updated Tag `{processedTagName}`"));
+                }
+                catch (DbUpdateException e)
+                {
+                    await SendEmbed(CreateDescriptionEmbed($"💾 Unable to update Tag `{processedTagName}`"));
+                    Log.Error(e.ToString());
+                }
+            }
+            else
+            {
+                await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag update [name] [content]`"));
+            }
+        }
+
         [Command("list")]
         [Summary("Lists all tags on the server, optionally filtering by keywords")]
         public async Task ListTags([Summary("Keywords to use")][Remainder] string keywords = null)
