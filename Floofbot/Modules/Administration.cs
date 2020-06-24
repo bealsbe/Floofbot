@@ -1,11 +1,12 @@
-﻿using System;
-using Discord;
-using System.Threading.Tasks;
+﻿using Discord;
 using Discord.Commands;
-using System.Text.RegularExpressions;
+using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Floofbot.Modules
 {
@@ -13,8 +14,9 @@ namespace Floofbot.Modules
     [Discord.Commands.Name("Administration")]
     public class Administration : ModuleBase<SocketCommandContext>
     {
-        private FloofDataContext _floofDB;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
+        private static readonly int MESSAGES_TO_SCAN_PER_CHANNEL_ON_PURGE = 100;
+        private FloofDataContext _floofDB;
 
         public Administration(FloofDataContext floofDB) => _floofDB = floofDB;
 
@@ -139,6 +141,45 @@ namespace Floofbot.Modules
 
             builder = new EmbedBuilder();
             builder.Title = (":shield: User Warned");
+            builder.Color = ADMIN_COLOR;
+            builder.AddField("User ID", badUser.Id);
+            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+
+        [Command("purge")]
+        [Alias("p")]
+        [Summary("Deletes recent messages from a given user for all channels on the server")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task PurgeUserMessages(
+            [Summary("user")] string user)
+        {
+            IUser badUser = resolveUser(user);
+            if (badUser == null) {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
+                return;
+            }
+
+            // retrieve user messages from ALL channels
+            foreach (ISocketMessageChannel channel in Context.Guild.TextChannels)
+            {
+                var asyncMessageCollections = channel.GetMessagesAsync(MESSAGES_TO_SCAN_PER_CHANNEL_ON_PURGE);
+                await foreach(var messageCollection in asyncMessageCollections)
+                {
+                    foreach (var message in messageCollection)
+                    {
+                        if (message.Author.Id == badUser.Id)
+                        {
+                            await channel.DeleteMessageAsync(message);
+                        }
+                    }
+                }
+            }
+
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.Title = (":shield: Messages Purged");
             builder.Color = ADMIN_COLOR;
             builder.AddField("User ID", badUser.Id);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
