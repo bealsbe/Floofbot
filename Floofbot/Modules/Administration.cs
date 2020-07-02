@@ -471,6 +471,7 @@ namespace Floofbot.Modules
                 var user = (IGuildUser)Context.User;
                 await user.AddRoleAsync(Context.Guild.GetRole(readRulesRoleId));
             }
+            await Context.Message.DeleteAsync();
         }
 
         private IUser resolveUser(string input)
