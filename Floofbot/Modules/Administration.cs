@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Floofbot.Modules
 {
@@ -195,14 +196,30 @@ namespace Floofbot.Modules
         public async Task warnlog([Summary("user")] string user)
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null) {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
-                return;
-            }
+            IQueryable<Warning> warnings;
+            if (badUser == null)
+            {
 
-            var warnings = _floofDB.Warnings.AsQueryable()
-                .Where(u => u.UserId == badUser.Id && u.GuildId == Context.Guild.Id)
-                .OrderByDescending(x => x.DateAdded).Take(10);
+                // user not in server, check if user is in database
+                if (Regex.IsMatch(user, @"\d{17,18}"))
+                {
+                    string userID = Regex.Match(user, @"\d{17,18}").Value;
+                    warnings = _floofDB.Warnings.AsQueryable()
+                                                    .Where(u => u.UserId == Convert.ToUInt64(user) && u.GuildId == Context.Guild.Id)
+                                                    .OrderByDescending(x => x.DateAdded).Take(10);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
+                    return;
+                }
+            }
+            else
+            {
+                warnings = _floofDB.Warnings.AsQueryable()
+                    .Where(u => u.UserId == badUser.Id && u.GuildId == Context.Guild.Id)
+                    .OrderByDescending(x => x.DateAdded).Take(10);
+            }
 
             if (warnings.Count() == 0)
             {
@@ -307,7 +324,7 @@ namespace Floofbot.Modules
                     durationNotifyString = delyString;
                     builder.AddField("Duration", delyString);
                     //unmute user after duration has expired
-                    Task.Run(async () =>
+                    await Task.Run(async () =>
                     {
                         await Task.Delay(duration);
 
@@ -321,7 +338,6 @@ namespace Floofbot.Modules
                             builder.Color = ADMIN_COLOR;
                             await badUser.SendMessageAsync("", false, builder.Build());
                         }
-
                     });
 
                 }
