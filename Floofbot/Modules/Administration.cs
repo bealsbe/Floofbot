@@ -275,7 +275,7 @@ namespace Floofbot.Modules
                         if (message.Author.Id == badUser.Id)
                         {
                             await channel.DeleteMessageAsync(message);
-                            Task.Delay(100); // helps reduce the risk of getting rate limited by the API
+                            await Task.Delay(100); // helps reduce the risk of getting rate limited by the API
                         }
                     }
                 }
