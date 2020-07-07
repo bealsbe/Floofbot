@@ -7,12 +7,15 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using Discord.Addons.Interactive;
+using Microsoft.EntityFrameworkCore;
 
 namespace Floofbot.Modules
 {
     [Summary("Administration commands")]
     [Discord.Commands.Name("Administration")]
-    public class Administration : ModuleBase<SocketCommandContext>
+    public class Administration : InteractiveBase
     {
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
         private static readonly int MESSAGES_TO_SCAN_PER_CHANNEL_ON_PURGE = 100;
@@ -31,8 +34,33 @@ namespace Floofbot.Modules
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
-                return;
+                if (Regex.IsMatch(user, @"\d{17,18}"))
+                {
+                    string userID = Regex.Match(user, @"\d{17,18}").Value;
+                    if (_floofDB.BansOnJoin.AsQueryable().Any(u => u.UserID == Convert.ToUInt64(userID))) // user is already going to be banned when they join
+                    {
+                        await Context.Channel.SendMessageAsync("⚠️ Cannot find user - they are already going to be banned when they join!");
+                        return;
+                    }
+                    else
+                    {
+                        _floofDB.Add(new BanOnJoin
+                        {
+                            UserID = Convert.ToUInt64(userID),
+                            ModID = Context.Message.Author.Id,
+                            ModUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}",
+                            Reason = reason
+                        }) ;
+                        _floofDB.SaveChanges();
+                        await Context.Channel.SendMessageAsync("⚠️ Could not find user, they will be banned next time they join the server!");
+                        return;
+                    }
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
+                    return;
+                }
             }
 
             //sends message to user
@@ -66,9 +94,35 @@ namespace Floofbot.Modules
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null) {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
-                return;
+            if (badUser == null)
+            {
+                if (Regex.IsMatch(user, @"\d{17,18}"))
+                {
+                    string userID = Regex.Match(user, @"\d{17,18}").Value;
+                    if (_floofDB.BansOnJoin.AsQueryable().Any(u => u.UserID == Convert.ToUInt64(userID))) // user is already going to be banned when they join
+                    {
+                        await Context.Channel.SendMessageAsync("⚠️ Cannot find user - they are already going to be banned when they join!");
+                        return;
+                    }
+                    else
+                    {
+                        _floofDB.Add(new BanOnJoin
+                        {
+                            UserID = Convert.ToUInt64(userID),
+                            ModID = Context.Message.Author.Id,
+                            ModUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}",
+                            Reason = reason
+                        });
+                        _floofDB.SaveChanges();
+                        await Context.Channel.SendMessageAsync("⚠️ Could not find user, they will be banned next time they join the server!");
+                        return;
+                    }
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
+                    return;
+                }
             }
 
             //sends message to user
@@ -107,6 +161,91 @@ namespace Floofbot.Modules
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+
+        [Command("viewautobans")]
+        [Summary("View a list of the User IDs that will be autobanned when they join the server")]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
+        public async Task ViewAutoBans()
+        {
+            if (!_floofDB.BansOnJoin.AsQueryable().Any()) // there are no auto bans!
+            {
+                await Context.Channel.SendMessageAsync("There are no auto bans configured!");
+                return;
+            }
+            List<BanOnJoin> autoBans = _floofDB.BansOnJoin.AsQueryable().ToList();
+
+            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+            int numPages = (int)Math.Ceiling((double)autoBans.Count / 20);
+            int index;
+            for (int i = 0; i < numPages; i++)
+            {
+                string text = "```\n";
+                for (int j = 0; j < 20; j++)
+                {
+                    index = i * 20 + j;
+                    if (index < autoBans.Count)
+                    {
+                        var modUser = resolveUser(autoBans[index].ModID.ToString()); // try to resolve the mod who added it
+                        var modUsername = ((modUser != null) ? $"{modUser.Username}#{modUser.Discriminator}" : $"{autoBans[index].ModUsername}"); // try to get mod's new username, otherwise, use database stored name
+                        text += $"{index + 1}. {autoBans[index].UserID} - added by {modUsername}\n";
+                    }
+                }
+                text += "\n```";
+                pages.Add(new PaginatedMessage.Page
+                {
+                    Description = text
+                });
+            };
+
+            var pager = new PaginatedMessage
+            {
+                Pages = pages,
+                Color = ADMIN_COLOR,
+                Content = Context.User.Mention,
+                FooterOverride = null,
+                Options = PaginatedAppearanceOptions.Default,
+                TimeStamp = DateTimeOffset.UtcNow
+            };
+            await PagedReplyAsync(pager, new ReactionList
+            {
+                Forward = true,
+                Backward = true,
+                Jump = true,
+                Trash = true
+            });
+        }
+
+        [Command("removeautoban")]
+        [Summary("Remove a user ID that is configured to be automatically banned")]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
+        public async Task RemoveAutoBan([Summary("user ID")] string userId)
+        {
+            if (!Regex.IsMatch(userId, @"\d{17,18}")) // not a valid user ID
+            {
+                await Context.Channel.SendMessageAsync("This is not a valid user ID! Please specify the User ID you wish to remove from the auto ban list!");
+                return;
+            }
+            BanOnJoin user = _floofDB.BansOnJoin.AsQueryable().Where(u => u.UserID == Convert.ToUInt64(userId)).FirstOrDefault();
+            if (user == null) // there are no auto bans!
+            {
+                await Context.Channel.SendMessageAsync("This user is not in the auto ban list!");
+                return;
+            }
+            try
+            {
+                _floofDB.Remove(user);
+                await _floofDB.SaveChangesAsync();
+                await Context.Channel.SendMessageAsync($"{userId} will no longer be automatically banned when they join the server!");
+                return;
+            }
+            catch (DbUpdateException) // db error
+            {
+                await Context.Channel.SendMessageAsync($"Unable to remove {userId} from the database.");
+                return;
+            }
         }
 
         [Command("kick")]
