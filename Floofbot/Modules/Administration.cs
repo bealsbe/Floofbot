@@ -148,6 +148,56 @@ namespace Floofbot.Modules
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
+        [Command("usernote")]
+        [Alias("un")]
+        [Summary("Add a moderation-style user note, give a specified reason")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task userNote(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "")
+        {
+            EmbedBuilder builder;
+            if (string.IsNullOrEmpty(reason)) {
+                builder = new EmbedBuilder() {
+                    Description = $"Usage: `usernote [user] [reason]`",
+                    Color = Color.Magenta
+                };
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+                return;
+            }
+
+            if(reason.Length > 500) {
+                await Context.Channel.SendMessageAsync("User notes can not exceed 500 characters");
+                return;
+            }
+
+            IUser badUser = resolveUser(user);
+            if (badUser == null) {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
+                return;
+            }
+
+            _floofDB.Add(new UserNote {
+                DateAdded = DateTime.Now,
+                Forgiven = false,
+                GuildId = Context.Guild.Id,
+                Moderator =  $"{Context.User.Username}#{Context.User.Discriminator}",
+                ModeratorId = Context.User.Id,
+                Reason = reason,
+                UserId = badUser.Id
+            });
+            _floofDB.SaveChanges();
+
+            builder = new EmbedBuilder();
+            builder.Title = (":pencil: User Note Added");
+            builder.Color = ADMIN_COLOR;
+            builder.AddField("User ID", badUser.Id);
+            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+
         [Command("purge")]
         [Alias("p")]
         [Summary("Deletes recent messages from a given user for all channels on the server")]
@@ -195,7 +245,8 @@ namespace Floofbot.Modules
         public async Task warnlog([Summary("user")] string user)
         {
             IUser badUser = resolveUser(user);
-            IQueryable<Warning> warnings;
+            IQueryable<Warning> formalWarnings;
+            IQueryable<UserNote> userNotes;
             if (badUser == null)
             {
 
@@ -203,7 +254,10 @@ namespace Floofbot.Modules
                 if (Regex.IsMatch(user, @"\d{17,18}"))
                 {
                     string userID = Regex.Match(user, @"\d{17,18}").Value;
-                    warnings = _floofDB.Warnings.AsQueryable()
+                    formalWarnings = _floofDB.Warnings.AsQueryable()
+                                                    .Where(u => u.UserId == Convert.ToUInt64(user) && u.GuildId == Context.Guild.Id)
+                                                    .OrderByDescending(x => x.DateAdded).Take(10);
+                    userNotes = _floofDB.UserNotes.AsQueryable()
                                                     .Where(u => u.UserId == Convert.ToUInt64(user) && u.GuildId == Context.Guild.Id)
                                                     .OrderByDescending(x => x.DateAdded).Take(10);
                 }
@@ -215,24 +269,62 @@ namespace Floofbot.Modules
             }
             else
             {
-                warnings = _floofDB.Warnings.AsQueryable()
+                formalWarnings = _floofDB.Warnings.AsQueryable()
+                    .Where(u => u.UserId == badUser.Id && u.GuildId == Context.Guild.Id)
+                    .OrderByDescending(x => x.DateAdded).Take(10);
+                userNotes = _floofDB.UserNotes.AsQueryable()
                     .Where(u => u.UserId == badUser.Id && u.GuildId == Context.Guild.Id)
                     .OrderByDescending(x => x.DateAdded).Take(10);
             }
 
-            if (warnings.Count() == 0)
+            if (formalWarnings.Count() == 0 && userNotes.Count() == 0)
             {
-                await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings!");
+                await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings or user notes!");
                 return;
             }
 
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = ADMIN_COLOR;
             int warningCount = 0;
+            int userNoteCount = 0;
             builder.WithTitle($"Warnings for {badUser.Username}#{badUser.Discriminator}");
-            foreach (Warning warning in warnings) {
-                builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"```{warning.Reason}```");
-                warningCount++;
+            if (formalWarnings.Count() != 0) // they have warnings
+            {
+                builder.AddField(":warning: | Formal Warnings:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
+                foreach (Warning warning in formalWarnings)
+                {
+                    if (warning.Forgiven)
+                    {
+                        IUser forgivenBy = resolveUser(warning.ForgivenBy.ToString());
+                        var forgivenByText = (forgivenBy != null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator}";
+                        builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"```{warning.Reason}```");
+                    }
+                    else
+                    {
+                        builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"```{warning.Reason}```");
+                    }
+                    warningCount++;
+                }
+            }
+            if (userNotes.Count() != 0) // they have user notes
+            {
+                builder.AddField("\u200B", "\u200B"); // blank line
+                builder.AddField(":pencil: | User Notes:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
+                foreach (UserNote usernote in userNotes)
+                {
+                    if (usernote.Forgiven)
+                    {
+                        IUser forgivenBy = resolveUser(usernote.ForgivenBy.ToString());
+                        var forgivenByText = (forgivenBy != null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator}";
+                        builder.AddField($"~~**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}~~ {forgivenByText}", $"```{usernote.Reason}```");
+
+                    }
+                    else
+                    {
+                        builder.AddField($"**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}", $"```{usernote.Reason}```");
+                        userNoteCount++;
+                    }
+                }
             }
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
