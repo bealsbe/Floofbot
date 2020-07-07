@@ -88,7 +88,7 @@ namespace Floofbot.Modules
         private bool UserHasTagUpdatePermissions(IGuildUser user)
         {
             bool requireAdminPermissions = GetTagUpdateRequiresAdmin(Context.Guild.Id);
-            return !requireAdminPermissions || user.GuildPermissions.Administrator;
+            return !requireAdminPermissions || user.GuildPermissions.BanMembers;
         }
 
         [Command("add")]
