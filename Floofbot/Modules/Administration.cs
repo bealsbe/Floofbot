@@ -91,6 +91,7 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task pruneBanUser(
             [Summary("user")] string user,
+            [Summary("Number Of Days To Prune")] int pruneDays = 0,
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
@@ -134,24 +135,7 @@ namespace Floofbot.Modules
             await badUser.SendMessageAsync("", false, builder.Build());
 
             //bans the user
-            await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
-
-            // retrieve user messages from ALL channels
-            foreach (ISocketMessageChannel channel in Context.Guild.TextChannels)
-            {
-                var asyncMessageCollections = channel.GetMessagesAsync(MESSAGES_TO_SCAN_PER_CHANNEL_ON_PURGE);
-                await foreach (var messageCollection in asyncMessageCollections)
-                {
-                    foreach (var message in messageCollection)
-                    {
-                        if (message.Author.Id == badUser.Id)
-                        {
-                            await channel.DeleteMessageAsync(message);
-                            await Task.Delay(100); // helps reduce the risk of getting rate limited by the API
-                        }
-                    }
-                }
-            }
+            await Context.Guild.AddBanAsync(badUser.Id, pruneDays, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
 
             builder = new EmbedBuilder();
             builder.Title = (":shield: User Banned");
