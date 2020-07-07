@@ -56,6 +56,59 @@ namespace Floofbot.Modules
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
+        [Command("pruneban")]
+        [Alias("pb")]
+        [Summary("Bans a user from the server, with an optional reason and prunes their messages")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task pruneBanUser(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "No Reason Provided")
+        {
+            IUser badUser = resolveUser(user);
+            if (badUser == null) {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
+                return;
+            }
+
+            //sends message to user
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.Title = "⚖️ Ban Notification";
+            builder.Description = $"You have been banned from {Context.Guild.Name}";
+            builder.AddField("Reason", reason);
+            builder.Color = ADMIN_COLOR;
+            await badUser.SendMessageAsync("", false, builder.Build());
+
+            //bans the user
+            await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
+
+            // retrieve user messages from ALL channels
+            foreach (ISocketMessageChannel channel in Context.Guild.TextChannels)
+            {
+                var asyncMessageCollections = channel.GetMessagesAsync(MESSAGES_TO_SCAN_PER_CHANNEL_ON_PURGE);
+                await foreach (var messageCollection in asyncMessageCollections)
+                {
+                    foreach (var message in messageCollection)
+                    {
+                        if (message.Author.Id == badUser.Id)
+                        {
+                            await channel.DeleteMessageAsync(message);
+                            await Task.Delay(100); // helps reduce the risk of getting rate limited by the API
+                        }
+                    }
+                }
+            }
+
+            builder = new EmbedBuilder();
+            builder.Title = (":shield: User Banned");
+            builder.Color = ADMIN_COLOR;
+            builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            builder.AddField("User ID", badUser.Id);
+            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+
         [Command("kick")]
         [Alias("k")]
         [Summary("Kicks a user from the server, with an optional reason")]
@@ -223,6 +276,7 @@ namespace Floofbot.Modules
                         if (message.Author.Id == badUser.Id)
                         {
                             await channel.DeleteMessageAsync(message);
+                            await Task.Delay(100); // helps reduce the risk of getting rate limited by the API
                         }
                     }
                 }
