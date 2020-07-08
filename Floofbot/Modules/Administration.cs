@@ -476,7 +476,7 @@ namespace Floofbot.Modules
                     if (warning.Forgiven)
                     {
                         IUser forgivenBy = resolveUser(warning.ForgivenBy.ToString());
-                        var forgivenByText = (forgivenBy != null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator}";
+                        var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
                         builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"```{warning.Reason}```");
                     }
                     else
@@ -495,7 +495,7 @@ namespace Floofbot.Modules
                     if (usernote.Forgiven)
                     {
                         IUser forgivenBy = resolveUser(usernote.ForgivenBy.ToString());
-                        var forgivenByText = (forgivenBy != null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator}";
+                        var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
                         builder.AddField($"~~**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}~~ {forgivenByText}", $"```{usernote.Reason}```");
 
                     }
