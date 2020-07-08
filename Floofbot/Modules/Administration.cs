@@ -889,7 +889,7 @@ namespace Floofbot.Modules
             {
                 await ReplyAsync($"Which would you like to be {function}? Please specify the ID.");
 
-                SocketMessage response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10)); // wait for reply from source user in source channel for 2 seconds
+                SocketMessage response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10)); // wait for reply from source user in source channel for 10 seconds
                 if (response == null)
                 {
                     await Context.Channel.SendMessageAsync("You did not respond in time. Aborting...");
