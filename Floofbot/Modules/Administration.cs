@@ -516,135 +516,7 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task forgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
         {
-            IQueryable warnings = null;
-            if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(badUser) || (!type.ToLower().Equals("warning") && !type.ToLower().Equals("usernote"))) // invalid parameters
-            {
-                Embed embed = CreateDescriptionEmbed($"💾 Usage: `forgive [warning/usernote] [user]`");
-                await SendEmbed(embed);
-                return;
-            }
-            IUser user = resolveUser(badUser);
-
-            ulong uID;
-            if (user != null)
-            {
-                uID = user.Id;
-            }
-            else if (Regex.IsMatch(badUser, @"\d{17,18}")) // not in server but valid user id
-            {
-                uID = Convert.ToUInt64(badUser);
-            }
-            else // user not in server AND not valid user id
-            {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{badUser}\"");
-                return;
-            }
-
-            if (type == "warning") // forgive warning
-            {
-                if (!_floofDB.Warnings.AsQueryable().Where(w => w.UserId == uID && w.GuildId == Context.Guild.Id && w.Forgiven == false).Any()) // there are no warnings for this user in this guild
-                {
-                    await Context.Channel.SendMessageAsync("User has no warnings to forgive!");
-                    return;
-                }
-                warnings = _floofDB.Warnings.AsQueryable()
-                    .Where(u => u.UserId == uID && u.GuildId == Context.Guild.Id && u.Forgiven == false)
-                    .OrderByDescending(x => x.DateAdded).Take(10);
-            }
-            else if (type == "usernote") // forgive usernote
-            {
-                if (!_floofDB.UserNotes.AsQueryable().Where(w => w.UserId == uID && w.GuildId == Context.Guild.Id && w.Forgiven == false).Any()) // there are no user notes for this user in this guild
-                {
-                    await Context.Channel.SendMessageAsync("User has no user notes to forgive!");
-                    return;
-                }
-                warnings = _floofDB.UserNotes.AsQueryable()
-                    .Where(u => u.UserId == uID && u.GuildId == Context.Guild.Id && u.Forgiven == false)
-                    .OrderByDescending(x => x.DateAdded).Take(10);
-            }
-
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Color = ADMIN_COLOR;
-            if (user == null) // no user, just id in database
-                builder.WithTitle($"Warnings for {badUser}");
-            else
-                builder.WithTitle($"Warnings for {user.Username}#{user.Discriminator}");
-            if (warnings == null) // for some reason didnt recieve data from database
-            {
-                Log.Error("Fatal error when trying to access warnings for the forgive user command!");
-                return;
-            }
-            if (type == "warning")
-            {
-                foreach (Warning w in warnings)
-                {
-                    builder.AddField($"**ID: {w.Id}** - {w.DateAdded.ToString("yyyy MMMM dd")} - {w.Moderator}", $"```{w.Reason}```");
-                }
-            }
-            else if (type == "usernote")
-            {
-                foreach (UserNote w in warnings)
-                {
-                    builder.AddField($"**ID: {w.Id}** - {w.DateAdded.ToString("yyyy MMMM dd")} - {w.Moderator}", $"```{w.Reason}```");
-                }
-            }
-            await SendEmbed(builder.Build());
-            try
-            {
-                await ReplyAsync("Which would you like to forgive? Please specify the ID.");
-
-                SocketMessage response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10)); // wait for reply from source user in source channel for 2 seconds
-                if (response == null)
-                {
-                    await Context.Channel.SendMessageAsync("You did not respond in time. Aborting...");
-                    return;
-                }
-
-                ulong warningId;
-                if (ulong.TryParse(response.Content, out warningId)) // response is of type integer
-                {
-                    if (type == "warning")
-                    {
-
-                        foreach (Warning w in warnings)
-                        {
-                            if (w.Id == warningId)
-                            {
-                                var modId = Context.Message.Author.Id;
-                                var modUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}";
-                                await SetWarningForgivenStatus(w, true, modId);
-                                await Context.Channel.SendMessageAsync($"Got it! {modUsername} has forgiven the warning with the ID {w.Id} and the reason: {w.Reason}.");
-                                return;
-                            }
-                        }
-                    }
-                    else if (type == "usernote")
-                    {
-                        foreach (UserNote un in warnings)
-                        {
-                            if (un.Id == warningId)
-                            {
-                                var modId = Context.Message.Author.Id;
-                                var modUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}";
-                                await SetUserNoteForgivenStatus(un, true, modId);
-                                await Context.Channel.SendMessageAsync($"Got it! {modUsername} has forgiven the user note with the ID {un.Id} and the reason: {un.Reason}.");
-                                return;
-                            }
-                        }
-                    }
-                    await Context.Channel.SendMessageAsync("You have provided either an incorrect response, or that warning ID is not in the list of warnings. Aborting...");
-                    return;
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync("Invalid input, please provide a valid number. Aborting..");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                await Context.Channel.SendMessageAsync(ex.ToString());
-            }
+            await UpdateForgivenStatus("forgiven", type, badUser);
         }
 
 
@@ -654,135 +526,7 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task unforgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
         {
-            IQueryable warnings = null;
-            if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(badUser) || (!type.ToLower().Equals("warning") && !type.ToLower().Equals("usernote"))) // invalid parameters
-            {
-                Embed embed = CreateDescriptionEmbed($"💾 Usage: `unforgive [warning/usernote] [user]`");
-                await SendEmbed(embed);
-                return;
-            }
-            IUser user = resolveUser(badUser);
-            ulong uID;
-            if (user != null)
-            {
-                uID = user.Id;
-            }
-            else if (Regex.IsMatch(badUser, @"\d{17,18}"))
-            {
-                uID = Convert.ToUInt64(badUser);
-            }
-            else // user not in server AND not in database
-            {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{badUser}\"");
-                return;
-            }
-
-            if (type == "warning") // forgive warning
-            {
-                if (!_floofDB.Warnings.AsQueryable().Where(w => w.UserId == uID && w.GuildId == Context.Guild.Id && w.Forgiven == true).Any()) // there are no warnings for this user in this guild
-                {
-                    await Context.Channel.SendMessageAsync("User has no warnings to unforgive!");
-                    return;
-                }
-                warnings = _floofDB.Warnings.AsQueryable()
-                    .Where(u => u.UserId == uID && u.GuildId == Context.Guild.Id && u.Forgiven == true)
-                    .OrderByDescending(x => x.DateAdded).Take(10);
-            }
-            else if (type == "usernote") // forgive usernote
-            {
-                if (!_floofDB.UserNotes.AsQueryable().Where(w => w.UserId == uID && w.GuildId == Context.Guild.Id && w.Forgiven == true).Any()) // there are no user notes for this user in this guild
-                {
-                    await Context.Channel.SendMessageAsync("User has no user notes to unforgive!");
-                    return;
-                }
-                warnings = _floofDB.UserNotes.AsQueryable()
-                    .Where(u => u.UserId == uID && u.GuildId == Context.Guild.Id && u.Forgiven == true)
-                    .OrderByDescending(x => x.DateAdded).Take(10);
-            }
-
-            // handle user input
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Color = ADMIN_COLOR;
-            if (user == null) // no user, just id in database
-                builder.WithTitle($"Forgiven warnings for {badUser}");
-            else
-                builder.WithTitle($"Forgiven warnings for {user.Username}#{user.Discriminator}");
-            if (warnings == null) // for some reason didnt recieve data from database
-            {
-                Log.Error("Fatal error when trying to access warnings for the forgive user command!");
-                return;
-            }
-            if (type == "warning")
-            {
-                foreach (Warning w in warnings)
-                {
-                    builder.AddField($"**ID: {w.Id}** - {w.DateAdded.ToString("yyyy MMMM dd")} - {w.Moderator}", $"```{w.Reason}```");
-                }
-            }
-            else if (type == "usernote")
-            {
-                foreach (UserNote w in warnings)
-                {
-                    builder.AddField($"**ID: {w.Id}** - {w.DateAdded.ToString("yyyy MMMM dd")} - {w.Moderator}", $"```{w.Reason}```");
-                }
-            }
-            await SendEmbed(builder.Build());
-            try
-            {
-                await ReplyAsync("Which would you like to unforgive? Please specify the ID.");
-
-                SocketMessage response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10)); // wait for reply from source user in source channel for 2 seconds
-                if (response == null)
-                {
-                    await Context.Channel.SendMessageAsync("You did not respond in time. Aborting...");
-                    return;
-                }
-
-                ulong warningId;
-                if (ulong.TryParse(response.Content, out warningId)) // response is of type integer
-                {
-                    if (type == "warning")
-                    {
-                        foreach (Warning w in warnings)
-                        {
-                            if (w.Id == warningId)
-                            {
-                                var modId = Context.Message.Author.Id;
-                                var modUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}";
-
-                                await SetWarningForgivenStatus(w, false, 0);
-                                await Context.Channel.SendMessageAsync($"Got it! {modUsername} has unforgiven the warning with the ID {w.Id} and the reason: {w.Reason}.");
-                                return;
-                            }
-                        }
-                    }
-                    else if (type == "usernote")
-                    {
-                        foreach (UserNote un in warnings)
-                        {
-                            if (un.Id == warningId)
-                            {
-                                var modId = Context.Message.Author.Id;
-                                var modUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}";
-                                await SetUserNoteForgivenStatus(un, false, 0);
-                                await Context.Channel.SendMessageAsync($"Got it! {modUsername} has unforgiven the user note with the ID {un.Id} and the reason: {un.Reason}.");
-                                return;
-                            }
-                        }
-                    }
-                    await Context.Channel.SendMessageAsync("You have provided either an incorrect response, or that warning ID is not in the list of warnings. Aborting...");
-                    return;
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync("Invalid input, please provide a valid number. Aborting..");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                await Context.Channel.SendMessageAsync(ex.ToString());
-            }
+            await UpdateForgivenStatus("unforgiven", type, badUser);
         }
 
         [Command("mute")]
@@ -1064,6 +808,139 @@ namespace Floofbot.Modules
         private async Task SendEmbed(Embed embed)
         {
             await Context.Channel.SendMessageAsync("", false, embed);
+        }
+        private async Task UpdateForgivenStatus(string function, string type, string badUser)
+        {
+            IQueryable warnings = null;
+            bool oldStatus = (function == "forgiven") ? false : true; // if we are forgiving them then their old status must be unforgiven
+            if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(badUser) || (!type.ToLower().Equals("warning") && !type.ToLower().Equals("usernote"))) // invalid parameters
+            {
+                Embed embed = CreateDescriptionEmbed($"💾 Usage: `{function} [warning/usernote] [user]`");
+                await SendEmbed(embed);
+                return;
+            }
+            IUser user = resolveUser(badUser);
+
+            ulong uID;
+            if (user != null)
+            {
+                uID = user.Id;
+            }
+            else if (Regex.IsMatch(badUser, @"\d{17,18}")) // not in server but valid user id
+            {
+                uID = Convert.ToUInt64(badUser);
+            }
+            else // user not in server AND not valid user id
+            {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{badUser}\"");
+                return;
+            }
+
+            if (type == "warning") // forgive warning
+            {
+                if (!_floofDB.Warnings.AsQueryable().Where(w => w.UserId == uID && w.GuildId == Context.Guild.Id && w.Forgiven == oldStatus).Any()) // there are no warnings for this user in this guild
+                {
+                    await Context.Channel.SendMessageAsync($"User has no warnings to be {function}!");
+                    return;
+                }
+                warnings = _floofDB.Warnings.AsQueryable()
+                    .Where(u => u.UserId == uID && u.GuildId == Context.Guild.Id && u.Forgiven == oldStatus)
+                    .OrderByDescending(x => x.DateAdded).Take(10);
+            }
+            else if (type == "usernote") // forgive usernote
+            {
+                if (!_floofDB.UserNotes.AsQueryable().Where(w => w.UserId == uID && w.GuildId == Context.Guild.Id && w.Forgiven == oldStatus).Any()) // there are no user notes for this user in this guild
+                {
+                    await Context.Channel.SendMessageAsync($"User has no user notes to be {function}!");
+                    return;
+                }
+                warnings = _floofDB.UserNotes.AsQueryable()
+                    .Where(u => u.UserId == uID && u.GuildId == Context.Guild.Id && u.Forgiven == oldStatus)
+                    .OrderByDescending(x => x.DateAdded).Take(10);
+            }
+
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.Color = ADMIN_COLOR;
+            if (user == null) // no user, just id in database
+                builder.WithTitle($"{((type == "warnings") ? "Warnings" : "User Notes")} for {badUser}");
+            else
+                builder.WithTitle($"{((type == "warnings") ? "Warnings" : "User Notes")} for {user.Username}#{user.Discriminator}");
+            if (warnings == null) // for some reason didnt recieve data from database
+            {
+                Log.Error("Fatal error when trying to access warnings for the forgive user command!");
+                return;
+            }
+            if (type == "warning")
+            {
+                foreach (Warning w in warnings)
+                {
+                    builder.AddField($"**ID: {w.Id}** - {w.DateAdded.ToString("yyyy MMMM dd")} - {w.Moderator}", $"```{w.Reason}```");
+                }
+            }
+            else if (type == "usernote")
+            {
+                foreach (UserNote w in warnings)
+                {
+                    builder.AddField($"**ID: {w.Id}** - {w.DateAdded.ToString("yyyy MMMM dd")} - {w.Moderator}", $"```{w.Reason}```");
+                }
+            }
+            await SendEmbed(builder.Build());
+            try
+            {
+                await ReplyAsync($"Which would you like to be {function}? Please specify the ID.");
+
+                SocketMessage response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(10)); // wait for reply from source user in source channel for 2 seconds
+                if (response == null)
+                {
+                    await Context.Channel.SendMessageAsync("You did not respond in time. Aborting...");
+                    return;
+                }
+
+                ulong warningId;
+                if (ulong.TryParse(response.Content, out warningId)) // response is of type integer
+                {
+                    if (type == "warning")
+                    {
+
+                        foreach (Warning w in warnings)
+                        {
+                            if (w.Id == warningId)
+                            {
+                                var modId = Context.Message.Author.Id;
+                                var modUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}";
+                                await SetWarningForgivenStatus(w, !oldStatus, modId);
+                                await Context.Channel.SendMessageAsync($"Got it! {modUsername} has {function} the warning with the ID {w.Id} and the reason: {w.Reason}.");
+                                return;
+                            }
+                        }
+                    }
+                    else if (type == "usernote")
+                    {
+                        foreach (UserNote un in warnings)
+                        {
+                            if (un.Id == warningId)
+                            {
+                                var modId = Context.Message.Author.Id;
+                                var modUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}";
+                                await SetUserNoteForgivenStatus(un, !oldStatus, modId);
+                                await Context.Channel.SendMessageAsync($"Got it! {modUsername} has {function} the user note with the ID {un.Id} and the reason: {un.Reason}.");
+                                return;
+                            }
+                        }
+                    }
+                    await Context.Channel.SendMessageAsync("You have provided either an incorrect response, or that warning ID is not in the list of warnings. Aborting...");
+                    return;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("Invalid input, please provide a valid number. Aborting..");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync(ex.ToString());
+            }
         }
         private async Task SetWarningForgivenStatus(Warning w, bool status, ulong forgivenBy)
         {
