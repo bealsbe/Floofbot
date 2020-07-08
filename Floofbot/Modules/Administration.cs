@@ -815,7 +815,7 @@ namespace Floofbot.Modules
             bool oldStatus = (function == "forgiven") ? false : true; // if we are forgiving them then their old status must be unforgiven
             if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(badUser) || (!type.ToLower().Equals("warning") && !type.ToLower().Equals("usernote"))) // invalid parameters
             {
-                Embed embed = CreateDescriptionEmbed($"💾 Usage: `{function} [warning/usernote] [user]`");
+                Embed embed = CreateDescriptionEmbed($"💾 Usage: `{(function == "forgiven" ? "forgive" : "unforgive")} [warning/usernote] [user]`");
                 await SendEmbed(embed);
                 return;
             }
