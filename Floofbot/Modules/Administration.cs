@@ -555,7 +555,7 @@ namespace Floofbot.Modules
             {
                 if (!_floofDB.UserNotes.AsQueryable().Where(w => w.UserId == uID && w.GuildId == Context.Guild.Id && w.Forgiven == false).Any()) // there are no user notes for this user in this guild
                 {
-                    await Context.Channel.SendMessageAsync("User has no warnings to forgive!");
+                    await Context.Channel.SendMessageAsync("User has no user notes to forgive!");
                     return;
                 }
                 warnings = _floofDB.UserNotes.AsQueryable()
