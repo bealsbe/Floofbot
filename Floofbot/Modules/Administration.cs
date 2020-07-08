@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using Discord.Addons.Interactive;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Floofbot.Modules
 {
@@ -570,6 +571,7 @@ namespace Floofbot.Modules
                 builder.WithTitle($"Warnings for {user.Username}#{user.Discriminator}");
             if (warnings == null) // for some reason didnt recieve data from database
             {
+                Log.Error("Fatal error when trying to access warnings for the forgive user command!");
                 return;
             }
             if (type == "warning")
@@ -707,6 +709,7 @@ namespace Floofbot.Modules
                 builder.WithTitle($"Forgiven warnings for {user.Username}#{user.Discriminator}");
             if (warnings == null) // for some reason didnt recieve data from database
             {
+                Log.Error("Fatal error when trying to access warnings for the forgive user command!");
                 return;
             }
             if (type == "warning")
