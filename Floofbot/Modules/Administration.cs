@@ -482,19 +482,19 @@ namespace Floofbot.Modules
                 builder.AddField(":warning: | Formal Warnings:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
                 foreach (Warning warning in formalWarnings)
                 {
-                    var HyperLink = "";
+                    var hyperLink = "";
                     if (warning.warningUrl != null && Uri.IsWellFormedUriString(warning.warningUrl, UriKind.Absolute)) // make sure url is good
-                        HyperLink = $"[Jump To Warning]({warning.warningUrl})\n";
+                        hyperLink = $"[Jump To Warning]({warning.warningUrl})\n";
 
                     if (warning.Forgiven)
                     {
                         IUser forgivenBy = resolveUser(warning.ForgivenBy.ToString());
                         var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
-                        builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"{HyperLink}```{warning.Reason}```");
+                        builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"{hyperLink}```{warning.Reason}```");
                     }
                     else
                     {
-                        builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"{HyperLink}```{warning.Reason}```");
+                        builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"{hyperLink}```{warning.Reason}```");
                     }
                     warningCount++;
                 }
