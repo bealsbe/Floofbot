@@ -25,11 +25,6 @@
     <ConfigFiles Include="*.config" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Migrations\20200708223314_WarnLogUpat.cs" />
-    <Compile Remove="Migrations\20200708223314_WarnLogUpat.Designer.cs" />
-  </ItemGroup>
-
   <Target Name="CopyConfigs" AfterTargets="AfterBuild">
     <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>
