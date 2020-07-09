@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,8 @@ namespace Floofbot.Services
         private DiscordSocketClient _client;
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
+        private static readonly Color ADMIN_COLOR = Color.DarkOrange;
+
 
         public EventLoggerService(DiscordSocketClient client)
         {
@@ -71,6 +74,34 @@ namespace Floofbot.Services
             var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} watch your language! You've said a bad word!");
             await Task.Delay(5000);
             await botMsg.DeleteAsync();
+        }
+        private async Task CheckUserAutoban(IGuildUser user)
+        {
+            FloofDataContext _floofDb = new FloofDataContext();
+            BanOnJoin badUserAutoban = _floofDb.BansOnJoin.AsQueryable().Where(u => u.UserID == user.Id).FirstOrDefault();
+            if (badUserAutoban != null) // user is in the list to be autobanned
+            {
+                //sends message to user
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.Title = "⚖️ Ban Notification";
+                builder.Description = $"You have been automatically banned from {user.Guild.Name}";
+                builder.AddField("Reason", badUserAutoban.Reason);
+                builder.Color = ADMIN_COLOR;
+                await user.SendMessageAsync("", false, builder.Build());
+                await user.Guild.AddBanAsync(user.Id, 0, $"{badUserAutoban.ModUsername} -> {badUserAutoban.Reason} (autobanned on user join)");
+
+                try
+                {
+                    _floofDb.Remove(badUserAutoban);
+                    await _floofDb.SaveChangesAsync();
+                    return;
+                }
+                catch (Exception ex) // db error
+                {
+                    Log.Error("Error with the auto ban on join system: " + ex);
+                    return;
+                }
+            }
         }
         public Task OnMessage(SocketMessage msg)
         {
@@ -347,6 +378,8 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    await CheckUserAutoban(user); // check if the user is to be automatically banned on join
+
                     if (user.IsBot)
                         return;
 
@@ -356,6 +389,7 @@ namespace Floofbot.Services
                     Discord.ITextChannel channel = await GetChannel(user.Guild, "UserJoinedChannel");
                     if (channel == null)
                         return;
+
 
                     var embed = new EmbedBuilder();
 
