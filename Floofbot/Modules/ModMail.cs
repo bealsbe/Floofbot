@@ -7,16 +7,28 @@ using Floofbot.Services.Repository.Models;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Floofbot.Modules
 {
     [Summary("Send a message directly to the server's moderators")]
-    public class ModMailModule
+    [Group("modmail")]
+    public class ModMailModule : InteractiveBase
     {
-        [Summary("Send a message directly to the server's moderators")]
+        private FloofDataContext _floofDb;
+        static readonly ulong RFURRY_SERVER_ID = 225980129799700481; // TODO: Replace this so that it works on more servers
+        public ModMailModule(FloofDataContext _floofDB)
+        {
+            _floofDb = _floofDB;
+        }
 
+        [Command("")]
+        public async Task sendModMail([Summary("Message Content")][Remainder] string content)
+        {
+
+        }
     }
     [Summary("Modmail configuration commands")]
     [RequireUserPermission(GuildPermission.Administrator)]
