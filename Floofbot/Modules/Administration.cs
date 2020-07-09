@@ -297,15 +297,17 @@ namespace Floofbot.Modules
                 return;
             }
 
-            _floofDB.Add(new Warning {
+            _floofDB.Add(new Warning
+            {
                 DateAdded = DateTime.Now,
                 Forgiven = false,
                 GuildId = Context.Guild.Id,
-                Moderator =  $"{Context.User.Username}#{Context.User.Discriminator}",
+                Moderator = $"{Context.User.Username}#{Context.User.Discriminator}",
                 ModeratorId = Context.User.Id,
                 Reason = reason,
-                UserId = badUser.Id
-            });
+                UserId = badUser.Id,
+                warningUrl = Context.Message.GetJumpUrl()
+            }) ;
             _floofDB.SaveChanges();
 
             //sends message to user
@@ -422,6 +424,12 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task warnlog([Summary("user")] string user)
         {
+            if (string.IsNullOrEmpty(user)) // invalid parameters
+            {
+                Embed embed = CreateDescriptionEmbed($"💾 Usage: `warnlog [user]`");
+                await SendEmbed(embed);
+                return;
+            }
             IUser badUser = resolveUser(user);
             IQueryable<Warning> formalWarnings;
             IQueryable<UserNote> userNotes;
@@ -474,15 +482,19 @@ namespace Floofbot.Modules
                 builder.AddField(":warning: | Formal Warnings:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
                 foreach (Warning warning in formalWarnings)
                 {
+                    var hyperLink = "";
+                    if (warning.warningUrl != null && Uri.IsWellFormedUriString(warning.warningUrl, UriKind.Absolute)) // make sure url is good
+                        hyperLink = $"[Jump To Warning]({warning.warningUrl})\n";
+
                     if (warning.Forgiven)
                     {
                         IUser forgivenBy = resolveUser(warning.ForgivenBy.ToString());
                         var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
-                        builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"```{warning.Reason}```");
+                        builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"{hyperLink}```{warning.Reason}```");
                     }
                     else
                     {
-                        builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"```{warning.Reason}```");
+                        builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"{hyperLink}```{warning.Reason}```");
                     }
                     warningCount++;
                 }
@@ -815,7 +827,7 @@ namespace Floofbot.Modules
             bool oldStatus = (function == "forgiven") ? false : true; // if we are forgiving them then their old status must be unforgiven
             if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(badUser) || (!type.ToLower().Equals("warning") && !type.ToLower().Equals("usernote"))) // invalid parameters
             {
-                Embed embed = CreateDescriptionEmbed($"💾 Usage: `{function} [warning/usernote] [user]`");
+                Embed embed = CreateDescriptionEmbed($"💾 Usage: `{(function == "forgiven" ? "forgive" : "unforgive")} [warning/usernote] [user]`");
                 await SendEmbed(embed);
                 return;
             }
