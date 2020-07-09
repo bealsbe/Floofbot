@@ -7,6 +7,7 @@ using Floofbot.Services.Repository.Models;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Floofbot.Modules
     public class ModMailModule : InteractiveBase
     {
         private FloofDataContext _floofDb;
-        static readonly ulong RFURRY_SERVER_ID = 225980129799700481; // TODO: Replace this so that it works on more servers
+        static readonly ulong RFURRY_SERVER_ID =225980129799700481; // TODO: Replace this so that it works on more servers
         public ModMailModule(FloofDataContext _floofDB)
         {
             _floofDb = _floofDB;
@@ -27,7 +28,64 @@ namespace Floofbot.Modules
         [Command("")]
         public async Task sendModMail([Summary("Message Content")][Remainder] string content)
         {
+            try
+            {
+                // get values
+                var serverConfig = _floofDb.ModMails.Find(RFURRY_SERVER_ID);
+                IGuild guild = Context.Client.GetGuild(RFURRY_SERVER_ID); // can return null
+                Discord.ITextChannel channel = await guild.GetTextChannelAsync((ulong)serverConfig.ChannelId); // can return null
+                IRole role = null;
+                if (serverConfig.ModRoleId != null)
+                {
+                    role = guild.GetRole((ulong)serverConfig.ModRoleId); // can return null
+                }
 
+                if (serverConfig == null) // not configured
+                {
+                    return;
+                }
+
+                if (serverConfig.IsEnabled == false || guild == null || channel == null) // disabled OR channel for mails not set
+                {
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(content))
+                {
+                    EmbedBuilder b;
+                    b = new EmbedBuilder()
+                    {
+                        Description = $"Usage: `modmail [message]`",
+                        Color = Color.Magenta
+                    };
+                    await Context.Message.Author.SendMessageAsync("", false, b.Build());
+                }
+
+                if (content.Length > 500)
+                {
+                    await Context.Message.Author.SendMessageAsync("Mod mails can not exceed 500 characters");
+                    return;
+                }
+
+                // form embed
+                SocketUser sender = Context.Message.Author;
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Title = "⚠️ | MOD MAIL ALERT!",
+                    Description = $"Modmail from: {sender.Mention} ({sender.Username}#{sender.Discriminator})",
+                    Color = Discord.Color.Gold
+                };
+                builder.WithCurrentTimestamp();
+                builder.AddField("Message Content", $"```{content}```");
+                string messageContent = (role == null) ? "Mod mail" : role.Mention; // role id can be set in database but deleted from server
+                await Context.Channel.SendMessageAsync("Alerting all mods!");
+                await channel.SendMessageAsync(messageContent, false, builder.Build());
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync(ex.ToString());
+                return;
+            }
         }
     }
     [Summary("Modmail configuration commands")]
