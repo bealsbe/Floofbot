@@ -12,5 +12,7 @@ namespace Floofbot.Configs
         public BotActivity Activity { get; set; }
 
         public List<BotRandomResponse> RandomResponses { get; set; }
+
+        public ulong ModMailServer { get; set; }
     }
 }

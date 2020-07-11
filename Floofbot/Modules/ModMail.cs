@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Floofbot.Configs;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Serilog;
@@ -19,37 +20,17 @@ namespace Floofbot.Modules
     public class ModMailModule : InteractiveBase
     {
         private FloofDataContext _floofDb;
-        static readonly ulong RFURRY_SERVER_ID =225980129799700481; // TODO: Replace this so that it works on more servers
+        static readonly ulong RFURRY_SERVER_ID = BotConfigFactory.Config.ModMailServer; // TODO: Replace this so that it works on more servers
         public ModMailModule(FloofDataContext _floofDB)
         {
             _floofDb = _floofDB;
         }
 
         [Command("")]
-        public async Task sendModMail([Summary("Message Content")][Remainder] string content)
+        public async Task sendModMail([Summary("Message Content")][Remainder] string content = "")
         {
             try
             {
-                // get values
-                var serverConfig = _floofDb.ModMails.Find(RFURRY_SERVER_ID);
-                IGuild guild = Context.Client.GetGuild(RFURRY_SERVER_ID); // can return null
-                Discord.ITextChannel channel = await guild.GetTextChannelAsync((ulong)serverConfig.ChannelId); // can return null
-                IRole role = null;
-                if (serverConfig.ModRoleId != null)
-                {
-                    role = guild.GetRole((ulong)serverConfig.ModRoleId); // can return null
-                }
-
-                if (serverConfig == null) // not configured
-                {
-                    return;
-                }
-
-                if (serverConfig.IsEnabled == false || guild == null || channel == null) // disabled OR channel for mails not set
-                {
-                    return;
-                }
-
                 if (string.IsNullOrEmpty(content))
                 {
                     EmbedBuilder b;
@@ -61,9 +42,26 @@ namespace Floofbot.Modules
                     await Context.Message.Author.SendMessageAsync("", false, b.Build());
                 }
 
+                // get values
+                ModMail serverConfig = _floofDb.ModMails.Find(RFURRY_SERVER_ID);
+                IGuild guild = Context.Client.GetGuild(RFURRY_SERVER_ID); // can return null
+                Discord.ITextChannel channel = await guild.GetTextChannelAsync((ulong)serverConfig.ChannelId); // can return null
+                IRole role = null;
+
+                if (serverConfig == null || serverConfig.IsEnabled == false || guild == null || channel == null) // not configured
+                {
+                    await Context.Channel.SendMessageAsync("Modmail is not configured on this server.");
+                    return;
+                }
+
+                if (serverConfig.ModRoleId != null)
+                {
+                    role = guild.GetRole((ulong)serverConfig.ModRoleId); // can return null
+                }
+
                 if (content.Length > 500)
                 {
-                    await Context.Message.Author.SendMessageAsync("Mod mails can not exceed 500 characters");
+                    await Context.Message.Author.SendMessageAsync("Mod mail content cannot exceed 500 characters");
                     return;
                 }
 
@@ -104,7 +102,7 @@ namespace Floofbot.Modules
             return new Discord.Color((uint)new Random().Next(0x1000000));
         }
 
-        private void CheckServerEntryExists(ulong server)
+        private ModMail GetServerConfig(ulong server)
         {
             // checks if server exists in database and adds if not
             var serverConfig = _floofDB.ModMails.Find(server);
@@ -118,15 +116,23 @@ namespace Floofbot.Modules
                     ModRoleId = null
                 });
                 _floofDB.SaveChanges();
+                return _floofDB.ModMails.Find(server);
+            }
+            else
+            {
+                return serverConfig;
             }
         }
 
         [Command("channel")]
         [Summary("Sets the channel for the modmail notifications")]
-        public async Task Channel([Summary("Channel (eg #alerts)")]Discord.IChannel channel)
+        public async Task Channel([Summary("Channel (eg #alerts)")]Discord.IChannel channel = null)
         {
-            CheckServerEntryExists(Context.Guild.Id);
-            var ServerConfig = _floofDB.ModMails.Find(Context.Guild.Id);
+            if (channel == null)
+            {
+                channel = (IChannel)Context.Channel;
+            }
+            var ServerConfig = GetServerConfig(Context.Guild.Id);
             ServerConfig.ChannelId = channel.Id;
             _floofDB.SaveChanges();
             await Context.Channel.SendMessageAsync("Channel updated! I will send modmails to <#" + channel.Id + ">");
@@ -140,9 +146,8 @@ namespace Floofbot.Modules
             // try toggling
             try
             {
-                CheckServerEntryExists(Context.Guild.Id);
                 // check the status of logger
-                var ServerConfig = _floofDB.ModMails.Find(Context.Guild.Id);
+                var ServerConfig = GetServerConfig(Context.Guild.Id);
                 if (ServerConfig.ChannelId == null)
                 {
                     await Context.Channel.SendMessageAsync("Channel not set! Please set the channel before toggling the ModMail feature.");
@@ -163,32 +168,51 @@ namespace Floofbot.Modules
         [Summary("OPTIONAL: A Role to Ping When ModMail is Received.")]
         public async Task SetModRole(string roleName = null)
         {
-            var ServerConfig = _floofDB.ModMails.Find(Context.Guild.Id);
             if (roleName == null)
             {
                 await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `modmailconfig [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
-            foreach (SocketRole r in Context.Guild.Roles)
+
+            var ServerConfig = GetServerConfig(Context.Guild.Id);
+            bool modRoleFound = false;
+            ulong? roleId = null;
+            try
             {
-                if (r.Name.ToLower() == roleName.ToLower())
+                foreach (SocketRole r in Context.Guild.Roles)
                 {
-                    try
+                    if (r.Name.ToLower() == roleName.ToLower())
                     {
-                        ServerConfig.ModRoleId = r.Id;
-                        await Context.Channel.SendMessageAsync("Mod role set!");
-                        _floofDB.SaveChanges();
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                        Log.Error("Error when trying to set the modmail mod role: " + ex);
-                        return;
+                        if (modRoleFound == false) // ok we found 1 role thats GOOD
+                        {
+                            modRoleFound = true;
+                            roleId = r.Id;
+                        }
+                        else // there is more than 1 role with the same name!
+                        {
+                            await Context.Channel.SendMessageAsync("More than one role exists with that name! Not sure what to do! Please resolve this. Aborting..");
+                            return;
+                        }
                     }
                 }
+
+                if (modRoleFound)
+                {
+                    ServerConfig.ModRoleId = roleId;
+                    _floofDB.SaveChanges();
+                    await Context.Channel.SendMessageAsync("Mod role set!");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("Unable to find that role. Role not set.");
+                    return;
+                }
             }
-            await Context.Channel.SendMessageAsync("Unable to find that role. Role not set.");
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                Log.Error("Error when trying to set the modmail mod role: " + ex);
+            }
         }
     }
 
