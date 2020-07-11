@@ -17,6 +17,10 @@ Activity:
 # This must be a valid Discord bot token
 Token: ""
 
+# Modmail enabled Server
+# Set this to a valid Server ID
+ModMailServer: ""
+
 # The list of random responses the bot gives out
 # Input: a regex of the user input, case *insensitive*
 # Response: the bot response, case *sensitive*
