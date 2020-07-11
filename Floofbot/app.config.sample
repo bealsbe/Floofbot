@@ -1,7 +1,7 @@
 # Floofbot Config File
 
 # The prefix to use for the bot commands
-Prefix: ">"
+Prefix: "."
 
 # The bot's status
 # Name and Details are strings
