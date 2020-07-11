@@ -919,12 +919,19 @@ namespace Floofbot.Modules
                 IQueryable<UserNote> userNotes = null;
                 SocketUser badUser = Context.Client.GetUser(uid);
 
-                formalWarnings = _floofDB.Warnings.AsQueryable()
-                    .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id)
-                    .OrderByDescending(x => x.DateAdded).Take(10);
-
-                if (!isOwnLog) // user notes are for mod view only
+                if (isOwnLog)
                 {
+                    formalWarnings = _floofDB.Warnings.AsQueryable()
+                        .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id && u.Forgiven == false)
+                        .OrderByDescending(x => x.DateAdded).Take(10);
+                }
+                else // user notes are for mod view only
+                {
+
+                    formalWarnings = _floofDB.Warnings.AsQueryable()
+                        .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id)
+                        .OrderByDescending(x => x.DateAdded).Take(10);
+
                     userNotes = _floofDB.UserNotes.AsQueryable()
                         .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id)
                         .OrderByDescending(x => x.DateAdded).Take(10);
