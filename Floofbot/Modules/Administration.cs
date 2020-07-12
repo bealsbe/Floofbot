@@ -293,9 +293,17 @@ namespace Floofbot.Modules
             }
 
             IUser badUser = resolveUser(user);
+            ulong uid = 0; // used if no resolved user
             if (badUser == null) {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
-                return;
+                if (Regex.IsMatch(user, @"\d{17,18}"))
+                {
+                    uid = Convert.ToUInt64(user);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
+                    return;
+                }
             }
 
             _floofDB.Add(new Warning
@@ -306,23 +314,26 @@ namespace Floofbot.Modules
                 Moderator = $"{Context.User.Username}#{Context.User.Discriminator}",
                 ModeratorId = Context.User.Id,
                 Reason = reason,
-                UserId = badUser.Id,
+                UserId = (badUser != null) ? badUser.Id : uid,
                 warningUrl = Context.Message.GetJumpUrl()
             }) ;
             _floofDB.SaveChanges();
 
-            //sends message to user
-            builder = new EmbedBuilder();
-            builder.Title = "⚖️ Warn Notification";
-            builder.Description = $"You have recieved a warning in {Context.Guild.Name}";
-            builder.AddField("Reason", reason);
-            builder.Color = ADMIN_COLOR;
-            await badUser.SendMessageAsync("", false, builder.Build());
+            if (badUser != null) // only send if resolved user
+            {
+                //sends message to user
+                builder = new EmbedBuilder();
+                builder.Title = "⚖️ Warn Notification";
+                builder.Description = $"You have recieved a warning in {Context.Guild.Name}";
+                builder.AddField("Reason", reason);
+                builder.Color = ADMIN_COLOR;
+                await badUser.SendMessageAsync("", false, builder.Build());
+            }
 
             builder = new EmbedBuilder();
             builder.Title = (":shield: User Warned");
             builder.Color = ADMIN_COLOR;
-            builder.AddField("User ID", badUser.Id);
+            builder.AddField("User ID", (badUser != null) ? badUser.Id : uid);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -353,9 +364,17 @@ namespace Floofbot.Modules
             }
 
             IUser badUser = resolveUser(user);
+            ulong uid = 0;
             if (badUser == null) {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
-                return;
+                if (Regex.IsMatch(user, @"\d{17,18}"))
+                {
+                    uid = Convert.ToUInt64(user);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
+                    return;
+                }
             }
 
             _floofDB.Add(new UserNote {
@@ -365,14 +384,14 @@ namespace Floofbot.Modules
                 Moderator =  $"{Context.User.Username}#{Context.User.Discriminator}",
                 ModeratorId = Context.User.Id,
                 Reason = reason,
-                UserId = badUser.Id
+                UserId = (badUser != null) ? badUser.Id : uid
             });
             _floofDB.SaveChanges();
 
             builder = new EmbedBuilder();
             builder.Title = (":pencil: User Note Added");
             builder.Color = ADMIN_COLOR;
-            builder.AddField("User ID", badUser.Id);
+            builder.AddField("User ID", (badUser != null) ? badUser.Id : uid);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
