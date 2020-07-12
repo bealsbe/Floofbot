@@ -431,7 +431,6 @@ namespace Floofbot.Modules
                     embed = GetWarnings(Context.Message.Author.Id, true);
                     if (embed == null)
                     {
-                        await Context.Message.Author.SendMessageAsync($"You are a good noodle. You have no warnings!");
                         return;
                     }
                     await Context.Message.Author.SendMessageAsync("", false, embed);
@@ -448,16 +447,7 @@ namespace Floofbot.Modules
                         embed = GetWarnings(badUser.Id, false);
                     if (embed == null)
                     {
-                        if (badUser == null)
-                        {
-                            await Context.Channel.SendMessageAsync($"{user} is a good noodle. They have no warnings or user notes!");
                             return;
-                        }
-                        else
-                        {
-                            await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings or user notes!");
-                            return;
-                        }
                     }
                     await Context.Channel.SendMessageAsync("", false, embed);
                     return;
@@ -916,137 +906,136 @@ namespace Floofbot.Modules
         }
         private Embed GetWarnings(ulong uid, bool isOwnLog)
         {
-            try {
-                IQueryable<Warning> formalWarnings = null;
-                IQueryable<UserNote> userNotes = null;
-                SocketUser badUser = Context.Client.GetUser(uid);
+            IQueryable<Warning> formalWarnings = null;
+            IQueryable<UserNote> userNotes = null;
+            SocketUser badUser = Context.Client.GetUser(uid);
 
-                if (isOwnLog)
+            if (isOwnLog)
+            {
+                formalWarnings = _floofDB.Warnings.AsQueryable()
+                    .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id && u.Forgiven == false)
+                    .OrderByDescending(x => x.DateAdded).Take(10);
+            }
+            else // user notes are for mod view only
+            {
+
+                formalWarnings = _floofDB.Warnings.AsQueryable()
+                    .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id)
+                    .OrderByDescending(x => x.DateAdded).Take(10);
+
+                userNotes = _floofDB.UserNotes.AsQueryable()
+                    .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id)
+                    .OrderByDescending(x => x.DateAdded).Take(10);
+            }
+
+            if (!isOwnLog) // mod viewing someones history
+            {
+                if (badUser == null) // client cant get user - no mutual servers?
                 {
-                    formalWarnings = _floofDB.Warnings.AsQueryable()
-                        .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id && u.Forgiven == false)
-                        .OrderByDescending(x => x.DateAdded).Take(10);
-                }
-                else // user notes are for mod view only
-                {
-
-                    formalWarnings = _floofDB.Warnings.AsQueryable()
-                        .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id)
-                        .OrderByDescending(x => x.DateAdded).Take(10);
-
-                    userNotes = _floofDB.UserNotes.AsQueryable()
-                        .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id)
-                        .OrderByDescending(x => x.DateAdded).Take(10);
-                }
-
-                if (!isOwnLog) // mod viewing someones history
-                {
-                    if (badUser == null) // client cant get user - no mutual servers?
+                    if (formalWarnings.Count() == 0 && userNotes.Count() == 0)
                     {
-                        if (formalWarnings.Count() == 0 && userNotes.Count() == 0)
-                        {
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        if (formalWarnings.Count() == 0 && userNotes.Count() == 0)
-                        {
-                            return null;
-                        }
-                    }
-                }
-                else // own users history
-                {
-                    if (formalWarnings.Count() == 0)
-                    {
-                        return null;
-                    }
-                }
-
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.Color = ADMIN_COLOR;
-                int warningCount = 0;
-                int userNoteCount = 0;
-
-                if (badUser == null && !isOwnLog) // no user, just id in database
-                    builder.WithTitle($"Warnings for {uid}");
-                else if (badUser != null && !isOwnLog)
-                    builder.WithTitle($"Warnings for {badUser.Username}#{badUser.Discriminator}");
-                else
-                    builder.WithTitle($"Your Warnings");
-
-                if (!isOwnLog)
-                {
-                    if (formalWarnings.Count() != 0) // they have warnings
-                    {
-                        builder.AddField(":warning: | Formal Warnings:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
-                        foreach (Warning warning in formalWarnings)
-                        {
-                            var hyperLink = "";
-                            if (warning.warningUrl != null && Uri.IsWellFormedUriString(warning.warningUrl, UriKind.Absolute)) // make sure url is good
-                                hyperLink = $"[Jump To Warning]({warning.warningUrl})\n";
-
-                            if (warning.Forgiven)
-                            {
-                                IUser forgivenBy = resolveUser(warning.ForgivenBy.ToString());
-                                var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
-                                builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"{hyperLink}```{warning.Reason}```");
-                            }
-                            else
-                            {
-                                builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"{hyperLink}```{warning.Reason}```");
-                            }
-                            warningCount++;
-                        }
+                        string message = $"{uid} is a good noodle. They have no warnings or user notes!";
+                        var embed = CreateDescriptionEmbed(message);
+                        return embed;
                     }
                 }
                 else
+                {
+                    if (formalWarnings.Count() == 0 && userNotes.Count() == 0)
+                    {
+                        string message = $"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings or user notes!";
+                        var embed = CreateDescriptionEmbed(message);
+                        return embed;
+                    }
+                }
+            }
+            else // own users history
+            {
+                if (formalWarnings.Count() == 0)
+                {
+                    string message = $"You are a good noodle. You have no warnings!";
+                    var embed = CreateDescriptionEmbed(message);
+                    return embed;
+                }
+            }
+
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.Color = ADMIN_COLOR;
+            int warningCount = 0;
+            int userNoteCount = 0;
+
+            if (badUser == null && !isOwnLog) // no user, just id in database
+                builder.WithTitle($"Warnings for {uid}");
+            else if (badUser != null && !isOwnLog)
+                builder.WithTitle($"Warnings for {badUser.Username}#{badUser.Discriminator}");
+            else
+                builder.WithTitle($"Your Warnings");
+
+            if (!isOwnLog)
+            {
+                if (formalWarnings.Count() != 0) // they have warnings
                 {
                     builder.AddField(":warning: | Formal Warnings:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
                     foreach (Warning warning in formalWarnings)
                     {
-                        if (warning.Forgiven) // user doesnt need to see forgiven warnings
+                        var hyperLink = "";
+                        if (warning.warningUrl != null && Uri.IsWellFormedUriString(warning.warningUrl, UriKind.Absolute)) // make sure url is good
+                            hyperLink = $"[Jump To Warning]({warning.warningUrl})\n";
+
+                        if (warning.Forgiven)
                         {
-                            continue;
+                            IUser forgivenBy = resolveUser(warning.ForgivenBy.ToString());
+                            var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
+                            builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"{hyperLink}```{warning.Reason}```");
                         }
                         else
                         {
-                            builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")}", $"```{warning.Reason}```");
+                            builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}", $"{hyperLink}```{warning.Reason}```");
                         }
                         warningCount++;
                     }
                 }
-                if (!isOwnLog)
+            }
+            else
+            {
+                builder.AddField(":warning: | Formal Warnings:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
+                foreach (Warning warning in formalWarnings)
                 {
-                    if (userNotes.Count() != 0) // they have user notes
+                    if (warning.Forgiven) // user doesnt need to see forgiven warnings
                     {
-                        builder.AddField("\u200B", "\u200B"); // blank line
-                        builder.AddField(":pencil: | User Notes:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
-                        foreach (UserNote usernote in userNotes)
+                        continue;
+                    }
+                    else
+                    {
+                        builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")}", $"```{warning.Reason}```");
+                    }
+                    warningCount++;
+                }
+            }
+            if (!isOwnLog)
+            {
+                if (userNotes.Count() != 0) // they have user notes
+                {
+                    builder.AddField("\u200B", "\u200B"); // blank line
+                    builder.AddField(":pencil: | User Notes:", "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_");
+                    foreach (UserNote usernote in userNotes)
+                    {
+                        if (usernote.Forgiven)
                         {
-                            if (usernote.Forgiven)
-                            {
-                                IUser forgivenBy = resolveUser(usernote.ForgivenBy.ToString());
-                                var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
-                                builder.AddField($"~~**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}~~ {forgivenByText}", $"```{usernote.Reason}```");
+                            IUser forgivenBy = resolveUser(usernote.ForgivenBy.ToString());
+                            var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
+                            builder.AddField($"~~**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}~~ {forgivenByText}", $"```{usernote.Reason}```");
 
-                            }
-                            else
-                            {
-                                builder.AddField($"**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}", $"```{usernote.Reason}```");
-                                userNoteCount++;
-                            }
+                        }
+                        else
+                        {
+                            builder.AddField($"**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}", $"```{usernote.Reason}```");
+                            userNoteCount++;
                         }
                     }
                 }
-                return builder.Build();
             }
-            catch (Exception ex)
-            {
-                Console.Out.Write(ex.ToString());
-                return null;
-            }
+            return builder.Build();
         }
     }
 }
