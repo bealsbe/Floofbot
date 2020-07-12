@@ -426,43 +426,45 @@ namespace Floofbot.Modules
         {
             SocketGuildUser selfUser = Context.Guild.GetUser(Context.Message.Author.Id); // get the guild user
             Embed embed;
-
-            if (!selfUser.GuildPermissions.BanMembers) // not a mod
+            if (string.IsNullOrEmpty(user)) // want to view their own warnlog 
             {
-                if (string.IsNullOrEmpty(user)) // want to view their own warnlog 
-                {
-                    embed = await GetWarnings(Context.Message.Author.Id, true, Context.Channel);
+                    embed = GetWarnings(Context.Message.Author.Id, true);
                     if (embed == null)
+                    {
+                        await Context.Message.Author.SendMessageAsync($"You are a good noodle. You have no warnings!");
                         return;
+                    }
                     await Context.Message.Author.SendMessageAsync("", false, embed);
                     return;
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync("Only moderators can view the warn logs of other users.");
-                    return;
-                }
             }
             else // a mod
             {
-                if (string.IsNullOrEmpty(user)) // want to view their own warnlog 
+                if (selfUser.GuildPermissions.BanMembers) // want to view their own warnlog 
                 {
-                    embed = await GetWarnings(Context.Message.Author.Id, true, Context.Channel);
+                    IUser badUser = resolveUser(user);
+                    if (badUser == null)
+                        embed = GetWarnings(Convert.ToUInt64(user), false);
+                    else
+                        embed = GetWarnings(badUser.Id, false);
                     if (embed == null)
-                        return;
-                    await Context.Message.Author.SendMessageAsync("", false, embed);
+                    {
+                        if (badUser == null)
+                        {
+                            await Context.Channel.SendMessageAsync($"{user} is a good noodle. They have no warnings or user notes!");
+                            return;
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings or user notes!");
+                            return;
+                        }
+                    }
+                    await Context.Channel.SendMessageAsync("", false, embed);
                     return;
                 }
                 else // mod wants to view another users log
                 {
-                    IUser badUser = resolveUser(user);
-                    if (badUser == null)
-                        embed = await GetWarnings(Convert.ToUInt64(user), false, Context.Channel);
-                    else
-                        embed = await GetWarnings(badUser.Id, false, Context.Channel);
-                    if (embed == null)
-                        return;
-                    await Context.Channel.SendMessageAsync("", false, embed);
+                    await Context.Channel.SendMessageAsync("Only moderators can view the warn logs of other users.");
                     return;
                 }
             }
@@ -912,7 +914,7 @@ namespace Floofbot.Modules
             un.ForgivenBy = forgivenBy;
             await _floofDB.SaveChangesAsync();
         }
-        private async Task<Embed> GetWarnings(ulong uid, bool isOwnLog, ISocketMessageChannel channel)
+        private Embed GetWarnings(ulong uid, bool isOwnLog)
         {
             try {
                 IQueryable<Warning> formalWarnings = null;
@@ -943,7 +945,6 @@ namespace Floofbot.Modules
                     {
                         if (formalWarnings.Count() == 0 && userNotes.Count() == 0)
                         {
-                            await channel.SendMessageAsync($"{uid} is a good noodle. They have no warnings or user notes!");
                             return null;
                         }
                     }
@@ -951,7 +952,6 @@ namespace Floofbot.Modules
                     {
                         if (formalWarnings.Count() == 0 && userNotes.Count() == 0)
                         {
-                            await channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is a good noodle. They have no warnings or user notes!");
                             return null;
                         }
                     }
@@ -960,7 +960,6 @@ namespace Floofbot.Modules
                 {
                     if (formalWarnings.Count() == 0)
                     {
-                        await channel.SendMessageAsync($"You are a good noodle. You have no warnings!");
                         return null;
                     }
                 }
