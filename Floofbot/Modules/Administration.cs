@@ -36,9 +36,9 @@ namespace Floofbot.Modules
         {
             IUser badUser = resolveUser(user);
             if (badUser == null) {
-                if (Regex.IsMatch(user, @"\d{17,18}"))
+                if (Regex.IsMatch(user, @"\d{16,}"))
                 {
-                    string userID = Regex.Match(user, @"\d{17,18}").Value;
+                    string userID = Regex.Match(user, @"\d{16,}").Value;
                     if (_floofDB.BansOnJoin.AsQueryable().Any(u => u.UserID == Convert.ToUInt64(userID))) // user is already going to be banned when they join
                     {
                         await Context.Channel.SendMessageAsync("⚠️ Cannot find user - they are already going to be banned when they join!");
@@ -99,9 +99,9 @@ namespace Floofbot.Modules
             IUser badUser = resolveUser(user);
             if (badUser == null)
             {
-                if (Regex.IsMatch(user, @"\d{17,18}"))
+                if (Regex.IsMatch(user, @"\d{16,}"))
                 {
-                    string userID = Regex.Match(user, @"\d{17,18}").Value;
+                    string userID = Regex.Match(user, @"\d{16,}").Value;
                     if (_floofDB.BansOnJoin.AsQueryable().Any(u => u.UserID == Convert.ToUInt64(userID))) // user is already going to be banned when they join
                     {
                         await Context.Channel.SendMessageAsync("⚠️ Cannot find user - they are already going to be banned when they join!");
@@ -209,7 +209,7 @@ namespace Floofbot.Modules
         [RequireContext(ContextType.Guild)]
         public async Task RemoveAutoBan([Summary("user ID")] string userId)
         {
-            if (!Regex.IsMatch(userId, @"\d{17,18}")) // not a valid user ID
+            if (!Regex.IsMatch(userId, @"\d{16,}")) // not a valid user ID
             {
                 await Context.Channel.SendMessageAsync("This is not a valid user ID! Please specify the User ID you wish to remove from the auto ban list!");
                 return;
@@ -295,7 +295,7 @@ namespace Floofbot.Modules
             IUser badUser = resolveUser(user);
             ulong uid = 0; // used if no resolved user
             if (badUser == null) {
-                if (Regex.IsMatch(user, @"\d{17,18}"))
+                if (Regex.IsMatch(user, @"\d{16,}"))
                 {
                     uid = Convert.ToUInt64(user);
                 }
@@ -366,7 +366,7 @@ namespace Floofbot.Modules
             IUser badUser = resolveUser(user);
             ulong uid = 0;
             if (badUser == null) {
-                if (Regex.IsMatch(user, @"\d{17,18}"))
+                if (Regex.IsMatch(user, @"\d{16,}"))
                 {
                     uid = Convert.ToUInt64(user);
                 }
@@ -753,8 +753,8 @@ namespace Floofbot.Modules
         {
             IUser user = null;
             //resolve userID or @mention
-            if (Regex.IsMatch(input, @"\d{17,18}")) {
-                string userID = Regex.Match(input, @"\d{17,18}").Value;
+            if (Regex.IsMatch(input, @"\d{16,}")) {
+                string userID = Regex.Match(input, @"\d{16}").Value;
                 user = Context.Client.GetUser(Convert.ToUInt64(userID));
             }
             //resolve username#0000
@@ -795,7 +795,7 @@ namespace Floofbot.Modules
             {
                 uID = user.Id;
             }
-            else if (Regex.IsMatch(badUser, @"\d{17,18}")) // not in server but valid user id
+            else if (Regex.IsMatch(badUser, @"\d{16,}")) // not in server but valid user id
             {
                 uID = Convert.ToUInt64(badUser);
             }
