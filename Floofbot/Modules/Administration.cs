@@ -302,7 +302,7 @@ namespace Floofbot.Modules
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"?? Could not find user \"{user}\"");
+                    await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                     return;
                 }
             }
@@ -378,7 +378,7 @@ namespace Floofbot.Modules
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"?? Could not find user \"{user}\"");
+                    await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                     return;
                 }
             }
