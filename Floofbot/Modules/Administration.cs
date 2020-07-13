@@ -294,16 +294,21 @@ namespace Floofbot.Modules
 
             IUser badUser = resolveUser(user);
             ulong uid = 0; // used if no resolved user
-            if (badUser == null) {
+            if (badUser == null)
+            {
                 if (Regex.IsMatch(user, @"\d{16,}"))
                 {
                     uid = Convert.ToUInt64(user);
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
+                    await Context.Channel.SendMessageAsync($"?? Could not find user \"{user}\"");
                     return;
                 }
+            }
+            else
+            {
+                uid = badUser.Id;
             }
 
             _floofDB.Add(new Warning
@@ -314,7 +319,7 @@ namespace Floofbot.Modules
                 Moderator = $"{Context.User.Username}#{Context.User.Discriminator}",
                 ModeratorId = Context.User.Id,
                 Reason = reason,
-                UserId = (badUser != null) ? badUser.Id : uid,
+                UserId = uid,
                 warningUrl = Context.Message.GetJumpUrl()
             }) ;
             _floofDB.SaveChanges();
@@ -333,7 +338,7 @@ namespace Floofbot.Modules
             builder = new EmbedBuilder();
             builder.Title = (":shield: User Warned");
             builder.Color = ADMIN_COLOR;
-            builder.AddField("User ID", (badUser != null) ? badUser.Id : uid);
+            builder.AddField("User ID", uid);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -364,17 +369,22 @@ namespace Floofbot.Modules
             }
 
             IUser badUser = resolveUser(user);
-            ulong uid = 0;
-            if (badUser == null) {
+            ulong uid = 0; // used if no resolved user
+            if (badUser == null)
+            {
                 if (Regex.IsMatch(user, @"\d{16,}"))
                 {
                     uid = Convert.ToUInt64(user);
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
+                    await Context.Channel.SendMessageAsync($"?? Could not find user \"{user}\"");
                     return;
                 }
+            }
+            else
+            {
+                uid = badUser.Id;
             }
 
             _floofDB.Add(new UserNote {
@@ -384,14 +394,14 @@ namespace Floofbot.Modules
                 Moderator =  $"{Context.User.Username}#{Context.User.Discriminator}",
                 ModeratorId = Context.User.Id,
                 Reason = reason,
-                UserId = (badUser != null) ? badUser.Id : uid
+                UserId = uid
             });
             _floofDB.SaveChanges();
 
             builder = new EmbedBuilder();
             builder.Title = (":pencil: User Note Added");
             builder.Color = ADMIN_COLOR;
-            builder.AddField("User ID", (badUser != null) ? badUser.Id : uid);
+            builder.AddField("User ID", uid);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -754,7 +764,7 @@ namespace Floofbot.Modules
             IUser user = null;
             //resolve userID or @mention
             if (Regex.IsMatch(input, @"\d{16,}")) {
-                string userID = Regex.Match(input, @"\d{16}").Value;
+                string userID = Regex.Match(input, @"\d{16,}").Value;
                 user = Context.Client.GetUser(Convert.ToUInt64(userID));
             }
             //resolve username#0000
