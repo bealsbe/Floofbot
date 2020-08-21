@@ -39,6 +39,53 @@ namespace Floofbot.Handlers
                 .BuildServiceProvider();
         }
 
+        private Embed generateErrorEmbed(SocketUser user, IResult result, SocketUserMessage msg)
+        {
+            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+            author.Name = user.Username + "#" + user.Discriminator;
+            if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                author.IconUrl = user.GetAvatarUrl();
+            author.Url = msg.GetJumpUrl();
+
+            EmbedBuilder builder = new EmbedBuilder
+            {
+                Author = author,
+                Title = "A fatal error has occured.",
+                Description = result.Error + "\n```" + result.ErrorReason + "```",
+                Color = Color.Red
+            };
+            builder.WithCurrentTimestamp();
+            return builder.Build();
+        }
+
+        private async Task LogErrorInDiscordChannel(IResult result, SocketMessage originalMessage)
+        {
+            FloofDataContext _floofDb = new FloofDataContext();
+            var userMsg = originalMessage as SocketUserMessage; // the original command
+            if (userMsg == null)
+                return;
+
+            var channel = userMsg.Channel as ITextChannel; // the channel of the original command
+            if (channel == null)
+                return;
+
+            var serverConfig = _floofDb.ErrorLoggingConfigs.Find(channel.GuildId); // no db result
+            if (serverConfig == null)
+                return;
+
+            if ((!serverConfig.IsOn) || (serverConfig.ChannelId == 0)) // not configured or disabled
+                return;
+
+            Discord.ITextChannel errorLoggingChannel = await channel.Guild.GetTextChannelAsync((ulong)serverConfig.ChannelId); // can return null if channel invalid
+            if (errorLoggingChannel == null)
+                return;
+
+
+            Embed embed = generateErrorEmbed(userMsg.Author, result, userMsg);
+            await errorLoggingChannel.SendMessageAsync("", false, embed);
+            return;
+        }
+
         private async Task HandleCommandAsync(SocketMessage s)
         {
             var msg = s as SocketUserMessage;
@@ -68,7 +115,7 @@ namespace Floofbot.Handlers
                     switch (result.Error)
                     {
                         case CommandError.BadArgCount:
-                            await msg.Channel.SendMessageAsync("ERROR: ``Too many or too few arguments. Please use the help command to view the required arguments.``");
+                            await msg.Channel.SendMessageAsync("ERROR: ``" + result.ErrorReason + "``");
                             Log.Error(result.Error + ": " + result.ErrorReason);
                             break;
                         case CommandError.MultipleMatches:
@@ -76,7 +123,7 @@ namespace Floofbot.Handlers
                             Log.Error(result.Error + ": " + result.ErrorReason);
                             break;
                         case CommandError.ObjectNotFound:
-                            await msg.Channel.SendMessageAsync("ERROR: ``The specified argument does not match the expected object. Examples include supplying a user tag when a discord channel is expected as an argument.``");
+                            await msg.Channel.SendMessageAsync("ERROR: ``The specified argument does not match the expected object - " + result.ErrorReason +"``");
                             Log.Error(result.Error + ": " + result.ErrorReason);
                             break;
                         case CommandError.ParseFailed:
@@ -92,15 +139,18 @@ namespace Floofbot.Handlers
                             Log.Error(result.Error + ": " + result.ErrorReason);
                             break;
                         case CommandError.Unsuccessful:
-                            await msg.Channel.SendMessageAsync("ERROR: ``For some reason, I am unable to execute that command at the moment. Try again.``");
+                            await msg.Channel.SendMessageAsync("ERROR: ``For some reason, I am unable to execute that command at the moment. Try again. I have notified the administrators.``");
+                            await LogErrorInDiscordChannel(result, msg);
                             Log.Error(result.Error + ": " + result.ErrorReason);
                             break;
                         case CommandError.Exception:
-                            await msg.Channel.SendMessageAsync("Error: ``An exception occured when running that command.``");
+                            await msg.Channel.SendMessageAsync("Error: ``An exception occured when running that command. I have notified the administrators.``");
+                            await LogErrorInDiscordChannel(result, msg);
                             Log.Error(result.Error + ": " + result.ErrorReason);
                             break;
                         default:
-                            await msg.Channel.SendMessageAsync("Error: ``An unknown exception occured.``");
+                            await msg.Channel.SendMessageAsync("Error: ``An unknown exception occured. I have notified the administrators.``");
+                            await LogErrorInDiscordChannel(result, msg);
                             Log.Error(result.Error + ": " + result.ErrorReason);
                             break;
                     }
