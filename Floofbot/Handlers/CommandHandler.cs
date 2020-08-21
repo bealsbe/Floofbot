@@ -39,6 +39,49 @@ namespace Floofbot.Handlers
                 .BuildServiceProvider();
         }
 
+        private Embed generateErrorEmbed(SocketUser user, IResult result, SocketUserMessage msg)
+        {
+            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+            author.Name = user.Username + "#" + user.Discriminator;
+            if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
+                author.IconUrl = user.GetAvatarUrl();
+            author.Url = msg.GetJumpUrl();
+
+            EmbedBuilder builder = new EmbedBuilder
+            {
+                Author = author,
+                Title = "A fatal error has occured.",
+                Description = result.Error + "\n```" + result.ErrorReason + "```",
+                Color = Color.Red
+            };
+            builder.WithCurrentTimestamp();
+            return builder.Build();
+        }
+
+        private async Task LogErrorInDiscordChannel(IResult result, SocketMessage originalMessage)
+        {
+            FloofDataContext _floofDb = new FloofDataContext();
+
+            var userMsg = originalMessage as SocketUserMessage; // the original command
+            var channel = userMsg.Channel as ITextChannel; // the channel of the original command
+
+            var serverConfig = _floofDb.ErrorLoggingConfigs.Find(channel.GuildId); // no db result
+            if (serverConfig == null)
+                return;
+
+            if ((!serverConfig.IsOn) || (serverConfig.ChannelId == null)) // not configured or disabled
+                return;
+
+            Discord.ITextChannel errorLoggingChannel = await channel.Guild.GetTextChannelAsync((ulong)serverConfig.ChannelId); // can return null if channel invalid
+            if (errorLoggingChannel == null)
+                return;
+
+
+            Embed embed = generateErrorEmbed(userMsg.Author, result, userMsg);
+            await errorLoggingChannel.SendMessageAsync("", false, embed);
+            return;
+        }
+
         private async Task HandleCommandAsync(SocketMessage s)
         {
             var msg = s as SocketUserMessage;
@@ -63,9 +106,35 @@ namespace Floofbot.Handlers
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 
-                if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
+                if (!result.IsSuccess)
                 {
-                    Log.Error(result.ErrorReason);
+                    string errorMessage = "An unknown exception occured. I have notified the administrators.";
+                    switch (result.Error)
+                    {
+                        case CommandError.BadArgCount:
+                            errorMessage = result.ErrorReason;
+                            break;
+                        case CommandError.MultipleMatches:
+                            errorMessage = "Multiple commands with the same name. I don't know what command you want me to do!";
+                            break;
+                        case CommandError.ObjectNotFound:
+                            errorMessage = "The specified argument does not match the expected object - " + result.ErrorReason;
+                            break;
+                        case CommandError.ParseFailed:
+                            errorMessage = "For some reason, I am unable to parse your command.";
+                            break;
+                        case CommandError.UnknownCommand:
+                            errorMessage = "Unknown command. Please check your spelling and try again.";
+                            break;
+                        case CommandError.UnmetPrecondition:
+                            errorMessage = "The command may not have completed successfully as some preconditions were not met.";
+                            break;
+                        default:
+                            await LogErrorInDiscordChannel(result, msg);
+                            break;
+                    }
+                    await msg.Channel.SendMessageAsync("ERROR: ``" + errorMessage + "``");
+                    Log.Error(result.Error + ": " + result.ErrorReason);
                 }
             }
         }
