@@ -61,13 +61,6 @@ namespace Floofbot.Handlers
         private async Task LogErrorInDiscordChannel(IResult result, SocketMessage originalMessage)
         {
             FloofDataContext _floofDb = new FloofDataContext();
-            var userMsg = originalMessage as SocketUserMessage; // the original command
-            if (userMsg == null)
-                return;
-
-            var channel = userMsg.Channel as ITextChannel; // the channel of the original command
-            if (channel == null)
-                return;
 
             var serverConfig = _floofDb.ErrorLoggingConfigs.Find(channel.GuildId); // no db result
             if (serverConfig == null)
@@ -112,32 +105,32 @@ namespace Floofbot.Handlers
 
                 if (!result.IsSuccess)
                 {
-                    string errorMessage = "``An unknown exception occured. I have notified the administrators.``";
+                    string errorMessage = "An unknown exception occured. I have notified the administrators.";
                     switch (result.Error)
                     {
                         case CommandError.BadArgCount:
-                            errorMessage = "``" + result.ErrorReason + "``";
+                            errorMessage = result.ErrorReason;
                             break;
                         case CommandError.MultipleMatches:
-                            errorMessage = "``Multiple commands with the same name. I don't know what command you want me to do!``";
+                            errorMessage = "Multiple commands with the same name. I don't know what command you want me to do!";
                             break;
                         case CommandError.ObjectNotFound:
-                            errorMessage = "``The specified argument does not match the expected object - " + result.ErrorReason +"``";
+                            errorMessage = "The specified argument does not match the expected object - " + result.ErrorReason +;
                             break;
                         case CommandError.ParseFailed:
-                            errorMessage = "``For some reason, I am unable to parse your command.``";
+                            errorMessage = "For some reason, I am unable to parse your command.";
                             break;
                         case CommandError.UnknownCommand:
-                            errorMessage = "``Unknown command. Please check your spelling and try again.``";
+                            errorMessage = "Unknown command. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
-                            errorMessage = "``The command may not have completed successfully as some preconditions were not met.``";
+                            errorMessage = "The command may not have completed successfully as some preconditions were not met.";
                             break;
                         default:
                             await LogErrorInDiscordChannel(result, msg);
                             break;
                     }
-                    await msg.Channel.SendMessageAsync("ERROR: " + errorMessage);
+                    await msg.Channel.SendMessageAsync("ERROR: ``" + errorMessage + "``");
                     Log.Error(result.Error + ": " + result.ErrorReason);
                 }
             }
