@@ -73,7 +73,7 @@ namespace Floofbot.Handlers
             if (serverConfig == null)
                 return;
 
-            if ((!serverConfig.IsOn) || (serverConfig.ChannelId == 0)) // not configured or disabled
+            if ((!serverConfig.IsOn) || (serverConfig.ChannelId == null)) // not configured or disabled
                 return;
 
             Discord.ITextChannel errorLoggingChannel = await channel.Guild.GetTextChannelAsync((ulong)serverConfig.ChannelId); // can return null if channel invalid

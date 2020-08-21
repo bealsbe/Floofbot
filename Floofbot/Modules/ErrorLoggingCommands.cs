@@ -26,7 +26,7 @@ public class ErrorLoggingCommands : InteractiveBase
             _floofDB.Add(new ErrorLogging
             {
                 ServerId = server,
-                ChannelId = 0,
+                ChannelId = null,
                 IsOn = false
             });
             _floofDB.SaveChanges();
@@ -60,7 +60,7 @@ public class ErrorLoggingCommands : InteractiveBase
         // try toggling
             // check the status of logger
             var ServerConfig = GetServerConfig(Context.Guild.Id);
-            if (ServerConfig.ChannelId == 0)
+            if (ServerConfig.ChannelId == null)
             {
                 await Context.Channel.SendMessageAsync("Channel not set! Please set the channel before toggling error logging.");
                 return;

@@ -11,7 +11,7 @@ namespace Floofbot.Migrations
                 columns: table => new
                 {
                     ServerId = table.Column<ulong>(nullable: false),
-                    ChannelId = table.Column<ulong>(nullable: false),
+                    ChannelId = table.Column<ulong?>(nullable: true),
                     IsOn = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
