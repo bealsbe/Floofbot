@@ -10,6 +10,7 @@ using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using System.Text;
 
 namespace Floofbot.Handlers
 {
@@ -109,6 +110,7 @@ namespace Floofbot.Handlers
                 if (!result.IsSuccess)
                 {
                     string errorMessage = "An unknown exception occured. I have notified the administrators.";
+                    bool isCriticalFailure = false;
                     switch (result.Error)
                     {
                         case CommandError.BadArgCount:
@@ -124,17 +126,25 @@ namespace Floofbot.Handlers
                             errorMessage = "For some reason, I am unable to parse your command.";
                             break;
                         case CommandError.UnknownCommand:
-                            errorMessage = "Unknown command. Please check your spelling and try again.";
+                            // extract the command name from string
+                            string[] splitCommandArray = msg.Content.Split();
+                            // remove prefixes
+                            string unknownCommandName = new StringBuilder(splitCommandArray[0]).Replace(prefix, "").Replace(_client.CurrentUser.Mention, "").ToString();
+                            errorMessage = "Unknown command '" + unknownCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
-                            errorMessage = "The command may not have completed successfully as some preconditions were not met.";
+                            errorMessage = "You did not meet the required precondition - " + result.ErrorReason;
                             break;
                         default:
                             await LogErrorInDiscordChannel(result, msg);
+                            isCriticalFailure = true;
                             break;
                     }
                     await msg.Channel.SendMessageAsync("ERROR: ``" + errorMessage + "``");
-                    Log.Error(result.Error + ": " + result.ErrorReason);
+                    if (isCriticalFailure)
+                        Log.Error(result.Error + ": " + result.ErrorReason);
+                    else
+                        Log.Information(result.Error + ": " + result.ErrorReason);
                 }
             }
         }
