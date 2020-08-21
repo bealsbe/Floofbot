@@ -112,49 +112,33 @@ namespace Floofbot.Handlers
 
                 if (!result.IsSuccess)
                 {
+                    string errorMessage = "ERROR: ``An unknown exception occured. I have notified the administrators.``";
                     switch (result.Error)
                     {
                         case CommandError.BadArgCount:
-                            await msg.Channel.SendMessageAsync("ERROR: ``" + result.ErrorReason + "``");
-                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            errorMessage = "ERROR: ``" + result.ErrorReason + "``";
                             break;
                         case CommandError.MultipleMatches:
-                            await msg.Channel.SendMessageAsync("ERROR: ``Multiple commands with the same name. I don't know what command you want me to do!``");
-                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            errorMessage = "ERROR: ``Multiple commands with the same name. I don't know what command you want me to do!``";
                             break;
                         case CommandError.ObjectNotFound:
-                            await msg.Channel.SendMessageAsync("ERROR: ``The specified argument does not match the expected object - " + result.ErrorReason +"``");
-                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            errorMessage = "ERROR: ``The specified argument does not match the expected object - " + result.ErrorReason +"``";
                             break;
                         case CommandError.ParseFailed:
-                            await msg.Channel.SendMessageAsync("ERROR: ``For some reason, I am unable to parse your command.``");
-                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            errorMessage = "ERROR: ``For some reason, I am unable to parse your command.``";
                             break;
                         case CommandError.UnknownCommand:
-                            await msg.Channel.SendMessageAsync("ERROR: ``Unknown command. Please check your spelling and try again.``");
-                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            errorMessage = "ERROR: ``Unknown command. Please check your spelling and try again.``";
                             break;
                         case CommandError.UnmetPrecondition:
-                            await msg.Channel.SendMessageAsync("ERROR: ``The command may not have completed successfully as some preconditions were not met.``");
-                            Log.Error(result.Error + ": " + result.ErrorReason);
-                            break;
-                        case CommandError.Unsuccessful:
-                            await msg.Channel.SendMessageAsync("ERROR: ``For some reason, I am unable to execute that command at the moment. Try again. I have notified the administrators.``");
-                            await LogErrorInDiscordChannel(result, msg);
-                            Log.Error(result.Error + ": " + result.ErrorReason);
-                            break;
-                        case CommandError.Exception:
-                            await msg.Channel.SendMessageAsync("Error: ``An exception occured when running that command. I have notified the administrators.``");
-                            await LogErrorInDiscordChannel(result, msg);
-                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            errorMessage = "ERROR: ``The command may not have completed successfully as some preconditions were not met.``";
                             break;
                         default:
-                            await msg.Channel.SendMessageAsync("Error: ``An unknown exception occured. I have notified the administrators.``");
                             await LogErrorInDiscordChannel(result, msg);
-                            Log.Error(result.Error + ": " + result.ErrorReason);
                             break;
                     }
-                    Log.Error(result.ErrorReason);
+                    await msg.Channel.SendMessageAsync(errorMessage);
+                    Log.Error(result.Error + ": " + result.ErrorReason);
                 }
             }
         }
