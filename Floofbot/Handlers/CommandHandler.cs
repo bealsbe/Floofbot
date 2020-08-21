@@ -63,8 +63,47 @@ namespace Floofbot.Handlers
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 
-                if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
+                if (!result.IsSuccess)
                 {
+                    switch (result.Error)
+                    {
+                        case CommandError.BadArgCount:
+                            await msg.Channel.SendMessageAsync("ERROR: ``Too many or too few arguments. Please use the help command to view the required arguments.``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                        case CommandError.MultipleMatches:
+                            await msg.Channel.SendMessageAsync("ERROR: ``Multiple commands with the same name. I don't know what command you want me to do!``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                        case CommandError.ObjectNotFound:
+                            await msg.Channel.SendMessageAsync("ERROR: ``The specified argument does not match the expected object. Examples include supplying a user tag when a discord channel is expected as an argument.``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                        case CommandError.ParseFailed:
+                            await msg.Channel.SendMessageAsync("ERROR: ``For some reason, I am unable to parse your command.``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                        case CommandError.UnknownCommand:
+                            await msg.Channel.SendMessageAsync("ERROR: ``Unknown command. Please check your spelling and try again.``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                        case CommandError.UnmetPrecondition:
+                            await msg.Channel.SendMessageAsync("ERROR: ``The command may not have completed successfully as some preconditions were not met.``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                        case CommandError.Unsuccessful:
+                            await msg.Channel.SendMessageAsync("ERROR: ``For some reason, I am unable to execute that command at the moment. Try again.``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                        case CommandError.Exception:
+                            await msg.Channel.SendMessageAsync("Error: ``An exception occured when running that command.``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                        default:
+                            await msg.Channel.SendMessageAsync("Error: ``An unknown exception occured.``");
+                            Log.Error(result.Error + ": " + result.ErrorReason);
+                            break;
+                    }
                     Log.Error(result.ErrorReason);
                 }
             }
