@@ -62,6 +62,9 @@ namespace Floofbot.Handlers
         {
             FloofDataContext _floofDb = new FloofDataContext();
 
+            var userMsg = originalMessage as SocketUserMessage; // the original command
+            var channel = userMsg.Channel as ITextChannel; // the channel of the original command
+
             var serverConfig = _floofDb.ErrorLoggingConfigs.Find(channel.GuildId); // no db result
             if (serverConfig == null)
                 return;
@@ -115,7 +118,7 @@ namespace Floofbot.Handlers
                             errorMessage = "Multiple commands with the same name. I don't know what command you want me to do!";
                             break;
                         case CommandError.ObjectNotFound:
-                            errorMessage = "The specified argument does not match the expected object - " + result.ErrorReason +;
+                            errorMessage = "The specified argument does not match the expected object - " + result.ErrorReason;
                             break;
                         case CommandError.ParseFailed:
                             errorMessage = "For some reason, I am unable to parse your command.";
