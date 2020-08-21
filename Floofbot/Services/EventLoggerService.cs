@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -22,11 +20,8 @@ namespace Floofbot.Services
         private DiscordSocketClient _client;
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
-        private static readonly Discord.Color ADMIN_COLOR = Discord.Color.DarkOrange;
-        private static readonly List<string> SUPPORTED_IMAGE_EXTENSIONS = new List<string>
-        {
-            "jpg", "png", "jpeg", "webp", "bmp"
-        };
+        private static readonly Color ADMIN_COLOR = Color.DarkOrange;
+
 
         public EventLoggerService(DiscordSocketClient client)
         {
@@ -108,15 +103,6 @@ namespace Floofbot.Services
                 }
             }
         }
-        public async Task HandleDeletedImage(string url, ITextChannel logChannel, string filename)
-        {
-            logChannel.SendMessageAsync(url);
-            System.Net.WebRequest request = System.Net.WebRequest.Create(url);
-            System.Net.WebResponse response = request.GetResponse();
-            System.IO.Stream responseStream = response.GetResponseStream();
-            if (responseStream != null)
-                await logChannel.SendFileAsync(responseStream, filename);
-        }
         public Task OnMessage(SocketMessage msg)
         {
             var userMsg = msg as SocketUserMessage;
@@ -185,7 +171,7 @@ namespace Floofbot.Services
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"⚠️ Message Edited | {after.Author.Username}#{after.Author.Discriminator}")
-                         .WithColor(Discord.Color.DarkGrey)
+                         .WithColor(Color.DarkGrey)
                          .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
                          .AddField("Before", messageBefore.Content, true)
                          .AddField("After", after.Content, true)
@@ -235,14 +221,12 @@ namespace Floofbot.Services
                     if (logChannel == null)
                         return;
 
-                    string content = !string.IsNullOrEmpty(message.Content) ? message.Content : "No Content - Attachment Only";
-
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"⚠️ Message Deleted | {message.Author.Username}#{message.Author.Discriminator}")
-                         .WithColor(Discord.Color.Gold)
+                         .WithColor(Color.Gold)
                          .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
-                         .AddField("Content", content)
+                         .AddField("Content", message.Content)
                          .WithCurrentTimestamp()
                          .WithFooter($"user_message_deleted user_messagelog {message.Author.Id}");
 
@@ -250,15 +234,6 @@ namespace Floofbot.Services
                         embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
 
                     await logChannel.SendMessageAsync("", false, embed.Build());
-                    if (message.Attachments.Count() != 0)
-                    {
-                        foreach (IAttachment att in message.Attachments)
-                        {
-                            string ext = att.Filename.Split('.').Last().ToLower();
-                            if (SUPPORTED_IMAGE_EXTENSIONS.Contains(ext))
-                                await HandleDeletedImage(att.Url, logChannel, att.Filename);
-                        }
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -294,7 +269,7 @@ namespace Floofbot.Services
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"⚠️ Message Deleted By Bot | {before.Author.Username}#{before.Author.Discriminator}")
-                         .WithColor(Discord.Color.Gold)
+                         .WithColor(Color.Gold)
                          .WithDescription($"{before.Author.Mention} ({before.Author.Id}) has had their message deleted in {channel.Mention}!")
                          .AddField("Content", before.Content)
                          .AddField("Reason", reason)
@@ -335,7 +310,7 @@ namespace Floofbot.Services
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"🔨 User Banned | {user.Username}#{user.Discriminator}")
-                         .WithColor(Discord.Color.Red)
+                         .WithColor(Color.Red)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .WithFooter($"user_banned user_banlog {user.Id}")
                          .WithCurrentTimestamp();
@@ -378,7 +353,7 @@ namespace Floofbot.Services
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"♻️ User Unbanned | {user.Username}#{user.Discriminator}")
-                         .WithColor(Discord.Color.Gold)
+                         .WithColor(Color.Gold)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .WithFooter($"user_unbanned user_banlog {user.Id}")
                          .WithCurrentTimestamp();
@@ -419,7 +394,7 @@ namespace Floofbot.Services
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"✅ User Joined | {user.Username}#{user.Discriminator}")
-                         .WithColor(Discord.Color.Green)
+                         .WithColor(Color.Green)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .AddField("Joined Server", user.JoinedAt?.ToString("ddd, dd MMM yyyy"), true)
                          .AddField("Joined Discord", user.CreatedAt.ToString("ddd, dd MMM yyyy"), true)
@@ -457,7 +432,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
                     embed.WithTitle($"❌ User Left | {user.Username}#{user.Discriminator}")
-                         .WithColor(Discord.Color.Red)
+                         .WithColor(Color.Red)
                          .WithDescription($"{user.Mention} | ``{user.Id}``");
                     if (user.JoinedAt != null)
                     {
@@ -510,7 +485,7 @@ namespace Floofbot.Services
                     if (before.Username != after.Username)
                     {
                         embed.WithTitle($"👥 Username Changed | {user.Username}#{user.Discriminator}")
-                             .WithColor(Discord.Color.Purple)
+                             .WithColor(Color.Purple)
                              .WithDescription($"{user.Mention} | ``{user.Id}``")
                              .AddField("Old Username", user.Username, true)
                              .AddField("New Name", user.Username, true)
@@ -528,7 +503,7 @@ namespace Floofbot.Services
                     else if (before.Nickname != after.Nickname)
                     {
                         embed.WithTitle($"👥 Nickname Changed | {user.Username}#{user.Discriminator}")
-                             .WithColor(Discord.Color.Purple)
+                             .WithColor(Color.Purple)
                              .WithDescription($"{user.Mention} | ``{user.Id}``")
                              .WithFooter($"user_nickname_change user_namelog {user.Id}")
                              .WithCurrentTimestamp();
@@ -556,7 +531,7 @@ namespace Floofbot.Services
                     else if (before.AvatarId != after.AvatarId)
                     {
                         embed.WithTitle($"🖼️ Avatar Changed | {user.Username}#{user.Discriminator}")
-                             .WithColor(Discord.Color.Purple)
+                             .WithColor(Color.Purple)
                              .WithDescription($"{user.Mention} | ``{user.Id}``")
                              .WithFooter($"user_avatar_change {user.Id}")
                              .WithCurrentTimestamp();
@@ -575,7 +550,7 @@ namespace Floofbot.Services
                         {
                             roleDifference = beforeRoles.Except(afterRoles).ToList();
                             embed.WithTitle($"❗ Roles Removed | {user.Username}#{user.Discriminator}")
-                                 .WithColor(Discord.Color.Orange)
+                                 .WithColor(Color.Orange)
                                  .WithDescription($"{user.Mention} | ``{user.Id}``")
                                  .WithFooter($"user_roles_removed user_rolelog {user.Id}")
                                  .WithCurrentTimestamp();
@@ -592,7 +567,7 @@ namespace Floofbot.Services
                         {
                             roleDifference = afterRoles.Except(beforeRoles).ToList();
                             embed.WithTitle($"❗ Roles Added | {user.Username}#{user.Discriminator}")
-                                 .WithColor(Discord.Color.Orange)
+                                 .WithColor(Color.Orange)
                                  .WithDescription($"{user.Mention} | ``{user.Id}``")
                                  .WithFooter($"user_roles_added user_rolelog {user.Id}")
                                  .WithCurrentTimestamp();
@@ -638,7 +613,7 @@ namespace Floofbot.Services
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"👢 User Kicked | {user.Username}#{user.Discriminator}")
-                         .WithColor(Discord.Color.Red)
+                         .WithColor(Color.Red)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .AddField("Kicked By", kicker.Mention)
                          .WithFooter($"user_kicked {user.Id}")
@@ -676,7 +651,7 @@ namespace Floofbot.Services
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"🔇 User Muted | {user.Username}#{user.Discriminator}")
-                         .WithColor(Discord.Color.Teal)
+                         .WithColor(Color.Teal)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .AddField("Muted By", muter.Mention)
                          .WithFooter($"user_muted user_mutelog {user.Id}")
@@ -715,7 +690,7 @@ namespace Floofbot.Services
                     var embed = new EmbedBuilder();
 
                     embed.WithTitle($"🔊 User Unmuted | {user.Username}#{user.Discriminator}")
-                         .WithColor(Discord.Color.Teal)
+                         .WithColor(Color.Teal)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .AddField("Unmuted By", unmuter.Mention)
                          .WithFooter($"user_unmuted user_mutelog {user.Id}")
