@@ -27,7 +27,7 @@ namespace Floofbot.Services.Repository
         public virtual DbSet<UserNote> UserNotes { get; set; }
         public virtual DbSet<BanOnJoin> BansOnJoin { get; set; }
         public virtual DbSet<ModMail> ModMails { get; set; }
-
+        public virtual DbSet<ErrorLogging> ErrorLoggingConfigs { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
