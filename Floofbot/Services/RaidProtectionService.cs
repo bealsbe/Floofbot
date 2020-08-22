@@ -123,22 +123,29 @@ namespace Floofbot.Services
             UserMessageCountTimeout(msg.Author.Id);
             return false;
         }
-        public async Task CheckMentions(SocketUserMessage msg, IGuild guild)
+        public async Task<bool> CheckMentions(SocketUserMessage msg, IGuild guild)
         {
             if (msg.MentionedUsers.Count > 10)
             {
                 string reason = "Raid Protection =>" + msg.MentionedUsers.Count + " mentions in one message.";
                 try
                 {
+                    //sends message to user
+                    EmbedBuilder builder = new EmbedBuilder();
+                    builder.Title = "⚖️ Ban Notification";
+                    builder.Description = $"You have been banned from {guild.Name}";
+                    builder.AddField("Reason", reason);
+                    builder.Color = Discord.Color.Red;
+                    await msg.Author.SendMessageAsync("", false, builder.Build());
                     await guild.AddBanAsync(msg.Author, 1, reason);
                 }
                 catch (Exception e)
                 {
                     Log.Error("Error banning user for mass mention: " + e);
                 }
-                return;
+                return true;
             }
-                
+            return false;
         }
         public async Task<bool> CheckLetterSpam(SocketMessage msg)
         {
@@ -275,7 +282,7 @@ namespace Floofbot.Services
             // now we run our checks. If any of them return true, we have a bad boy
 
             // this will ALWAYS ban users regardless of muted role or not 
-            await CheckMentions(userMsg, guild);
+            bool spammedMentions = CheckMentions(userMsg, guild).Result;
             // this will check their messages and see if they are spamming
             bool userSpammedMessages = CheckUserMessageCount(userMsg).Result;
             // this checks for spamming letters in a row
@@ -283,6 +290,8 @@ namespace Floofbot.Services
             // this checks for posting invite links
             bool userSpammedInviteLink = CheckInviteLinks(userMsg).Result;
 
+            if (spammedMentions)
+                return false; // user already banned
             if (userSpammedMessages || userSpammedLetters || userSpammedInviteLink)
             {
                 if (userPunishmentCount.ContainsKey(userMsg.Author.Id))
@@ -317,7 +326,15 @@ namespace Floofbot.Services
                         {
                             try
                             {
-                                await guild.AddBanAsync(msg.Author, 1, "Raid Protection => Triggered too many bot responses");
+                                string reason = "Raid Protection => Triggered too many bot responses";
+                                //sends message to user
+                                EmbedBuilder builder = new EmbedBuilder();
+                                builder.Title = "⚖️ Ban Notification";
+                                builder.Description = $"You have been banned from {guild.Name}";
+                                builder.AddField("Reason", reason);
+                                builder.Color = Discord.Color.Red;
+                                await msg.Author.SendMessageAsync("", false, builder.Build());
+                                await guild.AddBanAsync(msg.Author, 1, reason);
                             }
                             catch (Exception e)
                             {
