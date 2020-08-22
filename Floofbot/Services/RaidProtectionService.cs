@@ -123,7 +123,7 @@ namespace Floofbot.Services
             UserMessageCountTimeout(msg.Author.Id);
             return false;
         }
-        public async Task<bool> CheckMentions(SocketUserMessage msg, IGuild guild)
+        public async Task<bool> CheckMentions(SocketUserMessage msg, IGuild guild, SocketRole modRole, ITextChannel modChannel)
         {
             if (msg.MentionedUsers.Count > 10)
             {
@@ -138,6 +138,8 @@ namespace Floofbot.Services
                     builder.Color = Discord.Color.Red;
                     await msg.Author.SendMessageAsync("", false, builder.Build());
                     await guild.AddBanAsync(msg.Author, 1, reason);
+
+                    await NotifyModerators(modRole, modChannel, " I have banned a user for mentioning " + msg.MentionedUsers.Count() + " members");
                 }
                 catch (Exception e)
                 {
@@ -282,7 +284,7 @@ namespace Floofbot.Services
             // now we run our checks. If any of them return true, we have a bad boy
 
             // this will ALWAYS ban users regardless of muted role or not 
-            bool spammedMentions = CheckMentions(userMsg, guild).Result;
+            bool spammedMentions = CheckMentions(userMsg, guild, modRole, modChannel).Result;
             // this will check their messages and see if they are spamming
             bool userSpammedMessages = CheckUserMessageCount(userMsg).Result;
             // this checks for spamming letters in a row
