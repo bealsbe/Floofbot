@@ -390,6 +390,8 @@ namespace Floofbot.Services
                     if (user.IsBot)
                         return;
 
+                    await _raidProtectionService.CheckForExcessiveJoins(user.Guild);
+
                     if ((IsToggled(user.Guild)) == false)
                         return;
 

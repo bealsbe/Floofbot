@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Serilog;
 using System;
@@ -22,14 +23,24 @@ namespace Floofbot.Services
         private Dictionary<ulong, int> userPunishmentCount = new Dictionary<ulong, int>();
         // used to keep track of the number of messages a user sent for spam protection
         private Dictionary<ulong, int> userMessageCount = new Dictionary<ulong, int>();
-        // determines how long before a user is forgiven for a punishment - currently 5 min
-        private static int forgivenDuration = 5 * 60 * 1000;
-        // determines the rate at which users can send messages, currently no more than x messages in 5 seconds
-        private static int durationForMaxMessages = 5 * 1000;
+        // a list of punished users used to detect any potential raids
+        private List<SocketUser> punishedUsers = new List<SocketUser>();  
+        // determines how long before a user is forgiven for a punishment
+        private static int forgivenDuration = 5 * 60 * 1000; // 5 min
+        // determines the rate at which users can send messages, currently no more than x messages in y seconds
+        private static int durationForMaxMessages = 5 * 1000; // 5 s
         // determines the max number of punishments a user can have before being punished
         private static int maxNumberOfPunishments = 3;
         // the delay before the bot msg is deleted in ms
         private static int botMessageDeletionDelay = 3000;
+        // the duration before a user is removed from the list of punished users
+        private static int removePunishedUserDelay = 30 * 60 * 1000; // 30 min
+        // the number of punished users within a time frame before the mods are alerted of possible raids
+        private static int maxNumberPunishedUsers = 3;
+        // These are used to determine if there are an excessive number of joins in a short time frame
+        private static int maxNumberOfJoins = 5;
+        private static int userJoinsDelay = 2 * 60 * 1000; // 2 sec
+        private Dictionary<IGuild, int> numberOfJoins = new Dictionary<IGuild, int>();
 
 
 
@@ -42,12 +53,29 @@ namespace Floofbot.Services
             RaidProtectionConfig serverConfig = _floofDb.RaidProtectionConfigs.Find(guild.Id);
             return serverConfig;
         }
+        public async Task NotifyModerators(SocketRole modRole, ITextChannel modChannel, string message)
+        {
+            await modChannel.SendMessageAsync(modRole.Mention + " there may be a possible raid! Reason: ``" + message + "``");
+        }
         private async void UserPunishmentTimeout(ulong userid)
         {
             await Task.Delay(forgivenDuration);
             if (userPunishmentCount.ContainsKey(userid))
                 if (userPunishmentCount[userid] != 0)
                     userPunishmentCount[userid] -= 1;
+        }
+        private async void punishedUsersTimeout(SocketUser user)
+        {
+            await Task.Delay(removePunishedUserDelay);
+            if (punishedUsers.Contains(user))
+                punishedUsers.Remove(user);
+        }
+        private async void userJoinTimeout(IGuild guild)
+        {
+            await Task.Delay(userJoinsDelay);
+            if (numberOfJoins.ContainsKey(guild))
+                if (numberOfJoins[guild] != 0)
+                    numberOfJoins[guild] -= 1;
         }
         private async void UserMessageCountTimeout(ulong userid)
         {
@@ -99,7 +127,7 @@ namespace Floofbot.Services
         {
             if (msg.MentionedUsers.Count > 10)
             {
-                string reason = "Raid Protection => " + msg.MentionedUsers.Count + " mentions in one message.";
+                string reason = "Raid Protection =>" + msg.MentionedUsers.Count + " mentions in one message.";
                 try
                 {
                     await guild.AddBanAsync(msg.Author, 1, reason);
@@ -163,6 +191,39 @@ namespace Floofbot.Services
                 return true;
             }
             return false;
+        }
+        public async Task CheckForExcessiveJoins(IGuild guild)
+        {
+            var _floofDb = new FloofDataContext();
+            var server = guild as SocketGuild;
+            if (server == null)
+                return;
+            var serverConfig = GetServerConfig(guild, _floofDb);
+            // raid protection not configured
+            if (serverConfig == null)
+                return;
+            // raid protection disabled
+            if (!serverConfig.Enabled)
+                return;
+            // increment user join count for guild
+            if (numberOfJoins.ContainsKey(guild))
+            {
+                numberOfJoins[guild] += 1;
+                if (numberOfJoins[guild] >= maxNumberOfJoins)
+                {
+                    var modRole = (serverConfig.ModRoleId != null) ? server.GetRole((ulong)serverConfig.ModRoleId) : null;
+                    var modChannel = (serverConfig.ModChannelId != null) ? server.GetChannel((ulong)serverConfig.ModChannelId) as ITextChannel : null;
+                    await NotifyModerators(modRole, modChannel, "Excessive number of new joins in short time period.");
+                    numberOfJoins[guild] = 0;
+                    return;
+                }
+            }
+            else // they were a good boye but now they are not
+            {
+                numberOfJoins.Add(guild, 1);
+            }
+            userJoinTimeout(guild);
+
         }
         // return true is message triggered raid protection, false otherwise
         public async Task<bool> CheckMessage(FloofDataContext _floofDb, SocketMessage msg)
@@ -231,6 +292,12 @@ namespace Floofbot.Services
                     {
                         // remove them from the dictionary
                         userPunishmentCount.Remove(userMsg.Author.Id);
+                        // add to the list of punished users
+                        punishedUsers.Add(userMsg.Author);
+                        punishedUsersTimeout(userMsg.Author);
+                        // decide if we need to notify the mods of a potential raid
+                        if ((modRole != null) && (modChannel != null) && (punishedUsers.Count >= maxNumberPunishedUsers))
+                            await NotifyModerators(modRole, modChannel, "Excessive amount of users punished in short time frame.");
                         // if the muted role is set and we are not banning people
                         if ((mutedRole != null) && (!banOffenders))
                         {
