@@ -8,6 +8,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Floofbot.Modules
@@ -52,7 +53,49 @@ namespace Floofbot.Modules
                 return serverConfig;
             }
         }
-
+        private async Task<SocketRole> resolveRole(string input, SocketGuild guild, ISocketMessageChannel channel)
+        {
+            SocketRole role = null;
+            bool roleFound = false;
+            //resolve roleID or @mention
+            if (Regex.IsMatch(input, @"\d{10,}"))
+            {
+                string roleID = Regex.Match(input, @"\d{10,}").Value;
+                role = guild.GetRole(Convert.ToUInt64(roleID));
+                if (role != null)
+                    roleFound = true;
+                else
+                    roleFound = false;
+            }
+            //resolve role name
+            else
+            {
+                foreach (SocketRole r in Context.Guild.Roles)
+                {
+                    if (r.Name.ToLower() == input.ToLower())
+                    {
+                        if (roleFound == false) // ok we found 1 role thats GOOD
+                        {
+                            roleFound = true;
+                            role = r;
+                        }
+                        else // there is more than 1 role with the same name!
+                        {
+                            await channel.SendMessageAsync("More than one role exists with that name! Not sure what to do! Please resolve this. Aborting..");
+                            return null;
+                        }
+                    }
+                }
+            }
+            if (roleFound)
+            {
+                return role;
+            }
+            else
+            {
+                return null;
+            }
+        }
         [Command("modchannel")]
         [Summary("OPTIONAL: Sets the mod channel for raid notifications")]
         public async Task ModChannel([Summary("Channel (eg #alerts)")]Discord.IChannel channel = null)
@@ -111,152 +154,77 @@ namespace Floofbot.Modules
         }
         [Command("modrole")]
         [Summary("OPTIONAL: A role to ping for raid alerts.")]
-        public async Task SetModRole(string roleName = null)
+        public async Task SetModRole(string role = null)
         {
-            if (roleName == null)
+            if (role == null)
             {
                 await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `raidconfig modrole [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
 
             var ServerConfig = GetServerConfig(Context.Guild.Id);
-            bool modRoleFound = false;
-            ulong? roleId = null;
-            try
-            {
-                foreach (SocketRole r in Context.Guild.Roles)
-                {
-                    if (r.Name.ToLower() == roleName.ToLower())
-                    {
-                        if (modRoleFound == false) // ok we found 1 role thats GOOD
-                        {
-                            modRoleFound = true;
-                            roleId = r.Id;
-                        }
-                        else // there is more than 1 role with the same name!
-                        {
-                            await Context.Channel.SendMessageAsync("More than one role exists with that name! Not sure what to do! Please resolve this. Aborting..");
-                            return;
-                        }
-                    }
-                }
+            var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
 
-                if (modRoleFound)
+                if (foundRole != null)
                 {
-                    ServerConfig.ModRoleId = roleId;
+                    ServerConfig.ModRoleId = foundRole.Id;
                     _floofDB.SaveChanges();
-                    await Context.Channel.SendMessageAsync("Mod role set!");
+                    await Context.Channel.SendMessageAsync("Mod role set to " + foundRole.Name + "!");
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync("Unable to find that role. Role not set.");
+                    await Context.Channel.SendMessageAsync("Unable to set that role.");
                     return;
                 }
-            }
-            catch (Exception ex)
-            {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to set the raid protection mod role: " + ex);
-            }
         }
         [Command("mutedrole")]
         [Summary("OPTIONAL: A role to give to users to mute them in the server. If not set, users are banned by default.")]
-        public async Task SetMutedRole(string roleName = null)
+        public async Task SetMutedRole(string role = null)
         {
-            if (roleName == null)
+            if (role == null)
             {
                 await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `raidconfig mutedrole [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
 
             var ServerConfig = GetServerConfig(Context.Guild.Id);
-            bool mutedRoleFound = false;
-            ulong? roleId = null;
-            try
-            {
-                foreach (SocketRole r in Context.Guild.Roles)
-                {
-                    if (r.Name.ToLower() == roleName.ToLower())
-                    {
-                        if (mutedRoleFound == false) // ok we found 1 role thats GOOD
-                        {
-                            mutedRoleFound = true;
-                            roleId = r.Id;
-                        }
-                        else // there is more than 1 role with the same name!
-                        {
-                            await Context.Channel.SendMessageAsync("More than one role exists with that name! Not sure what to do! Please resolve this. Aborting..");
-                            return;
-                        }
-                    }
-                }
+            var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
 
-                if (mutedRoleFound)
-                {
-                    ServerConfig.MutedRoleId = roleId;
-                    _floofDB.SaveChanges();
-                    await Context.Channel.SendMessageAsync("Muted role set!");
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync("Unable to find that role. Role not set.");
-                    return;
-                }
-            }
-            catch (Exception ex)
+            if (foundRole != null)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to set the raid protection muted role: " + ex);
+                ServerConfig.MutedRoleId = foundRole.Id;
+                _floofDB.SaveChanges();
+                await Context.Channel.SendMessageAsync("Muted role set to " + foundRole.Name + "!");
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Unable to set that role.");
+                return;
             }
         }
         [Command("exceptionsrole")]
         [Summary("OPTIONAL: Users with this role are immune to raid protection.")]
-        public async Task SetExceptionsRole(string roleName = null)
+        public async Task SetExceptionsRole(string role = null)
         {
-            if (roleName == null)
+            if (role == null)
             {
                 await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `raidconfig exceptionsrole [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
 
             var ServerConfig = GetServerConfig(Context.Guild.Id);
-            bool exceptionsRoleFound = false;
-            ulong? roleId = null;
-            try
-            {
-                foreach (SocketRole r in Context.Guild.Roles)
-                {
-                    if (r.Name.ToLower() == roleName.ToLower())
-                    {
-                        if (exceptionsRoleFound == false) // ok we found 1 role thats GOOD
-                        {
-                            exceptionsRoleFound = true;
-                            roleId = r.Id;
-                        }
-                        else // there is more than 1 role with the same name!
-                        {
-                            await Context.Channel.SendMessageAsync("More than one role exists with that name! Not sure what to do! Please resolve this. Aborting..");
-                            return;
-                        }
-                    }
-                }
+            var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
 
-                if (exceptionsRoleFound)
-                {
-                    ServerConfig.ExceptionRoleId = roleId;
-                    _floofDB.SaveChanges();
-                    await Context.Channel.SendMessageAsync("Exceptions role set!");
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync("Unable to find that role. Role not set.");
-                    return;
-                }
-            }
-            catch (Exception ex)
+            if (foundRole != null)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to set the raid protection exceptions role: " + ex);
+                ServerConfig.ExceptionRoleId = foundRole.Id;
+                _floofDB.SaveChanges();
+                await Context.Channel.SendMessageAsync("Exceptions role set to " + foundRole.Name + "!");
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Unable to set that role.");
+                return;
             }
         }
     }
