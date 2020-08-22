@@ -23,7 +23,7 @@ namespace Floofbot.Services
         // used to keep track of the number of messages a user sent for spam protection
         private Dictionary<ulong, int> userMessageCount = new Dictionary<ulong, int>();
         // determines how long before a user is forgiven for a punishment - currently 5 min
-        private static int forgivenDuration = 1 * 60 * 1000;
+        private static int forgivenDuration = 5 * 60 * 1000;
         // determines the rate at which users can send messages, currently no more than x messages in 5 seconds
         private static int durationForMaxMessages = 5 * 1000;
         // determines the max number of punishments a user can have before being punished
