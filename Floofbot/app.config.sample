@@ -21,6 +21,9 @@ Token: ""
 # Set this to a valid Server ID
 ModMailServer: ""
 
+# Path to the SQLite database file
+DbPath: ""
+
 # The list of random responses the bot gives out
 # Input: a regex of the user input, case *insensitive*
 # Response: the bot response, case *sensitive*
