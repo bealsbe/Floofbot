@@ -39,7 +39,7 @@ namespace Floofbot.Services
         private static int maxNumberPunishedUsers = 3;
         // These are used to determine if there are an excessive number of joins in a short time frame
         private static int maxNumberOfJoins = 5;
-        private static int userJoinsDelay = 2 * 60 * 1000; // 2 sec
+        private static int userJoinsDelay = 2 * 60 * 1000; // 2 min
         private Dictionary<IGuild, int> numberOfJoins = new Dictionary<IGuild, int>();
 
 
