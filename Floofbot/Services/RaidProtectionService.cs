@@ -18,30 +18,41 @@ namespace Floofbot.Services
 {
     public class RaidProtectionService
     {
-        private DiscordSocketClient _client;
         // will store user id and how many counts they've had
-        private Dictionary<ulong, int> userPunishmentCount = new Dictionary<ulong, int>();
+        protected Dictionary<ulong, int> userPunishmentCount = new Dictionary<ulong, int>();
         // used to keep track of the number of messages a user sent for spam protection
-        private Dictionary<ulong, int> userMessageCount = new Dictionary<ulong, int>();
+        protected Dictionary<ulong, int> userMessageCount = new Dictionary<ulong, int>();
         // determines how long before a user is forgiven for a punishment - currently 5 min
-        private static int forgivenDuration = 5 * 60;
+        private static int forgivenDuration = 1 * 60 * 1000;
         // determines the rate at which users can send messages, currently no more than x messages in 5 seconds
-        private static int durationForMaxMessages = 3;
+        private static int durationForMaxMessages = 5 * 1000;
         // determines the max number of punishments a user can have before being punished
         private static int maxNumberOfPunishments = 3;
 
 
 
-        public RaidProtectionService(DiscordSocketClient client)
+        public RaidProtectionService()
         {
-            _client = client;
-            _client.MessageReceived += OnMessage;
 
         }
         public RaidProtectionConfig GetServerConfig(IGuild guild, FloofDataContext _floofDb)
         {
             RaidProtectionConfig serverConfig = _floofDb.RaidProtectionConfigs.Find(guild.Id);
             return serverConfig;
+        }
+        private async void UserPunishmentTimeout(ulong userid)
+        {
+            await Task.Delay(forgivenDuration);
+            if (userPunishmentCount.ContainsKey(userid))
+                if (userPunishmentCount[userid] != 0)
+                    userPunishmentCount[userid] -= 1;
+        }
+        private async void UserMessageCountTimeout(ulong userid)
+        {
+            await Task.Delay(durationForMaxMessages);
+            if (userMessageCount.ContainsKey(userid))
+                if (userMessageCount[userid] != 0)
+                    userMessageCount[userid] -= 1;
         }
         public async Task<bool> CheckUserMessageCount(SocketMessage msg)
         {
@@ -60,6 +71,8 @@ namespace Floofbot.Services
                     {
                         userPunishmentCount.Add(msg.Author.Id, 1);
                     }
+                    // reset the count after punishing the user
+                    userMessageCount[msg.Author.Id] = 0;
                     // we run an async task to remove their point after the specified duration
                     await Task.Run(async () =>
                     {
@@ -75,11 +88,7 @@ namespace Floofbot.Services
                 userMessageCount.Add(msg.Author.Id, 1);
             }
             // we run an async task to remove their point after the specified duration
-            await Task.Run(async () => {
-                await Task.Delay(durationForMaxMessages);
-
-                userMessageCount[msg.Author.Id] -= 1;
-            });
+            UserMessageCountTimeout(msg.Author.Id);
             return false;
         }
         public async Task CheckMentions(SocketUserMessage msg, IGuild guild)
@@ -95,7 +104,6 @@ namespace Floofbot.Services
                 {
                     Log.Error("Error banning user for mass mention: " + e);
                 }
-                await msg.DeleteAsync();
                 return;
             }
                 
@@ -119,11 +127,7 @@ namespace Floofbot.Services
                         userPunishmentCount.Add(msg.Author.Id, 1);
                     }
                     // we run an async task to remove their point after the specified duration
-                    await Task.Run(async () => {
-                        await Task.Delay(forgivenDuration);
-
-                        userPunishmentCount[msg.Author.Id] -= 1;
-                    });
+                    UserPunishmentTimeout(msg.Author.Id);
                     // we return here because we only need to check for at least one match, doesnt matter if there are more
                     return true;
                 }                     
@@ -133,7 +137,7 @@ namespace Floofbot.Services
         }
         public async Task<bool> CheckInviteLinks(SocketMessage msg)
         {
-            if (msg.Content.Contains("http://discord.gg"))
+            if (msg.Content.Contains("discord.gg") || msg.Content.Contains("d.gg"))
             {
                 await msg.Channel.SendMessageAsync(msg.Author.Mention + " no invite links!");
                 // add a bad boye point for the user
@@ -146,120 +150,112 @@ namespace Floofbot.Services
                     userPunishmentCount.Add(msg.Author.Id, 1);
                 }
                 // we run an async task to remove their point after the specified duration
-                await Task.Run(async () => {
-                    await Task.Delay(forgivenDuration);
-
-                    userPunishmentCount[msg.Author.Id] -= 1;
-                });
+                UserPunishmentTimeout(msg.Author.Id);
                 // we return here because we only need to check for at least one match, doesnt matter if there are more
                 return true;
             }
             return false;
         }
-        public Task OnMessage(SocketMessage msg)
+        // return true is message triggered raid protection, false otherwise
+        public async Task<bool> CheckMessage(FloofDataContext _floofDb, SocketMessage msg)
         {
-            var _ = Task.Run(async () =>
+
+            // can return null
+            var userMsg = msg as SocketUserMessage;
+            if (userMsg == null || msg.Author.IsBot)
+                return false;
+            // can return null
+            var channel = userMsg.Channel as ITextChannel;
+            if (channel == null)
+                return false;
+            // can return null
+            var guild = channel.Guild as SocketGuild;
+            if (guild == null)
+                return false;
+            var serverConfig = GetServerConfig(guild, _floofDb);
+            // raid protection not configured
+            if (serverConfig == null)
+                return false;
+            // raid protection disabled
+            if (!serverConfig.Enabled)
+                return false;
+
+            // users with the exceptions role are immune to raid protection
+            if (serverConfig.ExceptionRoleId != null)
             {
-                FloofDataContext floofDb = new FloofDataContext();
-                // can return null
-                var userMsg = msg as SocketUserMessage;
-                if (userMsg == null || msg.Author.IsBot)
-                    return;
-                // can return null
-                var channel = userMsg.Channel as ITextChannel;
-                if (channel == null)
-                    return;
-                // can return null
-                var guild = channel.Guild as SocketGuild;
-                if (guild == null)
-                    return;
-                var serverConfig = GetServerConfig(guild, floofDb);
-                // raid protection not configured
-                if (serverConfig == null)
-                    return;
-                // raid protection disabled
-                if (!serverConfig.Enabled)
-                    return;
-
-                // users with the exceptions role are immune to raid protection
-                if (serverConfig.ExceptionRoleId != null)
+                // returns null if exception role doe not exist anymore
+                var exceptionsRole = guild.GetRole((ulong)serverConfig.ExceptionRoleId); 
+                var guildUser = guild.GetUser(msg.Author.Id);
+                // role must exist and user must exist in server
+                if (exceptionsRole != null && guildUser != null)
                 {
-                    // returns null if exception role doe not exist anymore
-                    var exceptionsRole = guild.GetRole((ulong)serverConfig.ExceptionRoleId); 
-                    var guildUser = guild.GetUser(msg.Author.Id);
-                    // role must exist and user must exist in server
-                    if (exceptionsRole != null && guildUser != null)
-                    {
-                        foreach (IRole role in guildUser.Roles)
-                            {
-                            if (role.Id == exceptionsRole.Id)
-                                return;
-                            }
-                    }
-                }
-
-                // get other values from db and get their associated roles and channels
-                var mutedRole = guild.GetRole((ulong)serverConfig.MutedRoleId);
-                var modRole = guild.GetRole((ulong)serverConfig.ModRoleId);
-                var modChannel = guild.GetChannel((ulong)serverConfig.ModChannelId) as ITextChannel;
-                var banOffenders = serverConfig.BanOffenders;
-
-                // now we run our checks. If any of them return true, we have a bad boy
-
-                // this will ALWAYS ban users regardless of muted role or not 
-                await CheckMentions(userMsg, guild);
-                // this will check their messages and see if they are spamming
-                bool userSpammedMessages = CheckUserMessageCount(msg).Result;
-                // this checks for spamming letters in a row
-                bool userSpammedLetters = CheckLetterSpam(msg).Result;
-                // this checks for posting invite links
-                bool userSpammedInviteLink = CheckInviteLinks(msg).Result;
-
-                if (userSpammedMessages || userSpammedLetters || userSpammedInviteLink)
-                {
-                    if (userPunishmentCount.ContainsKey(msg.Author.Id))
-                    {
-                        // they have been too much of a bad boye >:(
-                        if (userPunishmentCount[msg.Author.Id] > maxNumberOfPunishments)
+                    foreach (IRole role in guildUser.Roles)
                         {
-                            // if the muted role is set and we are not banning people
-                            if (mutedRole != null && !banOffenders)
-                            {
-                                var guildUser = guild.GetUser(msg.Author.Id);
-                                try
-                                {
-                                    await guildUser.AddRoleAsync(mutedRole);
-                                    await msg.Channel.SendMessageAsync(msg.Author.Mention + " you have received too many warnings. You are muted as a result.");
-                                    return;
-                                }
-                                catch (Exception e)
-                                {
-                                    Log.Error("Unable to mute user for raid protection: " + e);
-                                    return;
-                                }
-                            }
-                            else // ban user by default
-                            {
-                                try
-                                {
-                                    await guild.AddBanAsync(msg.Author, 1, "Raid Protection => Triggered too many bot responses");
-                                    return;
-                                }
-                                catch (Exception e)
-                                {
-                                    Log.Error("Unable to ban user for raid protection: " + e);
-                                    return;
-                                }
-
-                            }
-
+                        if (role.Id == exceptionsRole.Id)
+                            return false;
                         }
-                    }
-                    await msg.DeleteAsync();
-                    return;
                 }
-            });
-            return Task.CompletedTask;
+            }
+
+            // get other values from db and get their associated roles and channels
+            var mutedRole = (serverConfig.MutedRoleId != null) ? guild.GetRole((ulong)serverConfig.MutedRoleId) : null;
+            var modRole = (serverConfig.ModRoleId != null) ? guild.GetRole((ulong)serverConfig.ModRoleId) : null;
+            var modChannel = (serverConfig.ModChannelId != null) ? guild.GetChannel((ulong)serverConfig.ModChannelId) as ITextChannel : null;
+            var banOffenders = serverConfig.BanOffenders;
+
+            // now we run our checks. If any of them return true, we have a bad boy
+
+            // this will ALWAYS ban users regardless of muted role or not 
+            await CheckMentions(userMsg, guild);
+            // this will check their messages and see if they are spamming
+            bool userSpammedMessages = CheckUserMessageCount(msg).Result;
+            // this checks for spamming letters in a row
+            bool userSpammedLetters = CheckLetterSpam(msg).Result;
+            // this checks for posting invite links
+            bool userSpammedInviteLink = CheckInviteLinks(msg).Result;
+
+            if (userSpammedMessages || userSpammedLetters || userSpammedInviteLink)
+            {
+                if (userPunishmentCount.ContainsKey(msg.Author.Id))
+                {
+                    // they have been too much of a bad boye >:(
+                    if (userPunishmentCount[msg.Author.Id] > maxNumberOfPunishments)
+                    {
+                        // remove them from the dictionary
+                        userPunishmentCount.Remove(msg.Author.Id);
+                        // if the muted role is set and we are not banning people
+                        if ((mutedRole != null) && (!banOffenders))
+                        {
+                            var guildUser = guild.GetUser(msg.Author.Id);
+                            try
+                            {
+                                await guildUser.AddRoleAsync(mutedRole);
+                                await msg.Channel.SendMessageAsync(msg.Author.Mention + " you have received too many warnings. You are muted as a result.");
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error("Unable to mute user for raid protection: " + e);
+                            }
+                            return true;
+                        }
+                        else // ban user by default
+                        {
+                            try
+                            {
+                                await guild.AddBanAsync(msg.Author, 1, "Raid Protection => Triggered too many bot responses");
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error("Unable to ban user for raid protection: " + e);
+                            }
+                            return false; // dont need to delete message as the ban already handled that
+                        }
+
+                    }
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

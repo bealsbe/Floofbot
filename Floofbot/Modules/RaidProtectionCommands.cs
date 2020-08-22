@@ -100,7 +100,7 @@ namespace Floofbot.Modules
                 var ServerConfig = GetServerConfig(Context.Guild.Id);
                 ServerConfig.BanOffenders = !ServerConfig.BanOffenders;
                 _floofDB.SaveChanges();
-                await Context.Channel.SendMessageAsync("Raid Protection Bans " + (ServerConfig.Enabled ? "Enabled!" : "Disabled!"));
+                await Context.Channel.SendMessageAsync("Raid Protection Bans " + (ServerConfig.BanOffenders ? "Enabled!" : "Disabled!"));
             }
             catch (Exception ex)
             {
@@ -193,7 +193,7 @@ namespace Floofbot.Modules
 
                 if (mutedRoleFound)
                 {
-                    ServerConfig.ModRoleId = roleId;
+                    ServerConfig.MutedRoleId = roleId;
                     _floofDB.SaveChanges();
                     await Context.Channel.SendMessageAsync("Muted role set!");
                 }
@@ -243,7 +243,7 @@ namespace Floofbot.Modules
 
                 if (exceptionsRoleFound)
                 {
-                    ServerConfig.ModRoleId = roleId;
+                    ServerConfig.ExceptionRoleId = roleId;
                     _floofDB.SaveChanges();
                     await Context.Channel.SendMessageAsync("Exceptions role set!");
                 }
