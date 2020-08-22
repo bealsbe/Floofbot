@@ -19,15 +19,17 @@ namespace Floofbot.Services
     public class RaidProtectionService
     {
         // will store user id and how many counts they've had
-        protected Dictionary<ulong, int> userPunishmentCount = new Dictionary<ulong, int>();
+        private Dictionary<ulong, int> userPunishmentCount = new Dictionary<ulong, int>();
         // used to keep track of the number of messages a user sent for spam protection
-        protected Dictionary<ulong, int> userMessageCount = new Dictionary<ulong, int>();
+        private Dictionary<ulong, int> userMessageCount = new Dictionary<ulong, int>();
         // determines how long before a user is forgiven for a punishment - currently 5 min
         private static int forgivenDuration = 1 * 60 * 1000;
         // determines the rate at which users can send messages, currently no more than x messages in 5 seconds
         private static int durationForMaxMessages = 5 * 1000;
         // determines the max number of punishments a user can have before being punished
         private static int maxNumberOfPunishments = 3;
+        // the delay before the bot msg is deleted in ms
+        private static int botMessageDeletionDelay = 3000;
 
 
 
@@ -61,7 +63,6 @@ namespace Floofbot.Services
                 userMessageCount[msg.Author.Id] += 1;
                 if (userMessageCount[msg.Author.Id] >= 5) // no more than 5 messages in time frame
                 {
-                    await msg.Channel.SendMessageAsync(msg.Author.Mention + " you are sending messages too quickly!");
                     // add a bad boye point for the user
                     if (userPunishmentCount.ContainsKey(msg.Author.Id))
                     {
@@ -80,6 +81,9 @@ namespace Floofbot.Services
 
                         userPunishmentCount[msg.Author.Id] -= 1;
                     });
+                    var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " you are sending messages too quickly!");
+                    await Task.Delay(botMessageDeletionDelay);
+                    await botMsg.DeleteAsync();
                     return true;
                 }
             }
@@ -116,7 +120,6 @@ namespace Floofbot.Services
                 // string has more than 5 letters in a row
                 if (m.Length > 5)
                 {
-                    await msg.Channel.SendMessageAsync(msg.Author.Mention + " no spamming!");
                     // add a bad boye point for the user
                     if (userPunishmentCount.ContainsKey(msg.Author.Id))
                     {
@@ -128,6 +131,9 @@ namespace Floofbot.Services
                     }
                     // we run an async task to remove their point after the specified duration
                     UserPunishmentTimeout(msg.Author.Id);
+                    var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " no spamming!");
+                    await Task.Delay(botMessageDeletionDelay);
+                    await botMsg.DeleteAsync();
                     // we return here because we only need to check for at least one match, doesnt matter if there are more
                     return true;
                 }                     
@@ -139,7 +145,6 @@ namespace Floofbot.Services
         {
             if (msg.Content.Contains("discord.gg") || msg.Content.Contains("d.gg"))
             {
-                await msg.Channel.SendMessageAsync(msg.Author.Mention + " no invite links!");
                 // add a bad boye point for the user
                 if (userPunishmentCount.ContainsKey(msg.Author.Id))
                 {
@@ -151,6 +156,9 @@ namespace Floofbot.Services
                 }
                 // we run an async task to remove their point after the specified duration
                 UserPunishmentTimeout(msg.Author.Id);
+                var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " no invite links!");
+                await Task.Delay(botMessageDeletionDelay);
+                await botMsg.DeleteAsync();
                 // we return here because we only need to check for at least one match, doesnt matter if there are more
                 return true;
             }
@@ -185,7 +193,7 @@ namespace Floofbot.Services
             {
                 // returns null if exception role doe not exist anymore
                 var exceptionsRole = guild.GetRole((ulong)serverConfig.ExceptionRoleId); 
-                var guildUser = guild.GetUser(msg.Author.Id);
+                var guildUser = guild.GetUser(userMsg.Author.Id);
                 // role must exist and user must exist in server
                 if (exceptionsRole != null && guildUser != null)
                 {
@@ -208,29 +216,29 @@ namespace Floofbot.Services
             // this will ALWAYS ban users regardless of muted role or not 
             await CheckMentions(userMsg, guild);
             // this will check their messages and see if they are spamming
-            bool userSpammedMessages = CheckUserMessageCount(msg).Result;
+            bool userSpammedMessages = CheckUserMessageCount(userMsg).Result;
             // this checks for spamming letters in a row
-            bool userSpammedLetters = CheckLetterSpam(msg).Result;
+            bool userSpammedLetters = CheckLetterSpam(userMsg).Result;
             // this checks for posting invite links
-            bool userSpammedInviteLink = CheckInviteLinks(msg).Result;
+            bool userSpammedInviteLink = CheckInviteLinks(userMsg).Result;
 
             if (userSpammedMessages || userSpammedLetters || userSpammedInviteLink)
             {
-                if (userPunishmentCount.ContainsKey(msg.Author.Id))
+                if (userPunishmentCount.ContainsKey(userMsg.Author.Id))
                 {
                     // they have been too much of a bad boye >:(
                     if (userPunishmentCount[msg.Author.Id] > maxNumberOfPunishments)
                     {
                         // remove them from the dictionary
-                        userPunishmentCount.Remove(msg.Author.Id);
+                        userPunishmentCount.Remove(userMsg.Author.Id);
                         // if the muted role is set and we are not banning people
                         if ((mutedRole != null) && (!banOffenders))
                         {
-                            var guildUser = guild.GetUser(msg.Author.Id);
+                            var guildUser = guild.GetUser(userMsg.Author.Id);
                             try
                             {
                                 await guildUser.AddRoleAsync(mutedRole);
-                                await msg.Channel.SendMessageAsync(msg.Author.Mention + " you have received too many warnings. You are muted as a result.");
+                                await msg.Channel.SendMessageAsync(userMsg.Author.Mention + " you have received too many warnings. You are muted as a result.");
                             }
                             catch (Exception e)
                             {
