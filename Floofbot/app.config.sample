@@ -22,7 +22,7 @@ Token: ""
 ModMailServer: ""
 
 # Path to the SQLite database file
-DbPath: ""
+DbPath: "floofData.db"
 
 # The list of random responses the bot gives out
 # Input: a regex of the user input, case *insensitive*
