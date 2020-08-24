@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Security.Policy;
@@ -41,6 +42,8 @@ namespace Floofbot.Services
         private static int maxNumberOfJoins = 5;
         private static int userJoinsDelay = 2 * 60 * 1000; // 2 min
         private Dictionary<IGuild, int> numberOfJoins = new Dictionary<IGuild, int>();
+        // The max number of repeated emojis before triggering the raid protection
+        private static int maxNumberEmojis = 5;
 
 
 
@@ -201,6 +204,33 @@ namespace Floofbot.Services
             }
             return false;
         }
+        public async Task<bool> CheckEmojiSpam(SocketMessage msg)
+        {
+            // check for repeated custom and normal emojis. 
+            // custom emojis have format <:name:id> and normal emojis use unicode emoji
+            var regex = "( ?<:.*:[0-9]*> ?| ?(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]) ?){" + maxNumberEmojis + ",}";
+            var matchEmoji = Regex.Match(msg.Content, regex);
+            if (matchEmoji.Success) // emoji spam
+            {
+                // add a bad boye point for the user
+                if (userPunishmentCount.ContainsKey(msg.Author.Id))
+                {
+                    userPunishmentCount[msg.Author.Id] += 1;
+                }
+                else // they were a good boye but now they are not
+                {
+                    userPunishmentCount.Add(msg.Author.Id, 1);
+                }
+                // we run an async task to remove their point after the specified duration
+                UserPunishmentTimeout(msg.Author.Id);
+                var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " do not spam emojis!");
+                await Task.Delay(botMessageDeletionDelay);
+                await botMsg.DeleteAsync();
+                return true;
+            }
+            else
+                return false;
+        }
         public async Task CheckForExcessiveJoins(IGuild guild)
         {
             var _floofDb = new FloofDataContext();
@@ -291,10 +321,12 @@ namespace Floofbot.Services
             bool userSpammedLetters = CheckLetterSpam(userMsg).Result;
             // this checks for posting invite links
             bool userSpammedInviteLink = CheckInviteLinks(userMsg).Result;
+            // check for spammed emojis
+            bool userSpammedEmojis = CheckEmojiSpam(userMsg).Result;
 
             if (spammedMentions)
                 return false; // user already banned
-            if (userSpammedMessages || userSpammedLetters || userSpammedInviteLink)
+            if (userSpammedMessages || userSpammedLetters || userSpammedInviteLink || userSpammedEmojis)
             {
                 if (userPunishmentCount.ContainsKey(userMsg.Author.Id))
                 {
