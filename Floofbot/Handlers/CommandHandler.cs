@@ -105,6 +105,8 @@ namespace Floofbot.Handlers
 
             if (msg.HasStringPrefix(prefix, ref argPos) || msg.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
+                if (msg.Author.IsBot)
+                    return;
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 
                 if (!result.IsSuccess)
