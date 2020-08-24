@@ -24,6 +24,13 @@ ModMailServer: ""
 # Path to the SQLite database file
 DbPath: "floofData.db"
 
+# These configure the backup settings
+# BackupOutputPath = output path for backups, BackupScript = path to backup script
+# NumberOfBackups = The number of backups to store before overwriting
+BackupOutputPath: "."
+BackupScript: "./scripts/backup.sh"
+NumberOfBackups: 14
+
 # The list of random responses the bot gives out
 # Input: a regex of the user input, case *insensitive*
 # Response: the bot response, case *sensitive*
