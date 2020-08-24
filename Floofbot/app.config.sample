@@ -27,8 +27,8 @@ DbPath: "floofData.db"
 # These configure the backup settings
 # BackupOutputPath = output path for backups, BackupScript = path to backup script
 # NumberOfBackups = The number of backups to store before overwriting
-BackupOutputPath: "."
-BackupScript: "./scripts/backup.sh"
+BackupOutputPath: "./"
+BackupScript: "./scripts/LinuxBackupScript"
 NumberOfBackups: 14
 
 # The list of random responses the bot gives out
