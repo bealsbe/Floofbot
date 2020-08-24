@@ -89,6 +89,9 @@ namespace Floofbot.Handlers
             if (msg == null)
                 return;
 
+            if (msg.Author.IsBot)
+                return;
+
             var context = new SocketCommandContext(_client, msg);
             int argPos = 0;
             string prefix;
@@ -105,8 +108,6 @@ namespace Floofbot.Handlers
 
             if (msg.HasStringPrefix(prefix, ref argPos) || msg.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
-                if (msg.Author.IsBot)
-                    return;
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 
                 if (!result.IsSuccess)
