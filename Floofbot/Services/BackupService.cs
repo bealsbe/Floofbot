@@ -10,7 +10,7 @@ namespace Floofbot.Services
 {
     class BackupService
     {
-        private int backupIndex = 0;
+        private int backupIndex = 1;
         private DateTime backupTime = new DateTime(1, 1, 1, 19, 55, 0, 0);
         public BackupService()
         {
@@ -24,23 +24,19 @@ namespace Floofbot.Services
             }
             else
             {
-                Log.Information("Automatic backups enabled!");
+                Log.Information("Automatic backups enabled! Backups will be saved to " + BotConfigFactory.Config.BackupOutputPath + " at " + backupTime.TimeOfDay);
             }
             await Task.Run(() =>
             {
                 while (true)
                 {
                     if (backupIndex == BotConfigFactory.Config.NumberOfBackups)
-                        backupIndex = 0;
+                        backupIndex = 1;
                     else
                         backupIndex++;
 
-                    // if ((DateTime.Now.TimeOfDay.Hours == backupTime.TimeOfDay.Hours) && (DateTime.Now.TimeOfDay.Minutes == backupTime.TimeOfDay.Minutes))
-                    if (true)
+                    if ((DateTime.Now.TimeOfDay.Hours == backupTime.TimeOfDay.Hours) && (DateTime.Now.TimeOfDay.Minutes == backupTime.TimeOfDay.Minutes))
                     {
-
-                        Log.Information("Starting scheduled database backup...");
-
                         System.Diagnostics.Process backupProcess = new System.Diagnostics.Process();
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
@@ -56,7 +52,7 @@ namespace Floofbot.Services
                             return;
                         }
 
-                        backupProcess.StartInfo.Arguments = BotConfigFactory.Config.BackupScript + " " + BotConfigFactory.Config.BackupOutputPath + " " + backupIndex; //argument
+                        backupProcess.StartInfo.Arguments = BotConfigFactory.Config.BackupScript + " " + BotConfigFactory.Config.DbPath + " " + BotConfigFactory.Config.BackupOutputPath + " " + backupIndex; //argument
                         backupProcess.StartInfo.UseShellExecute = false;
                         backupProcess.StartInfo.RedirectStandardOutput = true;
                         backupProcess.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
@@ -67,7 +63,6 @@ namespace Floofbot.Services
                             string output = backupProcess.StandardOutput.ReadToEnd(); //The output result
                             backupProcess.WaitForExit();
                             Log.Information(output);
-                            Log.Information(backupProcess.ExitCode.ToString());
                         }
                         catch (FileNotFoundException)
                         {
@@ -76,7 +71,7 @@ namespace Floofbot.Services
                         }
                         catch (Exception e)
                         {
-                            Log.Error("Exception occured when trying to backup the the database: " + e);
+                            Log.Fatal("Exception occured when trying to backup the the database: " + e);
                         }
                         Thread.Sleep(60 * 1000); // wait 1 min to prevent backing up multiple times
                     }
