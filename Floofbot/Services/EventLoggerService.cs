@@ -114,14 +114,19 @@ namespace Floofbot.Services
                     if (msg == null || msg.Author.IsBot)
                         return;
                     var channel = msg.Channel as ITextChannel;
-                    string content = msg.Content;
                     bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
                     if (hasBadWord)
                         await HandleBadMessage(msg.Author, msg);
-                    else if (userMsg.HasMentionPrefix(_client.CurrentUser, ref argPos) && content.EndsWith("?"))
+
+                    if (userMsg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.Content.EndsWith("?"))
                     {
+                        string content = msg.Content;
                         string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
-                        await channel.SendMessageAsync($"> {content}\n{eightBallResponse}");
+
+                        // filter out mass mention abuse
+                        Regex regexRemoveMentions = new Regex("<@(.*?)>");
+                        string filteredContent = regexRemoveMentions.Replace(content, "[NO MENTIONS]");
+                        await channel.SendMessageAsync($"> {filteredContent}\n{eightBallResponse}");
                     }
                     else
                     {
