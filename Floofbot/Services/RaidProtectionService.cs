@@ -140,7 +140,7 @@ namespace Floofbot.Services
                     builder.AddField("Reason", reason);
                     builder.Color = Discord.Color.Red;
                     await msg.Author.SendMessageAsync("", false, builder.Build());
-                    await guild.AddBanAsync(msg.Author, 1, reason);
+                    await guild.AddBanAsync(msg.Author, 0, reason);
 
                     await NotifyModerators(modRole, modChannel, " I have banned a user for mentioning " + msg.MentionedUsers.Count() + " members");
                 }
@@ -368,7 +368,7 @@ namespace Floofbot.Services
                                 builder.AddField("Reason", reason);
                                 builder.Color = Discord.Color.Red;
                                 await msg.Author.SendMessageAsync("", false, builder.Build());
-                                await guild.AddBanAsync(msg.Author, 1, reason);
+                                await guild.AddBanAsync(msg.Author, 0, reason);
                             }
                             catch (Exception e)
                             {
