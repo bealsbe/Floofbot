@@ -10,7 +10,7 @@ namespace Floofbot.Services
 {
     class BackupService
     {
-        private int backupIndex = 1;
+        private int backupIndex = 0;
         private DateTime backupTime = new DateTime(1, 1, 1, 02, 0, 0, 0);
         public BackupService()
         {
