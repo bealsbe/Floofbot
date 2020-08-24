@@ -11,7 +11,7 @@ namespace Floofbot.Services
     class BackupService
     {
         private int backupIndex = 0;
-        private DateTime backupTime = new DateTime(1, 1, 1, 18, 19, 0, 0);
+        private DateTime backupTime = new DateTime(1, 1, 1, 19, 55, 0, 0);
         public BackupService()
         {
         }
@@ -35,7 +35,8 @@ namespace Floofbot.Services
                     else
                         backupIndex++;
 
-                    if ((DateTime.Now.TimeOfDay.Hours == backupTime.TimeOfDay.Hours) && (DateTime.Now.TimeOfDay.Minutes == backupTime.TimeOfDay.Minutes))
+                    // if ((DateTime.Now.TimeOfDay.Hours == backupTime.TimeOfDay.Hours) && (DateTime.Now.TimeOfDay.Minutes == backupTime.TimeOfDay.Minutes))
+                    if (true)
                     {
 
                         Log.Information("Starting scheduled database backup...");
@@ -66,14 +67,7 @@ namespace Floofbot.Services
                             string output = backupProcess.StandardOutput.ReadToEnd(); //The output result
                             backupProcess.WaitForExit();
                             Log.Information(output);
-                            if (backupProcess.ExitCode != 0)
-                            {
-                                Log.Error("Backup was not successful. Please review the logs and resolve this error");
-                            }
-                            else
-                            {
-                                Log.Information("Backup successful");
-                            }
+                            Log.Information(backupProcess.ExitCode.ToString());
                         }
                         catch (FileNotFoundException)
                         {
