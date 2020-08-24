@@ -62,7 +62,7 @@ namespace Floofbot
                   new DiscordSocketConfig()
                   {
                       LogLevel = LogSeverity.Info,
-                      MessageCacheSize = 100
+                      MessageCacheSize = 1000
                   });
 
             try
