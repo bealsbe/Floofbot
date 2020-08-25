@@ -133,6 +133,8 @@ namespace Floofbot.Handlers
                             string[] splitCommandArray = msg.Content.Split();
                             // remove prefixes
                             string unknownCommandName = new StringBuilder(splitCommandArray[0]).Replace(prefix, "").Replace(_client.CurrentUser.Mention, "").ToString();
+                            if (string.IsNullOrEmpty(unknownCommandName))
+                                return;
                             errorMessage = "Unknown command '" + unknownCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
