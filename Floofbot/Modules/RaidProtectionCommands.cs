@@ -165,17 +165,17 @@ namespace Floofbot.Modules
             var ServerConfig = GetServerConfig(Context.Guild.Id);
             var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
 
-                if (foundRole != null)
-                {
-                    ServerConfig.ModRoleId = foundRole.Id;
-                    _floofDB.SaveChanges();
-                    await Context.Channel.SendMessageAsync("Mod role set to " + foundRole.Name + "!");
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync("Unable to set that role.");
-                    return;
-                }
+            if (foundRole != null)
+            {
+                ServerConfig.ModRoleId = foundRole.Id;
+                _floofDB.SaveChanges();
+                await Context.Channel.SendMessageAsync("Mod role set to " + foundRole.Name + "!");
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Unable to set that role.");
+                return;
+            }
         }
         [Command("mutedrole")]
         [Summary("OPTIONAL: A role to give to users to mute them in the server. If not set, users are banned by default.")]
