@@ -125,8 +125,10 @@ namespace Floofbot.Services
 
                         // filter out mass mention abuse
                         Regex regexRemoveMentions = new Regex("<@(.*?)>");
+                        Regex filterNewLines = new Regex("[\r\n]");
                         string filteredContent = regexRemoveMentions.Replace(content, "[NO MENTIONS]");
-                        await channel.SendMessageAsync($"> {filteredContent}\n{eightBallResponse}");
+                        filteredContent = filterNewLines.Replace(filteredContent, "\n> ");
+                        await channel.SendMessageAsync($"> {filteredContent}\n{msg.Author.Mention} {eightBallResponse}");
                     }
                     else
                     {
