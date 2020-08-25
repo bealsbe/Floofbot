@@ -63,8 +63,7 @@ namespace Floofbot.Services
         private async void UserPunishmentTimeout(ulong userid)
         {
             await Task.Delay(forgivenDuration);
-            if (userPunishmentCount.ContainsKey(userid))
-                if (userPunishmentCount[userid] != 0)
+            if (userPunishmentCount.ContainsKey(userid) && userPunishmentCount[userid] != 0)
                     userPunishmentCount[userid] -= 1;
         }
         private async void punishedUsersTimeout(SocketUser user)
@@ -76,8 +75,7 @@ namespace Floofbot.Services
         private async void userJoinTimeout(IGuild guild)
         {
             await Task.Delay(userJoinsDelay);
-            if (numberOfJoins.ContainsKey(guild))
-                if (numberOfJoins[guild] != 0)
+            if (numberOfJoins.ContainsKey(guild) && numberOfJoins[guild] != 0)
                     numberOfJoins[guild] -= 1;
         }
         private async void UserMessageCountTimeout(ulong userid)
