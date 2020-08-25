@@ -14,5 +14,6 @@ namespace Floofbot.Configs
         public List<BotRandomResponse> RandomResponses { get; set; }
 
         public ulong ModMailServer { get; set; }
+        public string DbPath { get; set; }
     }
 }
