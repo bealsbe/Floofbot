@@ -208,7 +208,8 @@ namespace Floofbot.Services
         }
         public async Task<bool> CheckInviteLinks(SocketMessage msg, ulong guildId)
         {
-            if (msg.Content.Contains("discord.gg") || msg.Content.Contains("d.gg"))
+            var regex = "(https?:\\/\\/)?(www\\.)?((d(iscord)?\\.gg)|(discord(app)?\\.com))/+\\w{5,}/?";
+            if (Regex.IsMatch(msg.Content, regex))
             {
                 // add a bad boye point for the user
                 if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
