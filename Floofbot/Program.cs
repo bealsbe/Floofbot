@@ -17,8 +17,16 @@ namespace Floofbot
 
         static async Task Main(string[] args)
         {
+            string botDirectory = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            string _configPath;
+            if (args.Length == 1)
+                _configPath = args[0];
+            else
+                _configPath = botDirectory + "/app.config";
+
+
             InitialiseLogger();
-            InitialiseConfig();
+            InitialiseConfig(_configPath);
 
             string token = BotConfigFactory.Config.Token;
             if (string.IsNullOrEmpty(token))
@@ -43,10 +51,9 @@ namespace Floofbot
                 .CreateLogger();
         }
 
-        private static void InitialiseConfig()
+        private static void InitialiseConfig(string _configPath)
         {
-            string botDirectory = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            BotConfigFactory.Initialize(botDirectory + "/app.config");
+            BotConfigFactory.Initialize(_configPath);
         }
 
         public async Task MainAsync(string token)
@@ -55,7 +62,7 @@ namespace Floofbot
                   new DiscordSocketConfig()
                   {
                       LogLevel = LogSeverity.Info,
-                      MessageCacheSize = 100
+                      MessageCacheSize = 1000
                   });
 
             try

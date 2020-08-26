@@ -415,10 +415,23 @@ namespace Floofbot.Modules
         public async Task PurgeUserMessages(
             [Summary("user")] string user)
         {
+            string userId;
             IUser badUser = resolveUser(user);
-            if (badUser == null) {
-                await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
-                return;
+            if (badUser == null)
+            {
+                if (Regex.IsMatch(user, @"\d{16,}"))
+                {
+                    userId = Regex.Match(user, @"\d{16,}").Value;
+                }
+                else 
+                {
+                    await Context.Channel.SendMessageAsync("⚠️ Cannot find user");
+                    return;
+                }
+            }
+            else
+            {
+                userId = badUser.Id.ToString();
             }
 
             // retrieve user messages from ALL channels
@@ -429,7 +442,7 @@ namespace Floofbot.Modules
                 {
                     foreach (var message in messageCollection)
                     {
-                        if (message.Author.Id == badUser.Id)
+                        if (message.Author.Id.ToString() == userId)
                         {
                             await channel.DeleteMessageAsync(message);
                             await Task.Delay(100); // helps reduce the risk of getting rate limited by the API

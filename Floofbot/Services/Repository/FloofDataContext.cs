@@ -1,4 +1,5 @@
-﻿using Floofbot.Services.Repository.Models;
+﻿using Floofbot.Configs;
+using Floofbot.Services.Repository.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Floofbot.Services.Repository
@@ -33,7 +34,7 @@ namespace Floofbot.Services.Repository
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("DataSource=floofData.db");
+                optionsBuilder.UseSqlite("DataSource=" + BotConfigFactory.Config.DbPath);
             }
         }
     }
