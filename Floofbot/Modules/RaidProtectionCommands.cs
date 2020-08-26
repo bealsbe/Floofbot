@@ -87,14 +87,7 @@ namespace Floofbot.Modules
                     }
                 }
             }
-            if (roleFound)
-            {
-                return role;
-            }
-            else
-            {
-                return null;
-            }
+             return role;
         }
         [Command("modchannel")]
         [Summary("OPTIONAL: Sets the mod channel for raid notifications")]
