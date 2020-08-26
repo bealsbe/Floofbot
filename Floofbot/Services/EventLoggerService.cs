@@ -177,6 +177,17 @@ namespace Floofbot.Services
                     if (messageBefore.Content == after.Content) // no change
                         return;
 
+                    bool messageTriggeredRaidProtection = _raidProtectionService.CheckMessage(new FloofDataContext(), after).Result;
+                    if (messageTriggeredRaidProtection)
+                    {
+                        await after.DeleteAsync();
+                        return;
+                    }
+
+                    bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Content, channel.Guild.Id, after.Channel.Id);
+                    if (hasBadWord)
+                        await HandleBadMessage(after.Author, after);
+
                     if ((IsToggled(channel.Guild)) == false) // not toggled on
                         return;
 
@@ -198,10 +209,6 @@ namespace Floofbot.Services
                         embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
 
                     await logChannel.SendMessageAsync("", false, embed.Build());
-
-                    bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Content, channel.Guild.Id, channel.Id);
-                    if (hasBadWord)
-                        await HandleBadMessage(after.Author, after);
                 }
                 catch (Exception ex)
                 {
