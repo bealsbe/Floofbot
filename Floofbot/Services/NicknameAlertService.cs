@@ -64,13 +64,21 @@ namespace Floofbot.Services
         }
 
         public async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
-        {
+        { 
             var msg = message.Value as IUserMessage;
+            var chan = channel as ITextChannel;
 
-            if (reaction.User.Value.IsBot)
+            if (reaction.User.Value.IsBot || msg == null || chan == null)
                 return;
 
-            if (alertMessageIdsDic.ContainsKey(msg.Id))
+            var serverConfig = _floofDb.NicknameAlertConfigs.Find(chan.Guild.Id);
+
+            if (serverConfig == null || !serverConfig.IsOn || serverConfig.Channel == 0) // not configured/disabled
+            {
+                return;
+            }
+
+            if (alertMessageIdsDic != null && alertMessageIdsDic.ContainsKey(msg.Id))
             {
                 SocketGuildUser badUser;
                 alertMessageIdsDic.TryGetValue(msg.Id, out badUser);
