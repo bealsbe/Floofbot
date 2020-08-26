@@ -56,16 +56,11 @@ namespace Floofbot.Modules
         private async Task<SocketRole> resolveRole(string input, SocketGuild guild, ISocketMessageChannel channel)
         {
             SocketRole role = null;
-            bool roleFound = false;
             //resolve roleID or @mention
             if (Regex.IsMatch(input, @"\d{10,}"))
             {
                 string roleID = Regex.Match(input, @"\d{10,}").Value;
                 role = guild.GetRole(Convert.ToUInt64(roleID));
-                if (role != null)
-                    roleFound = true;
-                else
-                    roleFound = false;
             }
             //resolve role name
             else
@@ -74,9 +69,8 @@ namespace Floofbot.Modules
                 {
                     if (r.Name.ToLower() == input.ToLower())
                     {
-                        if (roleFound == false) // ok we found 1 role thats GOOD
+                        if (role == null) // ok we found 1 role thats GOOD
                         {
-                            roleFound = true;
                             role = r;
                         }
                         else // there is more than 1 role with the same name!
