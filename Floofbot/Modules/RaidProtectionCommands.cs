@@ -132,13 +132,16 @@ namespace Floofbot.Modules
         [Summary("OPTIONAL: A role to ping for raid alerts.")]
         public async Task SetModRole(string role = null)
         {
+            var ServerConfig = GetServerConfig(Context.Guild.Id);
+
             if (role == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `raidconfig modrole [rolename]`", Color = GenerateColor() }.Build());
+                ServerConfig.ModRoleId = null;
+                _floofDB.SaveChanges();
+                await Context.Channel.SendMessageAsync("Mod role removed. I will no longer ping a mod role.");
                 return;
             }
 
-            var ServerConfig = GetServerConfig(Context.Guild.Id);
             var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
 
             if (foundRole != null)
@@ -157,13 +160,16 @@ namespace Floofbot.Modules
         [Summary("OPTIONAL: A role to give to users to mute them in the server. If not set, users are banned by default.")]
         public async Task SetMutedRole(string role = null)
         {
+            var ServerConfig = GetServerConfig(Context.Guild.Id);
+
             if (role == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `raidconfig mutedrole [rolename]`", Color = GenerateColor() }.Build());
+                ServerConfig.MutedRoleId = null;
+                _floofDB.SaveChanges();
+                await Context.Channel.SendMessageAsync("Muted role removed. I will now default to banning users.");
                 return;
             }
 
-            var ServerConfig = GetServerConfig(Context.Guild.Id);
             var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
 
             if (foundRole != null)
@@ -182,13 +188,16 @@ namespace Floofbot.Modules
         [Summary("OPTIONAL: Users with this role are immune to raid protection.")]
         public async Task SetExceptionsRole(string role = null)
         {
+            var ServerConfig = GetServerConfig(Context.Guild.Id);
+
             if (role == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `raidconfig exceptionsrole [rolename]`", Color = GenerateColor() }.Build());
+                ServerConfig.ExceptionRoleId = null;
+                _floofDB.SaveChanges();
+                await Context.Channel.SendMessageAsync("Exceptions role removed. Users will no longer be exempt from raid protection.");
                 return;
             }
 
-            var ServerConfig = GetServerConfig(Context.Guild.Id);
             var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
 
             if (foundRole != null)
