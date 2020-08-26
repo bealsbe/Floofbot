@@ -107,22 +107,11 @@ namespace Floofbot.Modules
         [Summary("Toggles the raid protection")]
         public async Task Toggle()
         {
-
-            // try toggling
-            try
-            {
-                // check the status of raid protection
-                var ServerConfig = GetServerConfig(Context.Guild.Id);
-                ServerConfig.Enabled = !ServerConfig.Enabled;
-                _floofDB.SaveChanges();
-                await Context.Channel.SendMessageAsync("Raid Protection " + (ServerConfig.Enabled ? "Enabled!" : "Disabled!"));
-            }
-            catch (Exception ex)
-            {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to toggle raid protection: " + ex);
-                return;
-            }
+            // check the status of raid protection
+            var ServerConfig = GetServerConfig(Context.Guild.Id);
+            ServerConfig.Enabled = !ServerConfig.Enabled;
+            _floofDB.SaveChanges();
+            await Context.Channel.SendMessageAsync("Raid Protection " + (ServerConfig.Enabled ? "Enabled!" : "Disabled!"));
         }
         [Command("togglebans")]
         [Summary("Toggles whether to ban or mute users that trigger the raid detection.")]
