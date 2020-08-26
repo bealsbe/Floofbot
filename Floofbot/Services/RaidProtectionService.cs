@@ -62,9 +62,15 @@ namespace Floofbot.Services
             RaidProtectionConfig serverConfig = _floofDb.RaidProtectionConfigs.Find(guild.Id);
             return serverConfig;
         }        
-        public async Task NotifyModerators(SocketRole modRole, ITextChannel modChannel, string message)
+        private async Task NotifyModerators(SocketRole modRole, ITextChannel modChannel, string message)
         {
             await modChannel.SendMessageAsync(modRole.Mention + " there may be a possible raid! Reason: ``" + message + "``");
+        }
+        private async void SendMessageAndDelete(string messageContent, ISocketMessageChannel channel)
+        {
+            var botMsg = await channel.SendMessageAsync(messageContent);
+            await Task.Delay(botMessageDeletionDelay);
+            await botMsg.DeleteAsync();
         }
         private async void UserPunishmentTimeout(ulong guildId, ulong userId)
         {
@@ -115,7 +121,7 @@ namespace Floofbot.Services
             if (!punishedUsers.ContainsKey(guildId))
                 punishedUsers.Add(guildId, new List<SocketUser>());
         }
-    public async Task<bool> CheckUserMessageCount(SocketMessage msg, ulong guildId)
+    private bool CheckUserMessageCount(SocketMessage msg, ulong guildId)
         {
             if (userMessageCount[guildId].ContainsKey(msg.Author.Id))
             {
@@ -134,9 +140,7 @@ namespace Floofbot.Services
                     // reset the count after punishing the user
                     userMessageCount[guildId][msg.Author.Id] = 0;
 
-                    var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " you are sending messages too quickly!");
-                    await Task.Delay(botMessageDeletionDelay);
-                    await botMsg.DeleteAsync();
+                    SendMessageAndDelete(msg.Author.Mention + " you are sending messages too quickly!", msg.Channel);
 
                     // we run an async task to remove their point after the specified duration
                     UserPunishmentTimeout(guildId, msg.Author.Id);
@@ -151,7 +155,7 @@ namespace Floofbot.Services
             UserMessageCountTimeout(guildId, msg.Author.Id);
             return false;
         }
-        public async Task<bool> CheckMentions(SocketUserMessage msg, IGuild guild, SocketRole modRole, ITextChannel modChannel)
+        private async Task<bool> CheckMentions(SocketUserMessage msg, IGuild guild, SocketRole modRole, ITextChannel modChannel)
         {
             if (msg.MentionedUsers.Count > maxMentionCount)
             {
@@ -177,7 +181,7 @@ namespace Floofbot.Services
             }
             return false;
         }
-        public async Task<bool> CheckLetterSpam(SocketMessage msg, ulong guildId)
+        private bool CheckLetterSpam(SocketMessage msg, ulong guildId)
         {
             var matches = Regex.Matches(msg.Content, @"(.)\1+");
             foreach (Match m in matches)
@@ -196,9 +200,9 @@ namespace Floofbot.Services
                     }
                     // we run an async task to remove their point after the specified duration
                     UserPunishmentTimeout(guildId, msg.Author.Id);
-                    var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " no spamming!");
-                    await Task.Delay(botMessageDeletionDelay);
-                    await botMsg.DeleteAsync();
+
+                    SendMessageAndDelete(msg.Author.Mention + " no spamming!", msg.Channel);
+
                     // we return here because we only need to check for at least one match, doesnt matter if there are more
                     return true;
                 }                     
@@ -206,7 +210,7 @@ namespace Floofbot.Services
             return false;
 
         }
-        public async Task<bool> CheckInviteLinks(SocketMessage msg, ulong guildId)
+        private bool CheckInviteLinks(SocketMessage msg, ulong guildId)
         {
             var regex = "(https?:\\/\\/)?(www\\.)?((d(iscord)?\\.gg)|(discord(app)?\\.com))/+\\w{5,}/?";
             if (Regex.IsMatch(msg.Content, regex))
@@ -222,15 +226,15 @@ namespace Floofbot.Services
                 }
                 // we run an async task to remove their point after the specified duration
                 UserPunishmentTimeout(guildId, msg.Author.Id);
-                var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " no invite links!");
-                await Task.Delay(botMessageDeletionDelay);
-                await botMsg.DeleteAsync();
+
+                SendMessageAndDelete(msg.Author.Mention + " no invite links!", msg.Channel);
+
                 // we return here because we only need to check for at least one match, doesnt matter if there are more
                 return true;
             }
             return false;
         }
-        public async Task<bool> CheckEmojiSpam(SocketMessage msg, ulong guildId)
+        private bool CheckEmojiSpam(SocketMessage msg, ulong guildId)
         {
             // check for repeated custom and normal emojis. 
             // custom emojis have format <:name:id> and normal emojis use unicode emoji
@@ -249,9 +253,9 @@ namespace Floofbot.Services
                 }
                 // we run an async task to remove their point after the specified duration
                 UserPunishmentTimeout(guildId, msg.Author.Id);
-                var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " do not spam emojis!");
-                await Task.Delay(botMessageDeletionDelay);
-                await botMsg.DeleteAsync();
+
+                SendMessageAndDelete(msg.Author.Mention + " do not spam emojis!", msg.Channel);
+
                 return true;
             }
             else
@@ -344,13 +348,13 @@ namespace Floofbot.Services
             // this will ALWAYS ban users regardless of muted role or not 
             bool spammedMentions = CheckMentions(userMsg, guild, modRole, modChannel).Result;
             // this will check their messages and see if they are spamming
-            bool userSpammedMessages = CheckUserMessageCount(userMsg, guild.Id).Result;
+            bool userSpammedMessages = CheckUserMessageCount(userMsg, guild.Id);
             // this checks for spamming letters in a row
-            bool userSpammedLetters = CheckLetterSpam(userMsg, guild.Id).Result;
+            bool userSpammedLetters = CheckLetterSpam(userMsg, guild.Id);
             // this checks for posting invite links
-            bool userSpammedInviteLink = CheckInviteLinks(userMsg, guild.Id).Result;
+            bool userSpammedInviteLink = CheckInviteLinks(userMsg, guild.Id);
             // check for spammed emojis
-            bool userSpammedEmojis = CheckEmojiSpam(userMsg, guild.Id).Result;
+            bool userSpammedEmojis = CheckEmojiSpam(userMsg, guild.Id);
 
             if (spammedMentions)
                 return false; // user already banned
