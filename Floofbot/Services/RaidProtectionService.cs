@@ -25,7 +25,9 @@ namespace Floofbot.Services
         // used to keep track of the number of messages a user sent for spam protection
         private Dictionary<ulong, int> userMessageCount = new Dictionary<ulong, int>();
         // a list of punished users used to detect any potential raids
-        private List<SocketUser> punishedUsers = new List<SocketUser>();  
+        private List<SocketUser> punishedUsers = new List<SocketUser>();
+        // the total number of mentions a user can have before taking action
+        private static int maxMentionCount = 10;
         // determines how long before a user is forgiven for a punishment
         private static int forgivenDuration = 5 * 60 * 1000; // 5 min
         // determines the rate at which users can send messages, currently no more than x messages in y seconds
@@ -126,7 +128,7 @@ namespace Floofbot.Services
         }
         public async Task<bool> CheckMentions(SocketUserMessage msg, IGuild guild, SocketRole modRole, ITextChannel modChannel)
         {
-            if (msg.MentionedUsers.Count > 10)
+            if (msg.MentionedUsers.Count > maxMentionCount)
             {
                 string reason = "Raid Protection =>" + msg.MentionedUsers.Count + " mentions in one message.";
                 try
