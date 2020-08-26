@@ -3,9 +3,11 @@ using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.WebUtilities;
 using Serilog;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
@@ -20,12 +22,14 @@ namespace Floofbot.Services
 {
     public class RaidProtectionService
     {
+
+
         // will store user id and how many counts they've had
-        private Dictionary<ulong, int> userPunishmentCount = new Dictionary<ulong, int>();
+        private Dictionary<ulong, Dictionary<ulong, int>> userPunishmentCount = new Dictionary<ulong, Dictionary<ulong, int>>();
         // used to keep track of the number of messages a user sent for spam protection
-        private Dictionary<ulong, int> userMessageCount = new Dictionary<ulong, int>();
+        private Dictionary<ulong, Dictionary<ulong, int>> userMessageCount = new Dictionary<ulong, Dictionary<ulong, int>>();
         // a list of punished users used to detect any potential raids
-        private List<SocketUser> punishedUsers = new List<SocketUser>();
+        private Dictionary<ulong, List<SocketUser>> punishedUsers = new Dictionary<ulong, List<SocketUser>>();
         // the total number of mentions a user can have before taking action
         private static int maxMentionCount = 10;
         // determines how long before a user is forgiven for a punishment
@@ -57,26 +61,26 @@ namespace Floofbot.Services
         {
             RaidProtectionConfig serverConfig = _floofDb.RaidProtectionConfigs.Find(guild.Id);
             return serverConfig;
-        }
+        }        
         public async Task NotifyModerators(SocketRole modRole, ITextChannel modChannel, string message)
         {
             await modChannel.SendMessageAsync(modRole.Mention + " there may be a possible raid! Reason: ``" + message + "``");
         }
-        private async void UserPunishmentTimeout(ulong userid)
+        private async void UserPunishmentTimeout(ulong guildId, ulong userId)
         {
             await Task.Delay(forgivenDuration);
-            if (userPunishmentCount.ContainsKey(userid) && userPunishmentCount[userid] != 0)
+            if (userPunishmentCount.ContainsKey(guildId) && userPunishmentCount[guildId].ContainsKey(userId))
             {
-                userPunishmentCount[userid] -= 1;
-                if (userPunishmentCount[userid] == 0)
-                    userPunishmentCount.Remove(userid);
+                userPunishmentCount[guildId][userId] -= 1;
+                if (userPunishmentCount[guildId][userId] == 0)
+                    userPunishmentCount[guildId].Remove(userId);
             }
         }
-        private async void punishedUsersTimeout(SocketUser user)
+        private async void punishedUsersTimeout(ulong guildId, SocketUser user)
         {
             await Task.Delay(removePunishedUserDelay);
-            if (punishedUsers.Contains(user))
-                punishedUsers.Remove(user);
+            if (punishedUsers.ContainsKey(guildId) && punishedUsers[guildId].Contains(user))
+                punishedUsers[guildId].Remove(user);
         }
         private async void userJoinTimeout(IGuild guild)
         {
@@ -89,50 +93,62 @@ namespace Floofbot.Services
             }
                         
         }
-        private async void UserMessageCountTimeout(ulong userid)
+        private async void UserMessageCountTimeout(ulong guildId, ulong userId)
         {
             await Task.Delay(durationForMaxMessages);
-            if (userMessageCount.ContainsKey(userid))
-                if (userMessageCount[userid] != 0)
-                    userMessageCount[userid] -= 1;
+            if (userMessageCount.ContainsKey(guildId) && userMessageCount[guildId].ContainsKey(userId))
+                if (userMessageCount[guildId][userId] != 0)
+                {
+                    userMessageCount[guildId][userId] -= 1;
+                    if (userMessageCount[guildId][userId] == 0)
+                        userMessageCount[guildId].Remove(userId);
+
+                }
+
         }
-        public async Task<bool> CheckUserMessageCount(SocketMessage msg)
+        private void ensureGuildInDictionaries(ulong guildId)
         {
-            if (userMessageCount.ContainsKey(msg.Author.Id))
+            if (!userPunishmentCount.ContainsKey(guildId))
+                userPunishmentCount.Add(guildId, new Dictionary<ulong, int>());
+            if (!userMessageCount.ContainsKey(guildId))
+                userMessageCount.Add(guildId, new Dictionary<ulong, int>());
+            if (!punishedUsers.ContainsKey(guildId))
+                punishedUsers.Add(guildId, new List<SocketUser>());
+        }
+    public async Task<bool> CheckUserMessageCount(SocketMessage msg, ulong guildId)
+        {
+            if (userMessageCount[guildId].ContainsKey(msg.Author.Id))
             {
-                userMessageCount[msg.Author.Id] += 1;
-                if (userMessageCount[msg.Author.Id] >= 5) // no more than 5 messages in time frame
+                userMessageCount[guildId][msg.Author.Id] += 1;
+                if (userMessageCount[guildId][msg.Author.Id] >= 5) // no more than 5 messages in time frame
                 {
                     // add a bad boye point for the user
-                    if (userPunishmentCount.ContainsKey(msg.Author.Id))
+                    if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
                     {
-                        userPunishmentCount[msg.Author.Id] += 1;
+                        userPunishmentCount[guildId][msg.Author.Id] += 1;
                     }
                     else // they were a good boye but now they are not
                     {
-                        userPunishmentCount.Add(msg.Author.Id, 1);
+                        userPunishmentCount[guildId].Add(msg.Author.Id, 1);
                     }
                     // reset the count after punishing the user
-                    userMessageCount[msg.Author.Id] = 0;
-                    // we run an async task to remove their point after the specified duration
-                    await Task.Run(async () =>
-                    {
-                        await Task.Delay(forgivenDuration);
+                    userMessageCount[guildId][msg.Author.Id] = 0;
 
-                        userPunishmentCount[msg.Author.Id] -= 1;
-                    });
                     var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " you are sending messages too quickly!");
                     await Task.Delay(botMessageDeletionDelay);
                     await botMsg.DeleteAsync();
+
+                    // we run an async task to remove their point after the specified duration
+                    UserPunishmentTimeout(guildId, msg.Author.Id);
                     return true;
                 }
             }
             else // they were a good boye but now they are not
             {
-                userMessageCount.Add(msg.Author.Id, 1);
+                userMessageCount[guildId].Add(msg.Author.Id, 1);
             }
             // we run an async task to remove their point after the specified duration
-            UserMessageCountTimeout(msg.Author.Id);
+            UserMessageCountTimeout(guildId, msg.Author.Id);
             return false;
         }
         public async Task<bool> CheckMentions(SocketUserMessage msg, IGuild guild, SocketRole modRole, ITextChannel modChannel)
@@ -161,7 +177,7 @@ namespace Floofbot.Services
             }
             return false;
         }
-        public async Task<bool> CheckLetterSpam(SocketMessage msg)
+        public async Task<bool> CheckLetterSpam(SocketMessage msg, ulong guildId)
         {
             var matches = Regex.Matches(msg.Content, @"(.)\1+");
             foreach (Match m in matches)
@@ -170,16 +186,16 @@ namespace Floofbot.Services
                 if (m.Length > 5)
                 {
                     // add a bad boye point for the user
-                    if (userPunishmentCount.ContainsKey(msg.Author.Id))
+                    if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
                     {
-                        userPunishmentCount[msg.Author.Id] += 1;
+                        userPunishmentCount[guildId][msg.Author.Id] += 1;
                     }
                     else // they were a good boye but now they are not
                     {
-                        userPunishmentCount.Add(msg.Author.Id, 1);
+                        userPunishmentCount[guildId].Add(msg.Author.Id, 1);
                     }
                     // we run an async task to remove their point after the specified duration
-                    UserPunishmentTimeout(msg.Author.Id);
+                    UserPunishmentTimeout(guildId, msg.Author.Id);
                     var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " no spamming!");
                     await Task.Delay(botMessageDeletionDelay);
                     await botMsg.DeleteAsync();
@@ -190,21 +206,21 @@ namespace Floofbot.Services
             return false;
 
         }
-        public async Task<bool> CheckInviteLinks(SocketMessage msg)
+        public async Task<bool> CheckInviteLinks(SocketMessage msg, ulong guildId)
         {
             if (msg.Content.Contains("discord.gg") || msg.Content.Contains("d.gg"))
             {
                 // add a bad boye point for the user
-                if (userPunishmentCount.ContainsKey(msg.Author.Id))
+                if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
                 {
-                    userPunishmentCount[msg.Author.Id] += 1;
+                    userPunishmentCount[guildId][msg.Author.Id] += 1;
                 }
                 else // they were a good boye but now they are not
                 {
-                    userPunishmentCount.Add(msg.Author.Id, 1);
+                    userPunishmentCount[guildId].Add(msg.Author.Id, 1);
                 }
                 // we run an async task to remove their point after the specified duration
-                UserPunishmentTimeout(msg.Author.Id);
+                UserPunishmentTimeout(guildId, msg.Author.Id);
                 var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " no invite links!");
                 await Task.Delay(botMessageDeletionDelay);
                 await botMsg.DeleteAsync();
@@ -213,7 +229,7 @@ namespace Floofbot.Services
             }
             return false;
         }
-        public async Task<bool> CheckEmojiSpam(SocketMessage msg)
+        public async Task<bool> CheckEmojiSpam(SocketMessage msg, ulong guildId)
         {
             // check for repeated custom and normal emojis. 
             // custom emojis have format <:name:id> and normal emojis use unicode emoji
@@ -222,16 +238,16 @@ namespace Floofbot.Services
             if (matchEmoji.Success) // emoji spam
             {
                 // add a bad boye point for the user
-                if (userPunishmentCount.ContainsKey(msg.Author.Id))
+                if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
                 {
-                    userPunishmentCount[msg.Author.Id] += 1;
+                    userPunishmentCount[guildId][msg.Author.Id] += 1;
                 }
                 else // they were a good boye but now they are not
                 {
-                    userPunishmentCount.Add(msg.Author.Id, 1);
+                    userPunishmentCount[guildId].Add(msg.Author.Id, 1);
                 }
                 // we run an async task to remove their point after the specified duration
-                UserPunishmentTimeout(msg.Author.Id);
+                UserPunishmentTimeout(guildId, msg.Author.Id);
                 var botMsg = await msg.Channel.SendMessageAsync(msg.Author.Mention + " do not spam emojis!");
                 await Task.Delay(botMessageDeletionDelay);
                 await botMsg.DeleteAsync();
@@ -320,33 +336,35 @@ namespace Floofbot.Services
             var modChannel = (serverConfig.ModChannelId != null) ? guild.GetChannel((ulong)serverConfig.ModChannelId) as ITextChannel : null;
             var banOffenders = serverConfig.BanOffenders;
 
+            // ensure our dictionaries contain the guild
+            ensureGuildInDictionaries(guild.Id);
             // now we run our checks. If any of them return true, we have a bad boy
 
             // this will ALWAYS ban users regardless of muted role or not 
             bool spammedMentions = CheckMentions(userMsg, guild, modRole, modChannel).Result;
             // this will check their messages and see if they are spamming
-            bool userSpammedMessages = CheckUserMessageCount(userMsg).Result;
+            bool userSpammedMessages = CheckUserMessageCount(userMsg, guild.Id).Result;
             // this checks for spamming letters in a row
-            bool userSpammedLetters = CheckLetterSpam(userMsg).Result;
+            bool userSpammedLetters = CheckLetterSpam(userMsg, guild.Id).Result;
             // this checks for posting invite links
-            bool userSpammedInviteLink = CheckInviteLinks(userMsg).Result;
+            bool userSpammedInviteLink = CheckInviteLinks(userMsg, guild.Id).Result;
             // check for spammed emojis
-            bool userSpammedEmojis = CheckEmojiSpam(userMsg).Result;
+            bool userSpammedEmojis = CheckEmojiSpam(userMsg, guild.Id).Result;
 
             if (spammedMentions)
                 return false; // user already banned
             if (userSpammedMessages || userSpammedLetters || userSpammedInviteLink || userSpammedEmojis)
             {
-                if (userPunishmentCount.ContainsKey(userMsg.Author.Id))
+                if (userPunishmentCount[guild.Id].ContainsKey(userMsg.Author.Id))
                 {
                     // they have been too much of a bad boye >:(
-                    if (userPunishmentCount[msg.Author.Id] > maxNumberOfPunishments)
+                    if (userPunishmentCount[guild.Id][msg.Author.Id] > maxNumberOfPunishments)
                     {
                         // remove them from the dictionary
-                        userPunishmentCount.Remove(userMsg.Author.Id);
+                        userPunishmentCount[guild.Id].Remove(userMsg.Author.Id);
                         // add to the list of punished users
-                        punishedUsers.Add(userMsg.Author);
-                        punishedUsersTimeout(userMsg.Author);
+                        punishedUsers[guild.Id].Add(userMsg.Author);
+                        punishedUsersTimeout(guild.Id, userMsg.Author);
                         // decide if we need to notify the mods of a potential raid
                         if ((modRole != null) && (modChannel != null) && (punishedUsers.Count >= maxNumberPunishedUsers))
                             await NotifyModerators(modRole, modChannel, "Excessive amount of users punished in short time frame.");
