@@ -323,10 +323,10 @@ namespace Floofbot.Services
                 if (exceptionsRole != null && guildUser != null)
                 {
                     foreach (IRole role in guildUser.Roles)
-                        {
+                    {
                         if (role.Id == exceptionsRole.Id)
                             return false;
-                        }
+                    }
                 }
             }
 
