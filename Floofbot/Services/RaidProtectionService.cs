@@ -286,7 +286,7 @@ namespace Floofbot.Services
                     return;
                 }
             }
-            else // they were a good boye but now they are not
+            else // add 1 to number of joins in that guild
             {
                 numberOfJoins.Add(guild, 1);
             }
