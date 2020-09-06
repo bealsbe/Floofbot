@@ -212,7 +212,7 @@ namespace Floofbot.Services
         }
         private bool CheckInviteLinks(SocketMessage msg, ulong guildId)
         {
-            var regex = "(https?:\\/\\/)?(www\\.)?((d(iscord)?\\.gg)|(discord(app)?\\.com))/+\\w{5,}/?";
+            var regex = "(https?:\\/\\/)?(www\\.)?((discord(app)?\\.com\\/invite)|(discord\\.(gg|io|me|li)))\\/+\\w{2,}\\/?";
             if (Regex.IsMatch(msg.Content, regex))
             {
                 // add a bad boye point for the user
