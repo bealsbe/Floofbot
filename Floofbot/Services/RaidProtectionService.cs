@@ -64,6 +64,8 @@ namespace Floofbot.Services
         }        
         private async Task NotifyModerators(SocketRole modRole, ITextChannel modChannel, string message)
         {
+            if (modRole == null || modChannel == null || string.IsNullOrEmpty(message))
+                return;
             await modChannel.SendMessageAsync(modRole.Mention + " there may be a possible raid! Reason: ``" + message + "``");
         }
         private async void SendMessageAndDelete(string messageContent, ISocketMessageChannel channel)
