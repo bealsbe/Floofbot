@@ -270,11 +270,8 @@ namespace Floofbot.Services
                 return;
             var _floofDb = new FloofDataContext();
             var serverConfig = GetServerConfig(guild, _floofDb);
-            // raid protection not configured
-            if (serverConfig == null)
-                return;
-            // raid protection disabled
-            if (!serverConfig.Enabled)
+            // raid protection not configured or disabled
+            if (serverConfig == null || !serverConfig.Enabled)
                 return;
             // increment user join count for guild
             if (numberOfJoins.ContainsKey(guild))
