@@ -303,18 +303,14 @@ namespace Floofbot.Services
                 return false;
             // can return null
             var channel = userMsg.Channel as ITextChannel;
-            if (channel == null)
-                return false;
-            // can return null
             var guild = channel.Guild as SocketGuild;
-            if (guild == null)
+
+            if (channel == null || guild == null)
                 return false;
+
             var serverConfig = GetServerConfig(guild, _floofDb);
-            // raid protection not configured
-            if (serverConfig == null)
-                return false;
-            // raid protection disabled
-            if (!serverConfig.Enabled)
+            // raid protection not configured or disabled
+            if (serverConfig == null || !serverConfig.Enabled)
                 return false;
 
             // users with the exceptions role are immune to raid protection
