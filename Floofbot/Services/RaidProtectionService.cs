@@ -265,10 +265,10 @@ namespace Floofbot.Services
         }
         public async Task CheckForExcessiveJoins(IGuild guild)
         {
-            var _floofDb = new FloofDataContext();
             var server = guild as SocketGuild;
             if (server == null)
                 return;
+            var _floofDb = new FloofDataContext();
             var serverConfig = GetServerConfig(guild, _floofDb);
             // raid protection not configured
             if (serverConfig == null)
