@@ -85,7 +85,18 @@ namespace Floofbot.Handlers
         }
         private async Task OnMessageUpdatedHandler(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel chan)
         {
-            await HandleCommandAsync(after);
+            var messageBefore = (before.HasValue ? before.Value : null) as IUserMessage;
+            if (messageBefore == null)
+                return;
+
+            if (messageBefore.EditedTimestamp == null) // user has never edited their message
+                await HandleCommandAsync(after);
+            else
+            {
+                var timeDifference = DateTimeOffset.Now - messageBefore.EditedTimestamp.Value;
+                if (timeDifference.TotalSeconds > 30) // allow 30s edit intervals
+                    await HandleCommandAsync(after);
+            }
         }
         private async Task HandleCommandAsync(SocketMessage s)
         {
