@@ -61,11 +61,14 @@ namespace Floofbot.Services
         {
             RaidProtectionConfig serverConfig = _floofDb.RaidProtectionConfigs.Find(guild.Id);
             return serverConfig;
-        }        
+        }
         private async Task NotifyModerators(SocketRole modRole, ITextChannel modChannel, string message)
         {
             if (modRole == null || modChannel == null || string.IsNullOrEmpty(message))
+            {
+                Log.Information("Unable to notify moderators of a possible raid with reason: ``" + message + "``");
                 return;
+            }
             await modChannel.SendMessageAsync(modRole.Mention + " there may be a possible raid! Reason: ``" + message + "``");
         }
         private async void SendMessageAndDelete(string messageContent, ISocketMessageChannel channel)
@@ -146,6 +149,8 @@ namespace Floofbot.Services
 
                     // we run an async task to remove their point after the specified duration
                     UserPunishmentTimeout(guildId, msg.Author.Id);
+
+                    Log.Information("User ID " + msg.Author.Id + " triggered excess message spam and received a warning.");
                     return true;
                 }
             }
@@ -179,6 +184,7 @@ namespace Floofbot.Services
                 {
                     Log.Error("Error banning user for mass mention: " + e);
                 }
+                Log.Information("User ID " + msg.Author.Id + " triggered excess mention spam and was banned.");
                 return true;
             }
             return false;
@@ -204,6 +210,8 @@ namespace Floofbot.Services
                     UserPunishmentTimeout(guildId, msg.Author.Id);
 
                     SendMessageAndDelete(msg.Author.Mention + " no spamming!", msg.Channel);
+
+                    Log.Information("User ID " + msg.Author.Id + " triggered excess letter spam and received a warning.");
 
                     // we return here because we only need to check for at least one match, doesnt matter if there are more
                     return true;
@@ -231,6 +239,8 @@ namespace Floofbot.Services
 
                 SendMessageAndDelete(msg.Author.Mention + " no invite links!", msg.Channel);
 
+                Log.Information("User ID " + msg.Author.Id + " triggered invite link spam and received a warning.");
+
                 // we return here because we only need to check for at least one match, doesnt matter if there are more
                 return true;
             }
@@ -255,6 +265,8 @@ namespace Floofbot.Services
                 }
                 // we run an async task to remove their point after the specified duration
                 UserPunishmentTimeout(guildId, msg.Author.Id);
+
+                Log.Information("User ID " + msg.Author.Id + " triggered emoji spam and received a warning.");
 
                 SendMessageAndDelete(msg.Author.Mention + " do not spam emojis!", msg.Channel);
 
@@ -282,6 +294,7 @@ namespace Floofbot.Services
                     var modRole = (serverConfig.ModRoleId != null) ? server.GetRole((ulong)serverConfig.ModRoleId) : null;
                     var modChannel = (serverConfig.ModChannelId != null) ? server.GetChannel((ulong)serverConfig.ModChannelId) as ITextChannel : null;
                     await NotifyModerators(modRole, modChannel, "Excessive number of new joins in short time period.");
+                    Log.Information("An excessive number of joins was detected in server ID " + server.Id);
                     numberOfJoins[guild] = 0;
                     return;
                 }
