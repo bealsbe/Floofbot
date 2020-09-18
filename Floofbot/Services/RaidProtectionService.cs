@@ -51,12 +51,6 @@ namespace Floofbot.Services
         // The max number of repeated emojis before triggering the raid protection
         private static int maxNumberEmojis = 5;
 
-
-
-        public RaidProtectionService()
-        {
-
-        }
         public RaidProtectionConfig GetServerConfig(IGuild guild, FloofDataContext _floofDb)
         {
             RaidProtectionConfig serverConfig = _floofDb.RaidProtectionConfigs.Find(guild.Id);
