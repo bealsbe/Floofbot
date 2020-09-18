@@ -93,7 +93,7 @@ namespace Floofbot.Handlers
             {
                 var timeDifference = DateTimeOffset.Now - messageBefore.Timestamp;
                 if (timeDifference.TotalSeconds < 30)
-                await HandleCommandAsync(after);
+                    await HandleCommandAsync(after);
 
             }
         }
