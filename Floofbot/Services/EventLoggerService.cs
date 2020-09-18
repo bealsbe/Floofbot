@@ -20,6 +20,7 @@ namespace Floofbot.Services
         private DiscordSocketClient _client;
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
+        private RaidProtectionService _raidProtectionService;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
 
 
@@ -30,7 +31,7 @@ namespace Floofbot.Services
             // assisting handlers
             _wordFilterService = new WordFilterService();
             _nicknameAlertService = new NicknameAlertService(new FloofDataContext());
-
+            _raidProtectionService = new RaidProtectionService();
             // event handlers
             _client.MessageUpdated += MessageUpdated;
             _client.MessageDeleted += MessageDeleted;
@@ -114,6 +115,14 @@ namespace Floofbot.Services
                     if (msg == null || msg.Author.IsBot)
                         return;
                     var channel = msg.Channel as ITextChannel;
+
+                    bool messageTriggeredRaidProtection = _raidProtectionService.CheckMessage(new FloofDataContext(), msg).Result;
+                    if (messageTriggeredRaidProtection)
+                    {
+                        await msg.DeleteAsync();
+                        return;
+                    }
+                  
                     bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
                     if (hasBadWord)
                         await HandleBadMessage(msg.Author, msg);
@@ -168,6 +177,17 @@ namespace Floofbot.Services
                     if (messageBefore.Content == after.Content) // no change
                         return;
 
+                    bool messageTriggeredRaidProtection = _raidProtectionService.CheckMessage(new FloofDataContext(), after).Result;
+                    if (messageTriggeredRaidProtection)
+                    {
+                        await after.DeleteAsync();
+                        return;
+                    }
+
+                    bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Content, channel.Guild.Id, after.Channel.Id);
+                    if (hasBadWord)
+                        await HandleBadMessage(after.Author, after);
+
                     if ((IsToggled(channel.Guild)) == false) // not toggled on
                         return;
 
@@ -189,10 +209,6 @@ namespace Floofbot.Services
                         embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
 
                     await logChannel.SendMessageAsync("", false, embed.Build());
-
-                    bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Content, channel.Guild.Id, channel.Id);
-                    if (hasBadWord)
-                        await HandleBadMessage(after.Author, after);
                 }
                 catch (Exception ex)
                 {
@@ -389,6 +405,8 @@ namespace Floofbot.Services
 
                     if (user.IsBot)
                         return;
+
+                    await _raidProtectionService.CheckForExcessiveJoins(user.Guild);
 
                     if ((IsToggled(user.Guild)) == false)
                         return;
