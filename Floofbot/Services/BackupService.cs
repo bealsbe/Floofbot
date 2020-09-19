@@ -32,7 +32,7 @@ namespace Floofbot.Services
                 double targetDelay = DateTime.Now.TimeOfDay.TotalSeconds - backupTime.TotalSeconds;
                 if (targetDelay < 0)
                 {
-                    targetDelay += 86400;
+                    targetDelay += 86400000;
                 }
                 await Task.Delay((int)targetDelay);
                 System.Diagnostics.Process backupProcess = new System.Diagnostics.Process();
