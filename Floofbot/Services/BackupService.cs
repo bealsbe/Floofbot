@@ -10,7 +10,7 @@ namespace Floofbot.Services
 {
     class BackupService
     {
-        private TimeSpan backupTime = new TimeSpan(2, 0, 0);
+        private TimeSpan backupTime = new TimeSpan(11, 52, 0);
         public void Start()
         {
             if (string.IsNullOrEmpty(BotConfigFactory.Config.BackupOutputPath) || string.IsNullOrEmpty(BotConfigFactory.Config.BackupScript))
@@ -29,7 +29,8 @@ namespace Floofbot.Services
         {
             while (true)
             {
-                double targetDelay = DateTime.UtcNow.TimeOfDay.TotalSeconds - backupTime.TotalSeconds;
+                double targetDelay = backupTime.TotalSeconds - DateTime.UtcNow.TimeOfDay.TotalSeconds;
+                Console.WriteLine(targetDelay.ToString());
                 if (targetDelay < 0)
                 {
                     targetDelay += 86400;
