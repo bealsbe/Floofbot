@@ -30,7 +30,6 @@ namespace Floofbot.Services
             while (true)
             {
                 double targetDelay = backupTime.TotalSeconds - DateTime.UtcNow.TimeOfDay.TotalSeconds;
-                Console.WriteLine(targetDelay.ToString());
                 if (targetDelay < 0)
                 {
                     targetDelay += 86400;
