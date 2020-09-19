@@ -32,9 +32,9 @@ namespace Floofbot.Services
                 double targetDelay = DateTime.UtcNow.TimeOfDay.TotalSeconds - backupTime.TotalSeconds;
                 if (targetDelay < 0)
                 {
-                    targetDelay += 86400000;
+                    targetDelay += 86400;
                 }
-                await Task.Delay((int)targetDelay);
+                await Task.Delay((int)targetDelay * 1000);
                 System.Diagnostics.Process backupProcess = new System.Diagnostics.Process();
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
