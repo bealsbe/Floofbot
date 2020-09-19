@@ -10,7 +10,7 @@ namespace Floofbot.Services
 {
     class BackupService
     {
-        private TimeSpan backupTime = new TimeSpan(11, 52, 0);
+        private TimeSpan backupTime = new TimeSpan(2, 0, 0);
         public void Start()
         {
             if (string.IsNullOrEmpty(BotConfigFactory.Config.BackupOutputPath) || string.IsNullOrEmpty(BotConfigFactory.Config.BackupScript))
