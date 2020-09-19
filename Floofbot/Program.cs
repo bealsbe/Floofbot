@@ -92,7 +92,7 @@ namespace Floofbot
             }
 
             BackupService backupService = new BackupService();
-            backupService.Run();
+            backupService.Start();
             await Task.Delay(-1);
         }
     }
