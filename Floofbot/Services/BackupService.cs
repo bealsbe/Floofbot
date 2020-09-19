@@ -10,7 +10,7 @@ namespace Floofbot.Services
 {
     class BackupService
     {
-        private DateTime backupTime = new DateTime(1, 1, 1, 02, 0, 0, 0);
+        private TimeSpan backupTime = new TimeSpan(2, 0, 0);
         public void Start()
         {
             if (string.IsNullOrEmpty(BotConfigFactory.Config.BackupOutputPath) || string.IsNullOrEmpty(BotConfigFactory.Config.BackupScript))
@@ -20,17 +20,21 @@ namespace Floofbot.Services
             }
             else
             {
-                Log.Information("Automatic backups enabled! Backups will be saved to " + BotConfigFactory.Config.BackupOutputPath + " at " + backupTime.TimeOfDay);
+                Log.Information("Automatic backups enabled! Backups will be saved to " + BotConfigFactory.Config.BackupOutputPath + " at " + backupTime);
             }
-            if ((DateTime.Now.TimeOfDay.Hours == backupTime.TimeOfDay.Hours) && (DateTime.Now.TimeOfDay.Minutes == backupTime.TimeOfDay.Minutes))
-            {
-                RunBackups();
-            }
+
+            RunBackups();
         }
         public async void RunBackups()
         {
             while (true)
             {
+                double targetDelay = DateTime.Now.TimeOfDay.TotalSeconds - backupTime.TotalSeconds;
+                if (targetDelay < 0)
+                {
+                    targetDelay += 86400;
+                }
+                await Task.Delay((int)targetDelay);
                 System.Diagnostics.Process backupProcess = new System.Diagnostics.Process();
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -70,7 +74,6 @@ namespace Floofbot.Services
                 {
                     Log.Fatal("Exception occured when trying to backup the the database: " + e);
                 }
-                await Task.Delay(24 * 3600 * 1000);
             }
         } 
     }
