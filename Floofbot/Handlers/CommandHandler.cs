@@ -29,6 +29,7 @@ namespace Floofbot.Handlers
             _commands = new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false });
             _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
             _client.MessageReceived += HandleCommandAsync;
+            _client.MessageUpdated += OnMessageUpdatedHandler;
         }
 
         private IServiceProvider BuildServiceProvider(DiscordSocketClient client)
@@ -82,7 +83,20 @@ namespace Floofbot.Handlers
             await errorLoggingChannel.SendMessageAsync("", false, embed);
             return;
         }
+        private async Task OnMessageUpdatedHandler(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel chan)
+        {
+            var messageBefore = before.Value as IUserMessage;
+            if (messageBefore == null)
+                return;
 
+            if (messageBefore.EditedTimestamp == null) // user has never edited their message
+            {
+                var timeDifference = DateTimeOffset.Now - messageBefore.Timestamp;
+                if (timeDifference.TotalSeconds < 30)
+                    await HandleCommandAsync(after);
+
+            }
+        }
         private async Task HandleCommandAsync(SocketMessage s)
         {
             var msg = s as SocketUserMessage;
