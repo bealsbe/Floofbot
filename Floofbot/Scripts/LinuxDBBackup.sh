@@ -9,7 +9,7 @@ max_backups=$3
 partial_path="$output_path/$BACKUP_PREFIX"
 
 ## Remove oldest max backup
-rm -f "$output_path/$BACKUP_PREFIX"
+rm -f "$output_path/$BACKUP_PREFIX$max_backups"
 
 ## Shift existing backups over by one
 current_backup=`expr $max_backups - 1`
