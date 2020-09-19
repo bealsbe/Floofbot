@@ -29,7 +29,7 @@ namespace Floofbot.Services
         {
             while (true)
             {
-                double targetDelay = DateTime.Now.TimeOfDay.TotalSeconds - backupTime.TotalSeconds;
+                double targetDelay = DateTime.UtcNow.TimeOfDay.TotalSeconds - backupTime.TotalSeconds;
                 if (targetDelay < 0)
                 {
                     targetDelay += 86400000;
