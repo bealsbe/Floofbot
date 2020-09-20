@@ -3,7 +3,6 @@ using Serilog;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
@@ -42,7 +41,7 @@ namespace Floofbot.Services
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    backupProcess.StartInfo.FileName = "/bin/bash";
+                    backupProcess.StartInfo.FileName = "/bin/sh";
                 }
                 else
                 {
@@ -64,6 +63,10 @@ namespace Floofbot.Services
                     string output = backupProcess.StandardOutput.ReadToEnd(); //The output result
                     backupProcess.WaitForExit();
                     Log.Information(output);
+                    if (backupProcess.ExitCode != 0)
+                    {
+                        Log.Error("Backup script failed. Process returned exit code " + backupProcess.ExitCode);
+                    }
                 }
                 catch (FileNotFoundException)
                 {
