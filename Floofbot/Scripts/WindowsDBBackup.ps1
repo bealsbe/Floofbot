@@ -1,5 +1,5 @@
 ﻿$dbPath = $args[0]
-$outputPath = $args[1]
+$outputPath = $args[1] + "\"
 $maxNumberBackups = $args[2]
 
 # delete oldest backup
@@ -24,9 +24,11 @@ Copy-Item $dbPath -Destination $backupPath -force
 
 if ($?) # Copy success
 {
-    Write-Host "Backup Successful"
+    Write-Host "Backup successful"
+    Exit 0
 }
 else
 {
-    Write-Host "Backup-Failed"
+    Write-Host "Backup failed"
+    Exit 1
 }
