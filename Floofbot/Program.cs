@@ -90,6 +90,9 @@ namespace Floofbot
             {
                 await _client.SetActivityAsync(BotConfigFactory.Config.Activity);
             }
+
+            BackupService backupService = new BackupService();
+            backupService.Start();
             await Task.Delay(-1);
         }
     }

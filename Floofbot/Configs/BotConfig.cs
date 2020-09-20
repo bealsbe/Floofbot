@@ -15,5 +15,9 @@ namespace Floofbot.Configs
 
         public ulong ModMailServer { get; set; }
         public string DbPath { get; set; }
+        public string BackupOutputPath { get; set; }
+        public string BackupScript { get; set; }
+        public int NumberOfBackups { get; set; }
+
     }
 }
