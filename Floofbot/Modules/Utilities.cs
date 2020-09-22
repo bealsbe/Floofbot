@@ -57,7 +57,7 @@ namespace Floofbot
             if (user.AvatarId != null)
                 avatar = user.GetAvatarUrl(ImageFormat.Auto, 512);
 
-            string infostring = $"👥 **Info for {user.Mention}** \n";
+            string infostring = $"👥 **User info for {user.Mention}** \n";
             infostring +=
                  $"**User** : {user.Nickname ?? user.Username} ({user.Username}#{user.Discriminator})\n" +
                  $"**ID** : {user.Id}\n" +
