@@ -197,8 +197,8 @@ namespace Floofbot.Services
             var matches = Regex.Matches(msg.Content, @"(.)\1+");
             foreach (Match m in matches)
             {
-                // string has more than 5 letters in a row
-                if (m.Length > 5)
+                // string has more than 8 letters in a row
+                if (m.Length > 8)
                 {
                     // add a bad boye point for the user
                     if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
