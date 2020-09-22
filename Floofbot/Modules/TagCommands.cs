@@ -286,7 +286,7 @@ namespace Floofbot.Modules
             if (!string.IsNullOrEmpty(tag))
             {
                 string tagName = tag.ToLower();
-                Tag tagToRemove = _floofDb.Tags.FirstOrDefault(x => x.TagName == tagName);
+                Tag tagToRemove = _floofDb.Tags.FirstOrDefault(x => x.TagName == tagName && x.ServerId == Context.Guild.Id);
                 if (tagToRemove != null)
                 {
                     try
