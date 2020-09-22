@@ -129,15 +129,13 @@ namespace Floofbot.Services
 
                     if (userMsg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.Content.EndsWith("?"))
                     {
-                        string content = msg.Content;
                         string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
 
-                        // filter out mass mention abuse
-                        Regex regexRemoveMentions = new Regex("<@(.*?)>");
-                        Regex filterNewLines = new Regex("[\r\n]");
-                        string filteredContent = regexRemoveMentions.Replace(content, "[NO MENTIONS]");
-                        filteredContent = filterNewLines.Replace(filteredContent, "\n> ");
-                        await channel.SendMessageAsync($"> {filteredContent}\n{msg.Author.Mention} {eightBallResponse}");
+                        Embed embed = new EmbedBuilder()
+                        {
+                            Description = msg.Content
+                        }.Build();
+                        await channel.SendMessageAsync($"{msg.Author.Mention} {eightBallResponse}", false, embed);
                     }
                     else
                     {
