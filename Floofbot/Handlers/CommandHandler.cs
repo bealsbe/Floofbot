@@ -120,7 +120,7 @@ namespace Floofbot.Handlers
                 prefix = BotConfigFactory.Config.Prefix;
             }
 
-            if (msg.HasStringPrefix(prefix, ref argPos) || msg.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            if ((msg.HasStringPrefix(prefix, ref argPos) || msg.HasMentionPrefix(_client.CurrentUser, ref argPos)) && !msg.Content.Substring(argPos).StartsWith(prefix))
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 
