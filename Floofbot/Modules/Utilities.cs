@@ -120,13 +120,13 @@ namespace Floofbot
             SocketGuild guild = Context.Guild;
 
             // Get Guild creation date and time, in UTC
-            DateTime guildCreated = DateTime.Parse(guild.CreatedAt.ToString("ddd, dd MMM yyyy h:m tt")).ToUniversalTime();
+            string guildCreated = guild.CreatedAt.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
 
             int numberTextChannels = guild.TextChannels.Count;
             int numberVoiceChannels = guild.VoiceChannels.Count;
             int daysOld = Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days;
             string daysAgo = $" That's " + ((daysOld == 0) ? "today!" : (daysOld == 1) ? $"yesterday!" : $"{daysOld} days ago!");
-            string createdAt = $"Created {guildCreated} UTC." + daysAgo;
+            string createdAt = $"Created {guildCreated}." + daysAgo;
             int totalMembers = guild.MemberCount;
             int onlineUsers = guild.Users.Where(mem => mem.Status == UserStatus.Online).Count();
             int numberRoles = guild.Roles.Count;
