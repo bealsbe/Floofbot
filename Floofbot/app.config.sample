@@ -19,7 +19,7 @@ Token: ""
 
 # Modmail enabled Server
 # Set this to a valid Server ID
-ModMailServer: ""
+ModMailServer: "0"
 
 # Path to the SQLite database file
 DbPath: "floofData.db"
@@ -48,3 +48,24 @@ RandomResponses:
   - Input: "^lol$"
     Response: "lol"
     Probability: 0.1
+
+RaidProtection:
+  # the total number of mentions a user can have before taking action
+  MaxMentionCount: 10
+  # determines how long before a user is forgiven for a punishment
+  ForgivenDuration: 300000
+  # determines the rate at which users can send messages, currently no more than x messages in y seconds
+  DurationForMaxMessages: 5000
+  # determines the max number of punishments a user can have before being punished
+  MaxNumberOfPunishments: 3
+  # the delay before the bot msg is deleted in ms
+  BotMessageDeletionDelay: 3000
+  # the duration before a user is removed from the list of punished users in ms
+  RemovePunishedUserDelay: 1800000
+  # the number of punished users within a time frame before the mods are alerted of possible raids
+  MaxNumberPunishedUsers: 3
+  # These are used to determine if there are an excessive number of joins in a short time frame
+  MaxNumberOfJoins: 5
+  UserJoinsDelay: 120000
+  # The max number of repeated emojis before triggering the raid protection
+  MaxNumberEmojis: 5

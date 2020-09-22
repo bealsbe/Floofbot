@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Floofbot.Configs;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Microsoft.AspNetCore.Http;
@@ -22,35 +23,43 @@ namespace Floofbot.Services
 {
     public class RaidProtectionService
     {
-
-
+        // load raid config
+        private Dictionary<string, int> raidConfig;
         // will store user id and how many counts they've had
         private Dictionary<ulong, Dictionary<ulong, int>> userPunishmentCount = new Dictionary<ulong, Dictionary<ulong, int>>();
         // used to keep track of the number of messages a user sent for spam protection
         private Dictionary<ulong, Dictionary<ulong, int>> userMessageCount = new Dictionary<ulong, Dictionary<ulong, int>>();
         // a list of punished users used to detect any potential raids
         private Dictionary<ulong, List<SocketUser>> punishedUsers = new Dictionary<ulong, List<SocketUser>>();
-        // the total number of mentions a user can have before taking action
-        private static int maxMentionCount = 10;
-        // determines how long before a user is forgiven for a punishment
-        private static int forgivenDuration = 5 * 60 * 1000; // 5 min
-        // determines the rate at which users can send messages, currently no more than x messages in y seconds
-        private static int durationForMaxMessages = 5 * 1000; // 5 s
-        // determines the max number of punishments a user can have before being punished
-        private static int maxNumberOfPunishments = 3;
-        // the delay before the bot msg is deleted in ms
-        private static int botMessageDeletionDelay = 3000;
-        // the duration before a user is removed from the list of punished users
-        private static int removePunishedUserDelay = 30 * 60 * 1000; // 30 min
-        // the number of punished users within a time frame before the mods are alerted of possible raids
-        private static int maxNumberPunishedUsers = 3;
-        // These are used to determine if there are an excessive number of joins in a short time frame
-        private static int maxNumberOfJoins = 5;
-        private static int userJoinsDelay = 2 * 60 * 1000; // 2 min
+        // contains the number of joins in a guild in a short time frame
         private Dictionary<IGuild, int> numberOfJoins = new Dictionary<IGuild, int>();
-        // The max number of repeated emojis before triggering the raid protection
-        private static int maxNumberEmojis = 5;
 
+        // these ints hold the raid protection config parameters
+        private static int maxMentionCount;
+        private static int forgivenDuration; 
+        private static int durationForMaxMessages;
+        private static int maxNumberOfPunishments;
+        private static int botMessageDeletionDelay;
+        private static int removePunishedUserDelay; 
+        private static int maxNumberPunishedUsers;
+        private static int maxNumberOfJoins;
+        private static int userJoinsDelay;
+        private static int maxNumberEmojis;
+
+        public RaidProtectionService()
+        {
+            raidConfig = BotConfigFactory.Config.RaidProtection;
+            maxMentionCount = raidConfig["MaxMentionCount"];
+            forgivenDuration = raidConfig["ForgivenDuration"];
+            durationForMaxMessages = raidConfig["DurationForMaxMessages"];
+            maxNumberOfPunishments = raidConfig["MaxNumberOfPunishments"];
+            botMessageDeletionDelay = raidConfig["BotMessageDeletionDelay"];
+            removePunishedUserDelay = raidConfig["RemovePunishedUserDelay"];
+            maxNumberPunishedUsers = raidConfig["MaxNumberPunishedUsers"];
+            maxNumberOfJoins = raidConfig["MaxNumberOfJoins"];
+            userJoinsDelay = raidConfig["UserJoinsDelay"];
+            maxNumberEmojis = raidConfig["MaxNumberEmojis"];
+        }
         public RaidProtectionConfig GetServerConfig(IGuild guild, FloofDataContext _floofDb)
         {
             RaidProtectionConfig serverConfig = _floofDb.RaidProtectionConfigs.Find(guild.Id);
