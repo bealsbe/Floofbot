@@ -310,9 +310,10 @@ namespace Floofbot.Services
                 return false;
             // can return null
             var channel = userMsg.Channel as ITextChannel;
+            if (channel == null)
+                return false;
             var guild = channel.Guild as SocketGuild;
-
-            if (channel == null || guild == null)
+            if (guild == null)
                 return false;
 
             var serverConfig = GetServerConfig(guild, _floofDb);
