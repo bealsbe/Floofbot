@@ -23,6 +23,10 @@
     
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Discord.Net.Commands" Version="2.2.0" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0" />
