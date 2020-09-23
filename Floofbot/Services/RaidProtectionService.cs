@@ -60,7 +60,7 @@ namespace Floofbot.Services
             maxNumberOfJoins = raidConfig["MaxNumberOfJoins"];
             userJoinsDelay = raidConfig["UserJoinsDelay"];
             maxNumberEmojis = raidConfig["MaxNumberEmojis"];
-            maxNumberSequentialCharacters = raidConfig["maxNumberSequentialCharacters"];
+            maxNumberSequentialCharacters = raidConfig["MaxNumberSequentialCharacters"];
         }
         public RaidProtectionConfig GetServerConfig(IGuild guild, FloofDataContext _floofDb)
         {
