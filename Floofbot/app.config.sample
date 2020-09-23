@@ -69,3 +69,5 @@ RaidProtection:
   UserJoinsDelay: 120000
   # The max number of repeated emojis before triggering the raid protection
   MaxNumberEmojis: 5
+  # The max number of times a user can post the same character in a row
+  maxNumberSequentialCharacters: 8

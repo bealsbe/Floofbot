@@ -45,6 +45,7 @@ namespace Floofbot.Services
         private static int maxNumberOfJoins;
         private static int userJoinsDelay;
         private static int maxNumberEmojis;
+        private static int maxNumberSequentialCharacters;
 
         public RaidProtectionService()
         {
@@ -59,6 +60,7 @@ namespace Floofbot.Services
             maxNumberOfJoins = raidConfig["MaxNumberOfJoins"];
             userJoinsDelay = raidConfig["UserJoinsDelay"];
             maxNumberEmojis = raidConfig["MaxNumberEmojis"];
+            maxNumberSequentialCharacters = raidConfig["maxNumberSequentialCharacters"];
         }
         public RaidProtectionConfig GetServerConfig(IGuild guild, FloofDataContext _floofDb)
         {
@@ -197,8 +199,8 @@ namespace Floofbot.Services
             var matches = Regex.Matches(msg.Content, @"([^\u200d])\1+");
             foreach (Match m in matches)
             {
-                // string has more than 8 letters in a row
-                if (m.Length > 8)
+                // string has too many characters in a row
+                if (m.Length > maxNumberSequentialCharacters)
                 {
                     // add a bad boye point for the user
                     if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
