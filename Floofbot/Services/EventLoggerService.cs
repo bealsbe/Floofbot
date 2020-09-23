@@ -106,6 +106,9 @@ namespace Floofbot.Services
         }
         public Task OnMessage(SocketMessage msg)
         {
+            if (msg.Channel.GetType() == typeof(SocketDMChannel))
+                return Task.CompletedTask;
+
             var userMsg = msg as SocketUserMessage;
             int argPos = 0;
             var _ = Task.Run(async () =>

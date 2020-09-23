@@ -77,6 +77,9 @@ namespace Floofbot.Services
                 {
                     Log.Fatal("Exception occured when trying to backup the the database: " + e);
                 }
+
+                // Safety sleep to ensure backups only run once per day
+                await Task.Delay(5000);
             }
         } 
     }
