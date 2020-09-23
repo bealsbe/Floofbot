@@ -10,7 +10,7 @@ using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using System.Text;
+using System.Linq;
 
 namespace Floofbot.Handlers
 {
@@ -120,7 +120,10 @@ namespace Floofbot.Handlers
                 prefix = BotConfigFactory.Config.Prefix;
             }
 
-            if ((msg.HasStringPrefix(prefix, ref argPos) || msg.HasMentionPrefix(_client.CurrentUser, ref argPos)) && !msg.Content.Substring(argPos).StartsWith(prefix))
+            bool hasValidPrefix = msg.HasMentionPrefix(_client.CurrentUser, ref argPos) || msg.HasStringPrefix(prefix, ref argPos);
+            string strippedCommandName = msg.Content.Substring(argPos).Split()[0];
+            bool hasValidStart = !string.IsNullOrEmpty(strippedCommandName) && strippedCommandName.All(char.IsLetterOrDigit);
+            if (hasValidPrefix && hasValidStart)
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
 
@@ -143,13 +146,7 @@ namespace Floofbot.Handlers
                             errorMessage = "For some reason, I am unable to parse your command.";
                             break;
                         case CommandError.UnknownCommand:
-                            // extract the command name from string
-                            string[] splitCommandArray = msg.Content.Split();
-                            // remove prefixes
-                            string unknownCommandName = new StringBuilder(splitCommandArray[0]).Replace(prefix, "").Replace(_client.CurrentUser.Mention, "").ToString();
-                            if (string.IsNullOrEmpty(unknownCommandName))
-                                return;
-                            errorMessage = "Unknown command '" + unknownCommandName + "'. Please check your spelling and try again.";
+                            errorMessage = "Unknown command '" + strippedCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
                             errorMessage = "You did not meet the required precondition - " + result.ErrorReason;
