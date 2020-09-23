@@ -49,16 +49,20 @@ namespace Floofbot
 
             string avatar = "https://cdn.discordapp.com/attachments/440635657925165060/442039889475665930/Turqouise.jpg";
 
+            // Get user's Discord joining date and time, in UTC
+            string discordJoin = user.CreatedAt.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
+            // Get user's Guild joining date and time, in UTC
+            string guildJoin = user.JoinedAt?.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
+
             if (user.AvatarId != null)
                 avatar = user.GetAvatarUrl(ImageFormat.Auto, 512);
 
-            string infostring = $"👥 **User info for:** {user.Mention}\n";
+            string infostring = $"👥 **User info for {user.Mention}** \n";
             infostring +=
-                 $"**Username** : {user.Username}#{user.Discriminator}\n" +
-                 $"**Nickname** : {user.Nickname ?? user.Username}\n" +
+                 $"**User** : {user.Nickname ?? user.Username} ({user.Username}#{user.Discriminator})\n" +
                  $"**ID** : {user.Id}\n" +
-                 $"**Discord Join Date** : {user.CreatedAt.ToString("ddd, dd MMM yyyy")}\n" +
-                 $"**Guild Join Date** : {user.JoinedAt?.ToString("ddd, dd MMM yyyy")}\n" +
+                 $"**Discord Join Date** : {discordJoin} \n" +
+                 $"**Guild Join Date** : {guildJoin}\n" +
                  $"**Status** : {user.Status}\n";
 
             EmbedBuilder builder = new EmbedBuilder
@@ -114,11 +118,15 @@ namespace Floofbot
         public async Task ServerInfo()
         {
             SocketGuild guild = Context.Guild;
+
+            // Get Guild creation date and time, in UTC
+            string guildCreated = guild.CreatedAt.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
+
             int numberTextChannels = guild.TextChannels.Count;
             int numberVoiceChannels = guild.VoiceChannels.Count;
             int daysOld = Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days;
             string daysAgo = $" That's " + ((daysOld == 0) ? "today!" : (daysOld == 1) ? $"yesterday!" : $"{daysOld} days ago!");
-            string createdAt = $"Created {guild.CreatedAt.ToString("ddd, dd MMM yyyy")}." + daysAgo;
+            string createdAt = $"Created {guildCreated}." + daysAgo;
             int totalMembers = guild.MemberCount;
             int onlineUsers = guild.Users.Where(mem => mem.Status == UserStatus.Online).Count();
             int numberRoles = guild.Roles.Count;
