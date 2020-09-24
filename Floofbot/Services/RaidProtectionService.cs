@@ -196,7 +196,7 @@ namespace Floofbot.Services
         }
         private bool CheckLetterSpam(SocketMessage msg, ulong guildId)
         {
-            var matches = Regex.Matches(msg.Content, @"([^\u200d])\1+");
+            var matches = Regex.Matches(msg.Content.ToLower(), @"([^\u200d])\1+");
             foreach (Match m in matches)
             {
                 // string has too many characters in a row
