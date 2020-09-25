@@ -7,11 +7,12 @@ on:
     branches: [ master ]
 
 jobs:
+
+  ## Builds artifacts for 3 targets and uploads artifacts
   build:
-
     runs-on: ubuntu-latest
-
     steps:
+
     - uses: actions/checkout@v2
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
@@ -23,6 +24,7 @@ jobs:
     - run: zip -j artifacts/win-x64/Floofbot_win-x64.zip artifacts/win-x64/Floofbot.exe
     - uses: actions/upload-artifact@v2
       with:
+        name: build_artifacts
         path: artifacts/win-x64/Floofbot_win-x64.zip
     
     - name: Build Linux binary (full)
@@ -30,6 +32,7 @@ jobs:
     - run: tar -czf artifacts/linux-x64/Floofbot_linux-x64.tar.gz -C artifacts/linux-x64 Floofbot
     - uses: actions/upload-artifact@v2
       with:
+        name: build_artifacts
         path: artifacts/linux-x64/Floofbot_linux-x64.tar.gz
 
     - name: Build Linux binary (musl)
@@ -37,9 +40,84 @@ jobs:
     - run: tar -czf artifacts/linux-musl-x64/Floofbot_linux-musl-x64.tar.gz -C artifacts/linux-musl-x64 Floofbot
     - uses: actions/upload-artifact@v2
       with:
+        name: build_artifacts
         path: artifacts/linux-musl-x64/Floofbot_linux-musl-x64.tar.gz
         
     - name: Upload sample config
       uses: actions/upload-artifact@v2
       with:
+        name: build_artifacts
         path: Floofbot/app.config.sample
+
+  ## Pulls build artifacts and creates a new release from them
+  release:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get new release number
+      shell: bash
+      run: >
+        curl --silent https://api.github.com/repos/${{ github.repository }}/releases/latest | python3 -c
+        "import sys, json, datetime;
+        cur_version = json.load(sys.stdin)['name'].rsplit('.', 1);
+        new_version = datetime.datetime.utcnow().strftime('%Y.%m.%d'), -1;
+        base, patch = new_version if new_version[0] != cur_version[0] else cur_version;
+        print(f'::set-env name=NEW_VERSION::{base}.{int(patch) + 1}')"
+
+    - name: Download built artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: build_artifacts
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.NEW_VERSION }}
+        release_name: ${{ env.NEW_VERSION }}
+        body: "This release includes changes from the following commits:\n\n${{ join(github.event.commits.*.url, '\n') }}"
+        draft: false
+        prerelease: false
+
+    - name: Upload release assets (Windows)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Floofbot_win-x64.zip
+        asset_name: Floofbot_win-x64.zip
+        asset_content_type: application/zip
+
+    - name: Upload release assets (Linux)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Floofbot_linux-x64.tar.gz
+        asset_name: Floofbot_linux-x64.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload release assets (Linux musl)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Floofbot_linux-musl-x64.tar.gz
+        asset_name: Floofbot_linux-musl-x64.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload release assets (config file)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: app.config.sample
+        asset_name: app.config.sample
+        asset_content_type: text/plain
