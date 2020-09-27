@@ -12,6 +12,7 @@ using Serilog;
 
 namespace Floofbot.Modules
 {
+    [RequireContext(ContextType.Guild)]
     [Summary("Add/Remove allowable roles for yourself")]
     public class UserAssignableRoleCommands : InteractiveBase
     {

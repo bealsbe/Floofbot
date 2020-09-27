@@ -114,7 +114,7 @@ namespace Floofbot.Modules
 
         [Summary("Adds a new filtered word")]
         [Command("add")]
-        public async Task AddFilteredWord([Summary("filtered word")]string word)
+        public async Task AddFilteredWord([Summary("filtered word")][Remainder] string word)
         {
             CheckServerEntryExists(Context.Guild.Id);
             string newWord = word.ToLower();
@@ -146,7 +146,7 @@ namespace Floofbot.Modules
         }
         [Summary("Removed an existing filtered word")]
         [Command("remove")]
-        public async Task RemoveFilteredWord([Summary("filtered word")]string word)
+        public async Task RemoveFilteredWord([Summary("filtered word")][Remainder] string word)
         {
             CheckServerEntryExists(Context.Guild.Id);
             string oldWord = word.ToLower();
