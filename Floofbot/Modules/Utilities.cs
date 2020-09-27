@@ -106,6 +106,7 @@ namespace Floofbot
                     Color = EMBED_COLOR
                 };
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
+                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
             }
             else
             {
