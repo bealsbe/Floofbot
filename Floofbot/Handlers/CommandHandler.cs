@@ -66,6 +66,8 @@ namespace Floofbot.Handlers
 
             var userMsg = originalMessage as SocketUserMessage; // the original command
             var channel = userMsg.Channel as ITextChannel; // the channel of the original command
+            if (channel == null)
+                return;
 
             var serverConfig = _floofDb.ErrorLoggingConfigs.Find(channel.GuildId); // no db result
             if (serverConfig == null)
