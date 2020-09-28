@@ -313,7 +313,8 @@ namespace Floofbot.Modules
 
         [Command("")]
         [Summary("Displays a tag")]
-        [RequireUserPermission(GuildPermission.AttachFiles)]
+        [RequireUserPermission(ChannelPermission.EmbedLinks)]
+        [RequireBotPermission(ChannelPermission.AttachFiles)]
         public async Task GetTag([Summary("Tag name")] string tagName = "")
         {
             if (!string.IsNullOrEmpty(tagName))

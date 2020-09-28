@@ -177,7 +177,7 @@ namespace Floofbot.Handlers
                             errorMessage = "Unknown command '" + strippedCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
-                            errorMessage = "You did not meet the required precondition - " + result.ErrorReason;
+                            errorMessage = "Required precondition not met - " + result.ErrorReason;
                             break;
                         default:
                             await LogErrorInDiscordChannel(result, msg);
