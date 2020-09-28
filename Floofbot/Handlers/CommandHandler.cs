@@ -151,7 +151,7 @@ namespace Floofbot.Handlers
                             break;
                         case CommandError.UnknownCommand:
                             // check 8ball response
-                            if (msg.Content.EndsWith("?"))
+                            if (msg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.Content.EndsWith("?"))
                             {
                                 string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
 
