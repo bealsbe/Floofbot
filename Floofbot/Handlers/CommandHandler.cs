@@ -49,15 +49,18 @@ namespace Floofbot.Handlers
             author.Name = user.Username + "#" + user.Discriminator;
             if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                 author.IconUrl = user.GetAvatarUrl();
-            author.Url = msg.GetJumpUrl();
+            if (msg.Channel.GetType() != typeof(SocketDMChannel))
+                author.Url = msg.GetJumpUrl();
 
             EmbedBuilder builder = new EmbedBuilder
             {
                 Author = author,
-                Title = "A fatal error has occured.",
+                Title = "A fatal error has occured. User message content: " + msg.Content,
                 Description = result.Error + "\n```" + result.ErrorReason + "```",
                 Color = Color.Red
             };
+            builder.AddField("Channel Type", (msg.Channel.GetType() == typeof(SocketDMChannel) ? "DM" : "Guild") + " Channel");
+
             builder.WithCurrentTimestamp();
             return builder.Build();
         }
@@ -183,9 +186,9 @@ namespace Floofbot.Handlers
                     }
                     await msg.Channel.SendMessageAsync("ERROR: ``" + errorMessage + "``");
                     if (isCriticalFailure)
-                        Log.Error(result.Error + ": " + result.ErrorReason);
+                        Log.Error(result.Error + "\nMessage Content: " + msg.Content + "\nError Reason: " + result.ErrorReason);
                     else
-                        Log.Information(result.Error + ": " + result.ErrorReason);
+                        Log.Information(result.Error + "\nMessage Content: " + msg.Content + "\nError Reason: " + result.ErrorReason);
                 }
             }
         }
