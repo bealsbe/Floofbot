@@ -110,7 +110,6 @@ namespace Floofbot.Services
                 return Task.CompletedTask;
 
             var userMsg = msg as SocketUserMessage;
-            int argPos = 0;
             var _ = Task.Run(async () =>
             {
                 try
@@ -129,25 +128,6 @@ namespace Floofbot.Services
                     bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
                     if (hasBadWord)
                         await HandleBadMessage(msg.Author, msg);
-
-                    if (userMsg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.Content.EndsWith("?"))
-                    {
-                        string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
-
-                        Embed embed = new EmbedBuilder()
-                        {
-                            Description = msg.Content
-                        }.Build();
-                        await channel.SendMessageAsync($"{msg.Author.Mention} {eightBallResponse}", false, embed);
-                    }
-                    else
-                    {
-                        string randomResponse = RandomResponseGenerator.GenerateResponse(userMsg);
-                        if (!string.IsNullOrEmpty(randomResponse))
-                        {
-                            await channel.SendMessageAsync(randomResponse);
-                        }
-                    }
                 }
                 catch (Exception ex)
                 {

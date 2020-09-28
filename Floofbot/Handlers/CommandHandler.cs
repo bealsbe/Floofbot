@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Linq;
+using Discord.Rest;
+using System.Text.RegularExpressions;
 
 namespace Floofbot.Handlers
 {
@@ -124,7 +126,7 @@ namespace Floofbot.Handlers
 
             bool hasValidPrefix = msg.HasMentionPrefix(_client.CurrentUser, ref argPos) || msg.HasStringPrefix(prefix, ref argPos);
             string strippedCommandName = msg.Content.Substring(argPos).Split()[0];
-            bool hasValidStart = !string.IsNullOrEmpty(strippedCommandName) && strippedCommandName.All(char.IsLetterOrDigit);
+            bool hasValidStart = !string.IsNullOrEmpty(strippedCommandName) && Regex.IsMatch(strippedCommandName, @"^[0-9]?[a-z]+\??$", RegexOptions.IgnoreCase);
             if (hasValidPrefix && hasValidStart)
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
@@ -148,6 +150,27 @@ namespace Floofbot.Handlers
                             errorMessage = "For some reason, I am unable to parse your command.";
                             break;
                         case CommandError.UnknownCommand:
+                            // check 8ball response
+                            if (msg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.Content.EndsWith("?"))
+                            {
+                                string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
+
+                                Embed embed = new EmbedBuilder()
+                                {
+                                    Description = msg.Content
+                                }.Build();
+                                await msg.Channel.SendMessageAsync($"{msg.Author.Mention} {eightBallResponse}", false, embed);
+                                return;
+                            }
+                            else
+                            {
+                                string randomResponse = RandomResponseGenerator.GenerateResponse(msg);
+                                if (!string.IsNullOrEmpty(randomResponse))
+                                {
+                                    await msg.Channel.SendMessageAsync(randomResponse);
+                                    return;
+                                }
+                            }
                             errorMessage = "Unknown command '" + strippedCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
