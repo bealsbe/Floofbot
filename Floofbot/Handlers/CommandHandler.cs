@@ -133,28 +133,6 @@ namespace Floofbot.Handlers
 
                 if (!result.IsSuccess)
                 {
-                    // check 8ball response
-                    if (msg.Content.EndsWith("?"))
-                    {
-                        string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
-
-                        Embed embed = new EmbedBuilder()
-                        {
-                            Description = msg.Content
-                        }.Build();
-                        await msg.Channel.SendMessageAsync($"{msg.Author.Mention} {eightBallResponse}", false, embed);
-                        return;
-                    }
-                    else
-                    {
-                        string randomResponse = RandomResponseGenerator.GenerateResponse(msg);
-                        if (!string.IsNullOrEmpty(randomResponse))
-                        {
-                            await msg.Channel.SendMessageAsync(randomResponse);
-                            return;
-                        }
-                    }
-
                     string errorMessage = "An unknown exception occured. I have notified the administrators.";
                     bool isCriticalFailure = false;
                     switch (result.Error)
@@ -172,6 +150,27 @@ namespace Floofbot.Handlers
                             errorMessage = "For some reason, I am unable to parse your command.";
                             break;
                         case CommandError.UnknownCommand:
+                            // check 8ball response
+                            if (msg.Content.EndsWith("?"))
+                            {
+                                string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
+
+                                Embed embed = new EmbedBuilder()
+                                {
+                                    Description = msg.Content
+                                }.Build();
+                                await msg.Channel.SendMessageAsync($"{msg.Author.Mention} {eightBallResponse}", false, embed);
+                                return;
+                            }
+                            else
+                            {
+                                string randomResponse = RandomResponseGenerator.GenerateResponse(msg);
+                                if (!string.IsNullOrEmpty(randomResponse))
+                                {
+                                    await msg.Channel.SendMessageAsync(randomResponse);
+                                    return;
+                                }
+                            }
                             errorMessage = "Unknown command '" + strippedCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
