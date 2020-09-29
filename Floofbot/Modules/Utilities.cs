@@ -96,6 +96,8 @@ namespace Floofbot
 
         [Command("say")]
         [Summary("Repeats a message")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RepeatMessage([Remainder] string message =null)
         {
             if (message != null)
