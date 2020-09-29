@@ -96,6 +96,9 @@ namespace Floofbot.Handlers
             if (messageBefore == null)
                 return;
 
+            if (messageBefore.Content == after.Content)
+                return;
+
             if (messageBefore.EditedTimestamp == null) // user has never edited their message
             {
                 var timeDifference = DateTimeOffset.Now - messageBefore.Timestamp;
