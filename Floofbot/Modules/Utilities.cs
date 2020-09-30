@@ -96,6 +96,8 @@ namespace Floofbot
 
         [Command("say")]
         [Summary("Repeats a message")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task RepeatMessage([Remainder] string message =null)
         {
             if (message != null)
@@ -106,6 +108,7 @@ namespace Floofbot
                     Color = EMBED_COLOR
                 };
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
+                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
             }
             else
             {

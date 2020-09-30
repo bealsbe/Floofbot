@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Linq;
+using Discord.Rest;
+using System.Text.RegularExpressions;
 
 namespace Floofbot.Handlers
 {
@@ -47,15 +49,18 @@ namespace Floofbot.Handlers
             author.Name = user.Username + "#" + user.Discriminator;
             if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                 author.IconUrl = user.GetAvatarUrl();
-            author.Url = msg.GetJumpUrl();
+            if (msg.Channel.GetType() != typeof(SocketDMChannel))
+                author.Url = msg.GetJumpUrl();
 
             EmbedBuilder builder = new EmbedBuilder
             {
                 Author = author,
-                Title = "A fatal error has occured.",
+                Title = "A fatal error has occured. User message content: " + msg.Content,
                 Description = result.Error + "\n```" + result.ErrorReason + "```",
                 Color = Color.Red
             };
+            builder.AddField("Channel Type", (msg.Channel.GetType() == typeof(SocketDMChannel) ? "DM" : "Guild") + " Channel");
+
             builder.WithCurrentTimestamp();
             return builder.Build();
         }
@@ -91,6 +96,9 @@ namespace Floofbot.Handlers
             if (messageBefore == null)
                 return;
 
+            if (messageBefore.Content == after.Content)
+                return;
+
             if (messageBefore.EditedTimestamp == null) // user has never edited their message
             {
                 var timeDifference = DateTimeOffset.Now - messageBefore.Timestamp;
@@ -124,7 +132,7 @@ namespace Floofbot.Handlers
 
             bool hasValidPrefix = msg.HasMentionPrefix(_client.CurrentUser, ref argPos) || msg.HasStringPrefix(prefix, ref argPos);
             string strippedCommandName = msg.Content.Substring(argPos).Split()[0];
-            bool hasValidStart = !string.IsNullOrEmpty(strippedCommandName) && strippedCommandName.All(char.IsLetterOrDigit);
+            bool hasValidStart = !string.IsNullOrEmpty(strippedCommandName) && Regex.IsMatch(strippedCommandName, @"^[0-9]?[a-z]+\??$", RegexOptions.IgnoreCase);
             if (hasValidPrefix && hasValidStart)
             {
                 var result = await _commands.ExecuteAsync(context, argPos, _services);
@@ -148,10 +156,31 @@ namespace Floofbot.Handlers
                             errorMessage = "For some reason, I am unable to parse your command.";
                             break;
                         case CommandError.UnknownCommand:
+                            // check 8ball response
+                            if (msg.HasMentionPrefix(_client.CurrentUser, ref argPos) && msg.Content.EndsWith("?"))
+                            {
+                                string eightBallResponse = Floofbot.Modules.Helpers.EightBall.GetRandomResponse();
+
+                                Embed embed = new EmbedBuilder()
+                                {
+                                    Description = msg.Content
+                                }.Build();
+                                await msg.Channel.SendMessageAsync($"{msg.Author.Mention} {eightBallResponse}", false, embed);
+                                return;
+                            }
+                            else
+                            {
+                                string randomResponse = RandomResponseGenerator.GenerateResponse(msg);
+                                if (!string.IsNullOrEmpty(randomResponse))
+                                {
+                                    await msg.Channel.SendMessageAsync(randomResponse);
+                                    return;
+                                }
+                            }
                             errorMessage = "Unknown command '" + strippedCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
-                            errorMessage = "You did not meet the required precondition - " + result.ErrorReason;
+                            errorMessage = "Required precondition not met - " + result.ErrorReason;
                             break;
                         default:
                             await LogErrorInDiscordChannel(result, msg);
@@ -160,9 +189,9 @@ namespace Floofbot.Handlers
                     }
                     await msg.Channel.SendMessageAsync("ERROR: ``" + errorMessage + "``");
                     if (isCriticalFailure)
-                        Log.Error(result.Error + ": " + result.ErrorReason);
+                        Log.Error(result.Error + "\nMessage Content: " + msg.Content + "\nError Reason: " + result.ErrorReason);
                     else
-                        Log.Information(result.Error + ": " + result.ErrorReason);
+                        Log.Information(result.Error + "\nMessage Content: " + msg.Content + "\nError Reason: " + result.ErrorReason);
                 }
             }
         }
