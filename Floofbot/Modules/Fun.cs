@@ -32,19 +32,27 @@ namespace Floofbot.Modules
         public async Task XKCD([Summary("Comic ID")] string comicId = "")
         {
             int parsedComicId;
-            if (!int.TryParse(comicId, out parsedComicId) || parsedComicId <= 0)
+            if ((!int.TryParse(comicId, out parsedComicId) || parsedComicId <= 0) && !comicId.ToLower().Equals(""))
             {
-                await Context.Channel.SendMessageAsync("Comic ID must be a positive integer less than or equal to Int32.MaxValue.");
+                await Context.Channel.SendMessageAsync("Comic ID must be a positive integer less than or equal to " + Int32.MaxValue + ".");
                 return;
             }
 
-            string json = await ApiFetcher.RequestSiteContentAsString($"https://xkcd.com/{comicId}/info.0.json");
+            string json;
+            if (parsedComicId == 0)
+            {
+                json = await ApiFetcher.RequestSiteContentAsString("https://xkcd.com/info.0.json");
+            }
+            else
+            {
+                json = await ApiFetcher.RequestSiteContentAsString($"https://xkcd.com/{comicId}/info.0.json");
+            }
+
             if (string.IsNullOrEmpty(json))
             {
                 await Context.Channel.SendMessageAsync("404 Not Found");
                 return;
             }
-
             string imgLink;
             string imgHoverText;
             string comicTitle;
