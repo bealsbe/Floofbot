@@ -267,5 +267,5 @@ __pycache__/
 
 # App Config File
 
-Floofbot/app.config
+Floofbot/config.yaml
 /Floofbot/floofData.db
