@@ -127,7 +127,17 @@ namespace Floofbot.Services
                   
                     bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
                     if (hasBadWord)
+                    {
                         await HandleBadMessage(msg.Author, msg);
+                        return;
+                    }
+
+                    string randomResponse = RandomResponseGenerator.GenerateResponse(userMsg);
+                    if (!string.IsNullOrEmpty(randomResponse))
+                    {
+                        await msg.Channel.SendMessageAsync(randomResponse);
+                        return;
+                    }
                 }
                 catch (Exception ex)
                 {

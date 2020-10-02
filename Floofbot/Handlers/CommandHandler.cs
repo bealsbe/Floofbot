@@ -168,15 +168,6 @@ namespace Floofbot.Handlers
                                 await msg.Channel.SendMessageAsync($"{msg.Author.Mention} {eightBallResponse}", false, embed);
                                 return;
                             }
-                            else
-                            {
-                                string randomResponse = RandomResponseGenerator.GenerateResponse(msg);
-                                if (!string.IsNullOrEmpty(randomResponse))
-                                {
-                                    await msg.Channel.SendMessageAsync(randomResponse);
-                                    return;
-                                }
-                            }
                             errorMessage = "Unknown command '" + strippedCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
