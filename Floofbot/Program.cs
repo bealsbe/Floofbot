@@ -22,7 +22,7 @@ namespace Floofbot
             if (args.Length == 1)
                 _configPath = args[0];
             else
-                _configPath = botDirectory + "/app.config";
+                _configPath = botDirectory + "/config.yaml";
 
 
             InitialiseLogger();

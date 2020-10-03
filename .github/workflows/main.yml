@@ -47,7 +47,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: build_artifacts
-        path: Floofbot/app.config.sample
+        path: Floofbot/config.yaml.sample
 
   ## Pulls build artifacts and creates a new release from them
   release:
@@ -118,6 +118,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: app.config.sample
-        asset_name: app.config.sample
+        asset_path: config.yaml.sample
+        asset_name: config.yaml.sample
         asset_content_type: text/plain
