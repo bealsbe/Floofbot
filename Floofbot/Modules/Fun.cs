@@ -32,7 +32,7 @@ namespace Floofbot.Modules
         public async Task XKCD([Summary("Comic ID")] string comicId = "")
         {
             int parsedComicId;
-            if ((!int.TryParse(comicId, out parsedComicId) || parsedComicId <= 0) && !comicId.ToLower().Equals(""))
+            if ((!int.TryParse(comicId, out parsedComicId) || parsedComicId <= 0) && !String.IsNullOrEmpty(comicId))
             {
                 await Context.Channel.SendMessageAsync("Comic ID must be a positive integer less than or equal to " + Int32.MaxValue + ".");
                 return;
