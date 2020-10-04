@@ -484,7 +484,13 @@ namespace Floofbot.Modules
                 {
                     IUser badUser = resolveUser(user);
                     if (badUser == null)
-                        embed = GetWarnings(Convert.ToUInt64(user), false);
+                        if (UInt64.TryParse(user, out ulong userid))
+                            embed = GetWarnings(Convert.ToUInt64(userid), false);
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync("⚠️ Unable to find that user.");
+                            return;
+                        }
                     else
                         embed = GetWarnings(badUser.Id, false);
                     if (embed == null)
