@@ -72,7 +72,7 @@ namespace Floofbot.Services
         private async Task HandleBadMessage(SocketUser user, SocketMessage msg)
         {
             await msg.DeleteAsync();
-            var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} watch your language! You've said a bad word!");
+            var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} There was a filtered word in that message. Please be mindful of your language!");
             await Task.Delay(5000);
             await botMsg.DeleteAsync();
         }

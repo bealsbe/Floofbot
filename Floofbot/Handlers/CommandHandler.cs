@@ -147,13 +147,13 @@ namespace Floofbot.Handlers
                             errorMessage = result.ErrorReason;
                             break;
                         case CommandError.MultipleMatches:
-                            errorMessage = "Multiple commands with the same name. I don't know what command you want me to do!";
+                            errorMessage = "Multiple results. I don't know which one you want! Please try to be more specific.";
                             break;
                         case CommandError.ObjectNotFound:
-                            errorMessage = "The specified argument does not match the expected object - " + result.ErrorReason;
+                            errorMessage = "One or more of your command parameters could not be resolved - " + result.ErrorReason;
                             break;
                         case CommandError.ParseFailed:
-                            errorMessage = "For some reason, I am unable to parse your command.";
+                            errorMessage = "For some reason, I can't understand your command.";
                             break;
                         case CommandError.UnknownCommand:
                             // check 8ball response
@@ -171,7 +171,7 @@ namespace Floofbot.Handlers
                             errorMessage = "Unknown command '" + strippedCommandName + "'. Please check your spelling and try again.";
                             break;
                         case CommandError.UnmetPrecondition:
-                            errorMessage = "Required precondition not met - " + result.ErrorReason;
+                            errorMessage = "A command condition has not been met - " + result.ErrorReason;
                             break;
                         default:
                             await LogErrorInDiscordChannel(result, msg);
