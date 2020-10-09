@@ -72,7 +72,7 @@ namespace Floofbot.Services
         private async Task HandleBadMessage(SocketUser user, SocketMessage msg)
         {
             await msg.DeleteAsync();
-            var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} watch your language! You've said a bad word!");
+            var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} There was a filtered word in that message. Please be mindful of your language!");
             await Task.Delay(5000);
             await botMsg.DeleteAsync();
         }
@@ -127,7 +127,17 @@ namespace Floofbot.Services
                   
                     bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
                     if (hasBadWord)
+                    {
                         await HandleBadMessage(msg.Author, msg);
+                        return;
+                    }
+
+                    string randomResponse = RandomResponseGenerator.GenerateResponse(userMsg);
+                    if (!string.IsNullOrEmpty(randomResponse))
+                    {
+                        await msg.Channel.SendMessageAsync(randomResponse);
+                        return;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -775,7 +785,7 @@ namespace Floofbot.Services
 
                 foreach (var filteredWord in _filteredWords)
                 {
-                    Regex r = new Regex($"\\b{filteredWord.Word}\\b",
+                    Regex r = new Regex(@$"\b({filteredWord.Word})\b",
                         RegexOptions.IgnoreCase | RegexOptions.Singleline);
                     if (r.IsMatch(messageContent))
                     {
