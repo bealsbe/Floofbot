@@ -40,6 +40,7 @@ namespace Floofbot
         [Command("userinfo")]
         [Summary("Displays information on a mentioned user. If no parameters are given, displays the user's own information")]
         [RequireContext(ContextType.Guild)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task UserInfo(IGuildUser usr = null)
         {
             var user = usr ?? Context.User as IGuildUser;
@@ -78,6 +79,7 @@ namespace Floofbot
         [Command("avatar")]
         [Summary("Displays a mentioned user's avatar. If no parameters are given, displays the user's own avatar")]
         [RequireContext(ContextType.Guild)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Avatar([Remainder] IGuildUser user = null)
         {
             if (user == null)
@@ -118,6 +120,7 @@ namespace Floofbot
 
         [Command("serverinfo")]
         [Summary("Returns information about the current server")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task ServerInfo()
         {
             SocketGuild guild = Context.Guild;
