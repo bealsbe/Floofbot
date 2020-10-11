@@ -136,7 +136,7 @@ namespace Floofbot.Services
             if (userMessageCount[guildId].ContainsKey(msg.Author.Id))
             {
                 userMessageCount[guildId][msg.Author.Id] += 1;
-                if (userMessageCount[guildId][msg.Author.Id] >= 5) // no more than 5 messages in time frame
+                if (userMessageCount[guildId][msg.Author.Id] >= 2) // no more than 2 messages in time frame
                 {
                     // add a bad boye point for the user
                     if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
