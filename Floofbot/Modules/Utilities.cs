@@ -80,7 +80,6 @@ namespace Floofbot
         [Summary("Displays a mentioned user's avatar. If no parameters are given, displays the user's own avatar")]
         [RequireContext(ContextType.Guild)]
         [RequireBotPermission(ChannelPermission.AttachFiles)]
-        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Avatar([Remainder] IGuildUser user = null)
         {
             if (user == null)
