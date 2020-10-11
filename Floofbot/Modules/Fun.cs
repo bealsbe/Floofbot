@@ -124,7 +124,7 @@ namespace Floofbot.Modules
         public async Task RequestCat()
         {
             string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
-            if (!string.IsNullOrEmpty(fileUrl))
+            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
             {
                 await SendAnimalEmbed(":cat:", fileUrl);
             }
@@ -139,7 +139,7 @@ namespace Floofbot.Modules
         public async Task RequestDog()
         {
             string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
-            if (!string.IsNullOrEmpty(fileUrl))
+            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
             {
                 await SendAnimalEmbed(":dog:", fileUrl);
             }
@@ -154,7 +154,7 @@ namespace Floofbot.Modules
         public async Task RequestFox()
         {
             string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
-            if (!string.IsNullOrEmpty(fileUrl))
+            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
             {
                 await SendAnimalEmbed(":fox:", fileUrl);
             }
@@ -169,7 +169,7 @@ namespace Floofbot.Modules
         public async Task RequestBirb()
         {
             string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
-            if (!string.IsNullOrEmpty(fileUrl))
+            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
             {
                 fileUrl = "https://random.birb.pw/img/" + fileUrl;
                 await SendAnimalEmbed(":bird:", fileUrl);
