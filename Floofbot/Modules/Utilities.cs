@@ -40,6 +40,7 @@ namespace Floofbot
         [Command("userinfo")]
         [Summary("Displays information on a mentioned user. If no parameters are given, displays the user's own information")]
         [RequireContext(ContextType.Guild)]
+        [RequireBotPermission(ChannelPermission.AttachFiles)]
         public async Task UserInfo(IGuildUser usr = null)
         {
             var user = usr ?? Context.User as IGuildUser;
@@ -120,6 +121,7 @@ namespace Floofbot
 
         [Command("serverinfo")]
         [Summary("Returns information about the current server")]
+        [RequireBotPermission(ChannelPermission.AttachFiles)]
         public async Task ServerInfo()
         {
             SocketGuild guild = Context.Guild;
