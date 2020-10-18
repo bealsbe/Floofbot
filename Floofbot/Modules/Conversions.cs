@@ -28,7 +28,7 @@ namespace Floofbot
             EmbedBuilder builder = new EmbedBuilder()
             {
                 Title = "Temperature conversion",
-                Description=$"🌡 {(double)Fah}F is equal to {(double)Cel}°C.",
+                Description=$"🌡 {(double)Fah}°F is equal to {(double)Cel}°C.",
                 //Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
                 Color = EMBED_COLOR
             };
@@ -45,7 +45,7 @@ namespace Floofbot
             EmbedBuilder builder = new EmbedBuilder()
             {
                 Title = "Temperature conversion",
-                Description = $"🌡 {(double)Cel}°C is equal to {(double)Fah}F.",
+                Description = $"🌡 {(double)Cel}°C is equal to {(double)Fah}°F.",
                 //Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
                 Color = EMBED_COLOR
             };
