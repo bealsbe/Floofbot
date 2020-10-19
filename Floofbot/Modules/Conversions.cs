@@ -14,43 +14,63 @@ namespace Floofbot
 {
     [Summary("Conversion commands")]
     [Discord.Commands.Name("Conversions")]
+    [Group("convert")]
     public class Conversions : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
 
-        [Command("tempfc")]
-        [Summary("Converts a temperature from Fahrenheit to Celsius")]
-        public async Task TempFC(double Fah)
+        [Command("temp")]
+        [Summary("Converts a temperature. Arguments are `[unit]` and `[temperature]`.")]
+        public async Task TempFC(string unit, double? input = null)
         {
-            double Cel;
-            Cel = (Fah - 32) / 1.8;
-
-            EmbedBuilder builder = new EmbedBuilder()
+            if(unit == "F" || unit == "f")
             {
-                Title = "Temperature conversion",
-                Description=$"🌡 {(double)Fah}°F is equal to {(double)Cel}°C.",
-                //Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
-                Color = EMBED_COLOR
-            };
+                if(input != null)
+                {
+                    double? Cel;
+                    Cel = (input - 32) / 1.8;
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
-        }
-        [Command("tempcf")]
-        [Summary("Converts a temperature from Celsius to Fahrenheit")]
-        public async Task TempCF(double Cel)
-        {
-            double Fah;
-            Fah = (Cel * 1.8) + 32;
+                    EmbedBuilder builder = new EmbedBuilder()
+                    {
+                        Title = "Temperature conversion",
+                        Description=$"🌡 {(double)input}°F is equal to {(double)Cel}°C.",
+                        //Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
+                        Color = EMBED_COLOR
+                    };
 
-            EmbedBuilder builder = new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("Please enter a temperature to convert.");
+                }
+            }
+            else if(unit == "C" || unit == "c")
             {
-                Title = "Temperature conversion",
-                Description = $"🌡 {(double)Cel}°C is equal to {(double)Fah}°F.",
-                //Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
-                Color = EMBED_COLOR
-            };
+                if(input != null)
+                {
+                    double? Fah;
+                    Fah = (input * 1.8) + 32;
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+                    EmbedBuilder builder = new EmbedBuilder()
+                    {
+                        Title = "Temperature conversion",
+                        Description = $"🌡 {(double)input}°C is equal to {(double)Fah}°F.",
+                        //Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
+                        Color = EMBED_COLOR
+                    };
+
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("Please enter a temperature to convert.");
+                }
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Please enter a valid base unit for the first argument. Possible values are `[C]` or `[F]`.");
+            }
         }
     }
 }
