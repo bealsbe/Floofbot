@@ -14,7 +14,7 @@ namespace Floofbot
 
         [Command("temp")]
         [Summary("Converts a temperature. Arguments are `[unit]` and `[temperature]`.")]
-        public async Task TempFC(string unit, double? input = null)
+        public async Task Temp(string unit, double? input = null)
         {
             if(unit == "F" || unit == "f")
             {
@@ -49,7 +49,6 @@ namespace Floofbot
                     {
                         Title = "Temperature conversion",
                         Description = $"🌡 {(double)input}°C is equal to {(double)Fah}°F.",
-                        //Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
                         Color = EMBED_COLOR
                     };
 
@@ -63,6 +62,57 @@ namespace Floofbot
             else
             {
                 await Context.Channel.SendMessageAsync("Please enter a valid base unit for the first argument. Possible values are `[C]` or `[F]`.");
+            }
+        }
+        [Command("weight")]
+        [Summary("Converts a weight. Arguments are `[unit]` and `[weight]`.")]
+        public async Task Weight(string unit, double? input = null)
+        {
+            double? kg = null;
+            double? lb = null;
+            if (unit == "Kg" || unit == "kg")
+            {
+                if (input != null)
+                {
+                    lb = (input * 2.2046);
+
+                    EmbedBuilder builder = new EmbedBuilder()
+                    {
+                        Title = "Weight conversion",
+                        Description = $"⚖️ {(double)input}Kg is equal to {(double)lb}lbs.",
+                        Color = EMBED_COLOR
+                    };
+
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("Please enter a weight to convert.");
+                }
+            }
+            else if (unit == "lb")
+            {
+                if (input != null)
+                {
+                    kg = (input * 0.4536);
+
+                    EmbedBuilder builder = new EmbedBuilder()
+                    {
+                        Title = "Weight conversion",
+                        Description = $"⚖️ {(double)input}lbs is equal to {(double)kg}Kg.",
+                        Color = EMBED_COLOR
+                    };
+
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("Please enter a weight to convert.");
+                }
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Please enter a valid base unit for the first argument. Possible values are `[Kg]` or `[lb]`.");
             }
         }
     }
