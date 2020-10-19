@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using UnitsNet;
 
 namespace Floofbot
 {
