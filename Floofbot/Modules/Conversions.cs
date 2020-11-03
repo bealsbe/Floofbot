@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -115,6 +116,23 @@ namespace Floofbot
             {
                 await Context.Channel.SendMessageAsync("Please enter a valid base unit for the first argument. Possible values are `[Kg]` or `[lb]`.");
             }
+        }
+        [Command("length")]
+        [Summary("In progress")]
+        public async Task Length(double input)
+        {
+            double baseLgt = input / 2.54;
+            double ftLgt = Math.Floor(baseLgt / 12);
+            double inLgt = baseLgt - (12 * ftLgt);
+
+            EmbedBuilder builder = new EmbedBuilder()
+            {
+                Title = "Length conversion",
+                Description = $"📏 {(double)input}cm is equal to {(double)ftLgt}\"{(double)inLgt}\'.",
+                Color = EMBED_COLOR
+            };
+
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
     }
 }
