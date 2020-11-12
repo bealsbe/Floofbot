@@ -20,46 +20,34 @@ namespace Floofbot
         {
             if(unit == "F" || unit == "f")
             {
-                if(input != null)
+                Temperature Fah = Temperature.FromDegreesFahrenheit(input);
+                double Cel = Fah.DegreesCelsius;
+                
+                EmbedBuilder builder = new EmbedBuilder()
                 {
-                    Temperature Fah = Temperature.FromDegreesFahrenheit(input);
-                    double Cel = Fah.DegreesCelsius;
+                    Title = "Temperature conversion",
+                    Description=$"🌡 {(Temperature)Fah} is equal to {(double)Math.Round(Cel,2, MidpointRounding.ToEven)}°C.",
+                    Color = EMBED_COLOR
+                };
 
-                    EmbedBuilder builder = new EmbedBuilder()
-                    {
-                        Title = "Temperature conversion",
-                        Description=$"🌡 {(Temperature)Fah}°F is equal to {(double)Cel}°C.",
-                        Color = EMBED_COLOR
-                    };
-
-                    await Context.Channel.SendMessageAsync("", false, builder.Build());
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync("Please enter a temperature to convert.");
-                }
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
+
             else if(unit == "C" || unit == "c")
             {
-                if(input != null)
-                {
-                    double? Fah;
-                    Fah = (input * 1.8) + 32;
+                Temperature Cel = Temperature.FromDegreesCelsius(input);
+                double Fah = Cel.DegreesFahrenheit;
 
-                    EmbedBuilder builder = new EmbedBuilder()
-                    {
-                        Title = "Temperature conversion",
-                        Description = $"🌡 {(double)input}°C is equal to {(double)Fah}°F.",
-                        Color = EMBED_COLOR
-                    };
-
-                    await Context.Channel.SendMessageAsync("", false, builder.Build());
-                }
-                else
+                EmbedBuilder builder = new EmbedBuilder()
                 {
-                    await Context.Channel.SendMessageAsync("Please enter a temperature to convert.");
-                }
+                    Title = "Temperature conversion",
+                    Description = $"🌡 {(Temperature)Cel} is equal to {(double)Math.Round(Fah, 2, MidpointRounding.ToEven)}°F.",
+                    Color = EMBED_COLOR
+                };
+
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
+
             else
             {
                 await Context.Channel.SendMessageAsync("Please enter a valid base unit for the first argument. Possible values are `[C]` or `[F]`.");
