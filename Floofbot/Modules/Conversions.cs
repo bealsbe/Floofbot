@@ -16,20 +16,19 @@ namespace Floofbot
 
         [Command("temp")]
         [Summary("Converts a temperature. Arguments are `[unit]` and `[temperature]`.")]
-        public async Task Temp(string unit, double? input = null)
+        public async Task Temp(string unit, double input)
         {
             if(unit == "F" || unit == "f")
             {
                 if(input != null)
                 {
-                    double? Cel;
-                    Cel = (input - 32) / 1.8;
+                    Temperature Fah = Temperature.FromDegreesFahrenheit(input);
+                    double Cel = Fah.DegreesCelsius;
 
                     EmbedBuilder builder = new EmbedBuilder()
                     {
                         Title = "Temperature conversion",
-                        Description=$"🌡 {(double)input}°F is equal to {(double)Cel}°C.",
-                        //Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
+                        Description=$"🌡 {(Temperature)Fah}°F is equal to {(double)Cel}°C.",
                         Color = EMBED_COLOR
                     };
 
