@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -17,9 +18,12 @@ namespace Floofbot
         [Alias("conv")]
         [Summary("Converts units to other units, such as Celcius to Fahrenheit.")]
 
-        public async Task convert()
+        public async Task convert(string input)
         {
+            if(Regex.Match(input, "\b(\d+)(f|F)\b"))
+            {
 
+            }
         }
 
         /*[Command("temp")]
