@@ -9,12 +9,20 @@ namespace Floofbot
 {
     [Summary("Conversion commands")]
     [Discord.Commands.Name("Conversions")]
-    [Group("convert")]
     public class Conversions : InteractiveBase
     {
         private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
 
-        [Command("temp")]
+        [Command("convert")]
+        [Alias("conv")]
+        [Summary("Converts units to other units, such as Celcius to Fahrenheit.")]
+
+        public async Task convert()
+        {
+
+        }
+
+        /*[Command("temp")]
         [Summary("Converts a temperature. Arguments are `[unit]` and `[temperature]`.")]
         public async Task Temp(string unit, double input)
         {
@@ -120,6 +128,6 @@ namespace Floofbot
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
-        }
+        }*/
     }
 }
