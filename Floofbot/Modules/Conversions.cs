@@ -20,9 +20,28 @@ namespace Floofbot
 
         public async Task convert(string input)
         {
-            if(Regex.Match(input, "\b(\d+)(f|F)\b"))
+            string fahPat = "\\b(\\d+)(f)\\b";
+            Regex fahReg = new Regex(fahPat, RegexOptions.IgnoreCase);
+            if (fahReg.Match(input).Success)
             {
+                Match m = fahReg.Match(input);
 
+                Group g = m.Groups[1];
+
+                string FahStr = Convert.ToString(g);
+                double FahTmp = Convert.ToDouble(FahStr);
+
+                Temperature Fah = Temperature.FromDegreesFahrenheit(FahTmp);
+                double Cel = Fah.DegreesCelsius;
+
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Title = "Temperature conversion",
+                    Description = $"🌡 {(Temperature)Fah} is equal to {(double)Math.Round(Cel, 2, MidpointRounding.ToEven)}°C.",
+                    Color = EMBED_COLOR
+                };
+
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
         }
 
