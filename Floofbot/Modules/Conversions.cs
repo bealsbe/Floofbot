@@ -22,6 +22,8 @@ namespace Floofbot
         {
             string fahPat = "\\b(\\d+)(f)\\b";
             Regex fahReg = new Regex(fahPat, RegexOptions.IgnoreCase);
+            string celPat = "\\b(\\d+)(c)\\b";
+            Regex celReg = new Regex(celPat, RegexOptions.IgnoreCase);
             if (fahReg.Match(input).Success)
             {
                 Match m = fahReg.Match(input);
@@ -43,13 +45,13 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-        }
 
         /*[Command("temp")]
         [Summary("Converts a temperature. Arguments are `[unit]` and `[temperature]`.")]
         public async Task Temp(string unit, double input)
         {
             if(unit == "F" || unit == "f")
+            else if(celReg.Match(input).Success)
             {
                 Temperature Fah = Temperature.FromDegreesFahrenheit(input);
                 double Cel = Fah.DegreesCelsius;
@@ -60,13 +62,19 @@ namespace Floofbot
                     Description=$"🌡 {(Temperature)Fah} is equal to {(double)Math.Round(Cel,2, MidpointRounding.ToEven)}°C.",
                     Color = EMBED_COLOR
                 };
+                Match m = celReg.Match(input);
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
+                Group g = m.Groups[1];
 
             else if(unit == "C" || unit == "c")
             {
                 Temperature Cel = Temperature.FromDegreesCelsius(input);
+                string celStr = Convert.ToString(g);
+                double celTmp = Convert.ToDouble(celStr);
+
+                Temperature Cel = Temperature.FromDegreesCelsius(celTmp);
                 double Fah = Cel.DegreesFahrenheit;
 
                 EmbedBuilder builder = new EmbedBuilder()
