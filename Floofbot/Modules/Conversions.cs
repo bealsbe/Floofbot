@@ -20,13 +20,9 @@ namespace Floofbot
 
         public async Task convert(string input)
         {
-            string fahPat = "\\b(\\d+)(f)\\b";
-            Regex fahReg = new Regex(fahPat, RegexOptions.IgnoreCase);
-            string celPat = "\\b(\\d+)(c)\\b";
-            Regex celReg = new Regex(celPat, RegexOptions.IgnoreCase);
-            if (fahReg.Match(input).Success)
+            if (Regex.Match(input, "\\b(\\d+)(f)\\b", RegexOptions.IgnoreCase).Success)
             {
-                Match m = fahReg.Match(input);
+                Match m = Regex.Match(input, "\\b(\\d+)(f)\\b", RegexOptions.IgnoreCase);
 
                 Group g = m.Groups[1];
 
@@ -45,9 +41,9 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if(celReg.Match(input).Success)
+            else if(Regex.Match(input, "\\b(\\d+)(c)\\b", RegexOptions.IgnoreCase).Success)
             {
-                Match m = celReg.Match(input);
+                Match m = Regex.Match(input, "\\b(\\d+)(c)\\b", RegexOptions.IgnoreCase);
 
                 Group g = m.Groups[1];
 
