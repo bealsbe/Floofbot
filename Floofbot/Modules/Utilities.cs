@@ -96,8 +96,8 @@ namespace Floofbot
             await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
-        [Command("say")]
-        [Summary("Repeats a message")]
+        [Command("embed")]
+        [Summary("Repeats a message in an embed format")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task RepeatMessage([Remainder] string message =null)
@@ -114,7 +114,24 @@ namespace Floofbot
             }
             else
             {
-                await Context.Channel.SendMessageAsync("Usage: `.say [message]`");
+                await Context.Channel.SendMessageAsync("Usage: `.embed [message]`");
+            }
+        }
+
+        [Command("echo")]
+        [Summary("Repeats a text message directly")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task EchoMessage([Remainder] string message = null)
+        {
+            if (message != null)
+            {
+                await Context.Channel.SendMessageAsync(message);
+                await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Usage: `.echo [message]`");
             }
         }
 
