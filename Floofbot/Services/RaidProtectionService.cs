@@ -29,6 +29,8 @@ namespace Floofbot.Services
         private Dictionary<ulong, Dictionary<ulong, int>> userPunishmentCount = new Dictionary<ulong, Dictionary<ulong, int>>();
         // used to keep track of the number of messages a user sent for spam protection
         private Dictionary<ulong, Dictionary<ulong, int>> userMessageCount = new Dictionary<ulong, Dictionary<ulong, int>>();
+        // used to track the last message a user has sent in the server
+        private Dictionary<ulong, Dictionary<ulong, SocketMessage>> lastUserMessageInGuild = new Dictionary<ulong, Dictionary<ulong, SocketMessage>>();
         // a list of punished users used to detect any potential raids
         private Dictionary<ulong, List<SocketUser>> punishedUsers = new Dictionary<ulong, List<SocketUser>>();
         // contains the number of joins in a guild in a short time frame
@@ -46,6 +48,8 @@ namespace Floofbot.Services
         private static int userJoinsDelay;
         private static int maxNumberEmojis;
         private static int maxNumberSequentialCharacters;
+        private static int durationBetweenMessages;
+        private static int maxMessageSpam;
 
         public RaidProtectionService()
         {
@@ -61,6 +65,8 @@ namespace Floofbot.Services
             userJoinsDelay = raidConfig["UserJoinsDelay"];
             maxNumberEmojis = raidConfig["MaxNumberEmojis"];
             maxNumberSequentialCharacters = raidConfig["MaxNumberSequentialCharacters"];
+            durationBetweenMessages = raidConfig["DurationBetweenMessages"];
+            maxMessageSpam = raidConfig["MaxMessageSpam"];
         }
         public RaidProtectionConfig GetServerConfig(IGuild guild, FloofDataContext _floofDb)
         {
@@ -120,7 +126,6 @@ namespace Floofbot.Services
                         userMessageCount[guildId].Remove(userId);
 
                 }
-
         }
         private void ensureGuildInDictionaries(ulong guildId)
         {
@@ -130,13 +135,33 @@ namespace Floofbot.Services
                 userMessageCount.Add(guildId, new Dictionary<ulong, int>());
             if (!punishedUsers.ContainsKey(guildId))
                 punishedUsers.Add(guildId, new List<SocketUser>());
+            if (!lastUserMessageInGuild.ContainsKey(guildId))
+                lastUserMessageInGuild.Add(guildId, new Dictionary<ulong, SocketMessage>());
         }
     private bool CheckUserMessageCount(SocketMessage msg, ulong guildId)
         {
             if (userMessageCount[guildId].ContainsKey(msg.Author.Id))
             {
-                userMessageCount[guildId][msg.Author.Id] += 1;
-                if (userMessageCount[guildId][msg.Author.Id] >= 2) // no more than 2 messages in time frame
+                // update last user message in server
+                if (lastUserMessageInGuild[guildId].ContainsKey(msg.Author.Id))
+                {
+                    lastUserMessageInGuild[guildId][msg.Author.Id] = msg;
+                }
+                // record last user message in server
+                else
+                {
+                    lastUserMessageInGuild[guildId].Add(msg.Author.Id, msg);
+                }
+
+                // compare timestamps of messages
+                TimeSpan timeBetweenMessages = msg.Timestamp - lastUserMessageInGuild[guildId][msg.Author.Id].Timestamp;
+                if (timeBetweenMessages.TotalSeconds < durationBetweenMessages)
+                    userMessageCount[guildId][msg.Author.Id] += 1;
+                else
+                    return false;
+
+
+                if (userMessageCount[guildId][msg.Author.Id] >= maxMessageSpam) // no more than 2 messages in time frame
                 {
                     // add a bad boye point for the user
                     if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
