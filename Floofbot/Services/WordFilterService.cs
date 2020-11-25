@@ -12,7 +12,6 @@ namespace Floofbot.Services
     {
         List<FilteredWord> _filteredWords;
         DateTime _lastRefreshedTime;
-        WordFilterService _wordFilterService;
 
         public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId) // names
         {
