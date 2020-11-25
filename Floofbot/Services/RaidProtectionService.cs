@@ -160,7 +160,6 @@ namespace Floofbot.Services
                 else
                     return false;
 
-
                 if (userMessageCount[guildId][msg.Author.Id] >= maxMessageSpam) // no more than 2 messages in time frame
                 {
                     // add a bad boye point for the user
