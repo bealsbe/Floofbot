@@ -3,20 +3,11 @@ using Discord.WebSocket;
 using Floofbot.Configs;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.WebUtilities;
 using Serilog;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
-using System.Net.NetworkInformation;
-using System.Security.Policy;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
