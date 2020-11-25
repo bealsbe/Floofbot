@@ -23,6 +23,9 @@ namespace Floofbot.Services
 {
     public class RaidProtectionService
     {
+        // filter service
+        WordFilterService _wordFilterService;
+
         // load raid config
         private Dictionary<string, int> raidConfig;
         // will store user id and how many counts they've had
@@ -54,6 +57,7 @@ namespace Floofbot.Services
         public RaidProtectionService()
         {
             raidConfig = BotConfigFactory.Config.RaidProtection;
+            _wordFilterService = new WordFilterService();
             maxMentionCount = raidConfig["MaxMentionCount"];
             forgivenDuration = raidConfig["ForgivenDuration"];
             durationForMaxMessages = raidConfig["DurationForMaxMessages"];
@@ -67,6 +71,13 @@ namespace Floofbot.Services
             maxNumberSequentialCharacters = raidConfig["MaxNumberSequentialCharacters"];
             durationBetweenMessages = raidConfig["DurationBetweenMessages"];
             maxMessageSpam = raidConfig["MaxMessageSpam"];
+        }
+        private async Task HandleBadMessage(SocketUser user, SocketMessage msg)
+        {
+            await msg.DeleteAsync();
+            var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} There was a filtered word in that message. Please be mindful of your language!");
+            await Task.Delay(5000);
+            await botMsg.DeleteAsync();
         }
         public RaidProtectionConfig GetServerConfig(IGuild guild, FloofDataContext _floofDb)
         {
@@ -137,6 +148,37 @@ namespace Floofbot.Services
                 punishedUsers.Add(guildId, new List<SocketUser>());
             if (!lastUserMessageInGuild.ContainsKey(guildId))
                 lastUserMessageInGuild.Add(guildId, new Dictionary<ulong, SocketMessage>());
+        }
+    private bool CheckMessageForFilteredWords(SocketMessage msg, ulong guildId)
+    {
+        bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, guildId, msg.Channel.Id);
+
+        if (hasBadWord)
+        {
+            // add a bad boye point for the user
+            if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
+            {
+                userPunishmentCount[guildId][msg.Author.Id] += 1;
+            }
+            else // they were a good boye but now they are not
+            {
+                userPunishmentCount[guildId].Add(msg.Author.Id, 1);
+            }
+            // we run an async task to remove their point after the specified duration
+            UserPunishmentTimeout(guildId, msg.Author.Id);
+
+            SendMessageAndDelete($"{msg.Author.Mention} There was a filtered word in that message. Please be mindful of your language!", msg.Channel);
+
+            Log.Information("User ID " + msg.Author.Id + " triggered the word filter.");
+
+            // we return here because we only need to check for at least one match, doesnt matter if there are more
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
         }
     private bool CheckUserMessageCount(SocketMessage msg, ulong guildId)
         {
@@ -383,6 +425,8 @@ namespace Floofbot.Services
             ensureGuildInDictionaries(guild.Id);
             // now we run our checks. If any of them return true, we have a bad boy
 
+            // checks for filtered words
+            bool filteredWord = CheckMessageForFilteredWords(userMsg, guild.Id);
             // this will ALWAYS ban users regardless of muted role or not 
             bool spammedMentions = CheckMentions(userMsg, guild, modRole, modChannel).Result;
             // this will check their messages and see if they are spamming
@@ -396,7 +440,7 @@ namespace Floofbot.Services
 
             if (spammedMentions)
                 return false; // user already banned
-            if (userSpammedMessages || userSpammedLetters || userSpammedInviteLink || userSpammedEmojis)
+            if (filteredWord || userSpammedMessages || userSpammedLetters || userSpammedInviteLink || userSpammedEmojis)
             {
                 if (userPunishmentCount[guild.Id].ContainsKey(userMsg.Author.Id))
                 {
