@@ -24,6 +24,9 @@ namespace Floofbot
             Regex fahReg = new Regex(fahPat, RegexOptions.IgnoreCase);
             string celPat = "\\b(\\d+)(c)\\b";
             Regex celReg = new Regex(celPat, RegexOptions.IgnoreCase);
+            string miPat = "\\b(\\d+)(mi)\\b";
+            Regex miReg = new Regex(miPat, RegexOptions.IgnoreCase);
+
             if (fahReg.Match(input).Success)
             {
                 Match m = fahReg.Match(input);
@@ -61,6 +64,27 @@ namespace Floofbot
                 {
                     Title = "Temperature conversion",
                     Description = $"🌡 {(Temperature)Cel} is equal to {(double)Math.Round(Fah, 2, MidpointRounding.ToEven)}°F.",
+                    Color = EMBED_COLOR
+                };
+
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            else if (miReg.Match(input).Success)
+            {
+                Match m = miReg.Match(input);
+
+                Group g = m.Groups[1];
+
+                string miStr = Convert.ToString(g);
+                double miTmp = Convert.ToDouble(miStr);
+
+                Length mi = Length.FromMiles(miTmp);
+                double km = mi.Kilometers;
+
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Title = "Temperature conversion",
+                    Description = $"📏 {(Length)mi} is equal to {(double)Math.Round(km, 3, MidpointRounding.ToEven)}Km.",
                     Color = EMBED_COLOR
                 };
 
