@@ -320,7 +320,7 @@ namespace Floofbot.Modules
             if (!string.IsNullOrEmpty(tagName))
             {
                 tagName = tagName.ToLower();
-                Tag selectedTag = _floofDb.Tags.AsQueryable().FirstOrDefault(x => x.TagName == tagName);
+                Tag selectedTag = _floofDb.Tags.AsQueryable().FirstOrDefault(x => x.TagName == tagName && x.ServerId == Context.Guild.Id);
 
                 if (selectedTag != null)
                 {
