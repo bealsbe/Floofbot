@@ -177,6 +177,7 @@ namespace Floofbot.Services
                 else
                 {
                     lastUserMessageInGuild[guildId].Add(msg.Author.Id, msg);
+                    return false;
                 }
 
                 // compare timestamps of messages
