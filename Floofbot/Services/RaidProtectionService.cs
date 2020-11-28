@@ -63,13 +63,6 @@ namespace Floofbot.Services
             durationBetweenMessages = raidConfig["DurationBetweenMessages"];
             maxMessageSpam = raidConfig["MaxMessageSpam"];
         }
-        private async Task HandleBadMessage(SocketUser user, SocketMessage msg)
-        {
-            await msg.DeleteAsync();
-            var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} There was a filtered word in that message. Please be mindful of your language!");
-            await Task.Delay(5000);
-            await botMsg.DeleteAsync();
-        }
         public RaidProtectionConfig GetServerConfig(IGuild guild, FloofDataContext _floofDb)
         {
             RaidProtectionConfig serverConfig = _floofDb.RaidProtectionConfigs.Find(guild.Id);
@@ -193,7 +186,7 @@ namespace Floofbot.Services
                 else
                     return false;
 
-                if (userMessageCount[guildId][msg.Author.Id] >= maxMessageSpam) // no more than 2 messages in time frame
+                if (userMessageCount[guildId][msg.Author.Id] >= maxMessageSpam) // no more than a defined number of messages in time frame
                 {
                     // add a bad boye point for the user
                     if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
