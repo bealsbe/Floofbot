@@ -69,13 +69,6 @@ namespace Floofbot.Services
 
             return ServerConfig.IsOn;
         }
-        private async Task HandleBadMessage(SocketUser user, SocketMessage msg)
-        {
-            await msg.DeleteAsync();
-            var botMsg = await msg.Channel.SendMessageAsync($"{user.Mention} There was a filtered word in that message. Please be mindful of your language!");
-            await Task.Delay(5000);
-            await botMsg.DeleteAsync();
-        }
         private async Task CheckUserAutoban(IGuildUser user)
         {
             FloofDataContext _floofDb = new FloofDataContext();
@@ -124,13 +117,6 @@ namespace Floofbot.Services
                         await msg.DeleteAsync();
                         return;
                     }
-                  
-                    bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, channel.Guild.Id, msg.Channel.Id);
-                    if (hasBadWord)
-                    {
-                        await HandleBadMessage(msg.Author, msg);
-                        return;
-                    }
 
                     string randomResponse = RandomResponseGenerator.GenerateResponse(userMsg);
                     if (!string.IsNullOrEmpty(randomResponse))
@@ -177,7 +163,12 @@ namespace Floofbot.Services
 
                     bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Content, channel.Guild.Id, after.Channel.Id);
                     if (hasBadWord)
-                        await HandleBadMessage(after.Author, after);
+                    {
+                        await after.DeleteAsync();
+                        var botMsg = await after.Channel.SendMessageAsync($"{after.Author.Mention} There was a filtered word in that message. Please be mindful of your language!");
+                        await Task.Delay(5000);
+                        await botMsg.DeleteAsync();
+                    }
 
                     if ((IsToggled(channel.Guild)) == false) // not toggled on
                         return;
@@ -724,76 +715,6 @@ namespace Floofbot.Services
                 }
             });
             return Task.CompletedTask;
-        }
-
-        class WordFilterService
-        {
-            List<FilteredWord> _filteredWords;
-            DateTime _lastRefreshedTime;
-
-            public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId) // names
-            {
-                // return false if none of the serverIds match or filtering has been disabled for the server
-                if (!floofDb.FilterConfigs.AsQueryable()
-                    .Any(x => x.ServerId == serverId && x.IsOn))
-                {
-                    return false;
-                }
-
-                DateTime currentTime = DateTime.Now;
-                if (_lastRefreshedTime == null || currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
-                {
-                    _filteredWords = floofDb.FilteredWords.AsQueryable()
-                        .Where(x => x.ServerId == serverId).ToList();
-                    _lastRefreshedTime = currentTime;
-                }
-
-                foreach (var filteredWord in _filteredWords)
-                {
-                    Regex r = new Regex($"{filteredWord.Word}",
-                        RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                    if (r.IsMatch(messageContent))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId) // messages
-            {
-                // return false if none of the serverIds match or filtering has been disabled for the server
-                if (!floofDb.FilterConfigs.AsQueryable()
-                    .Any(x => x.ServerId == serverId && x.IsOn))
-                {
-                    return false;
-                }
-
-                // whitelist means we don't have the filter on for this channel
-                if (floofDb.FilterChannelWhitelists.AsQueryable()
-                    .Any(x => x.ChannelId == channelId && x.ServerId == serverId))
-                {
-                    return false;
-                }
-
-                DateTime currentTime = DateTime.Now;
-                if (_lastRefreshedTime == null || currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
-                {
-                    _filteredWords = floofDb.FilteredWords.AsQueryable()
-                        .Where(x => x.ServerId == serverId).ToList();
-                    _lastRefreshedTime = currentTime;
-                }
-
-                foreach (var filteredWord in _filteredWords)
-                {
-                    Regex r = new Regex(@$"\b({filteredWord.Word})\b",
-                        RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                    if (r.IsMatch(messageContent))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
         }
     }
 }
