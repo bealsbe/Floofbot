@@ -598,21 +598,21 @@ namespace Floofbot.Modules
                 if (seconds > 0) {
                     TimeSpan duration = TimeSpan.FromSeconds(seconds);
 
-                    string delyString = "";
+                    string delayString = "";
 
                     if (duration.Days > 0)
-                        delyString += $"Days: {duration.Days} ";
+                        delayString += $"Days: {duration.Days} ";
                     if (duration.Hours > 0)
-                        delyString += $"Hours: {duration.Hours} ";
+                        delayString += $"Hours: {duration.Hours} ";
                     if (duration.Minutes > 0)
-                        delyString += $"Minutes: {duration.Minutes} ";
+                        delayString += $"Minutes: {duration.Minutes} ";
                     if (duration.Seconds > 0)
-                        delyString += $"Seconds: {duration.Seconds} ";
+                        delayString += $"Seconds: {duration.Seconds} ";
 
-                    durationNotifyString = delyString;
-                    builder.AddField("Duration", delyString);
+                    durationNotifyString = delayString;
+                    builder.AddField("Duration", delayString);
                     //unmute user after duration has expired
-                    await Task.Run(async () =>
+                    _ = Task.Run(async () =>
                     {
                         await Task.Delay(duration);
 
