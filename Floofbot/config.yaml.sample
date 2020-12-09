@@ -56,6 +56,10 @@ RaidProtection:
   ForgivenDuration: 300000
   # determines the rate at which users can send messages, currently no more than x messages in y seconds
   DurationForMaxMessages: 5000
+  # determines the minimum duration between two user messages before they are counted as spam
+  DurationBetweenMessages: 500
+  # determines the max number of spam messages a user can send before being warned
+  MaxMessageSpam: 3
   # determines the max number of punishments a user can have before being punished
   MaxNumberOfPunishments: 3
   # the delay before the bot msg is deleted in ms
