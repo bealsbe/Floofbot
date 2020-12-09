@@ -1,20 +1,17 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
+using Floofbot.Configs;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
 {
-    public class EventLoggerService
+    public class EventHandlerService
     {
 
         private DiscordSocketClient _client;
@@ -23,8 +20,11 @@ namespace Floofbot.Services
         private RaidProtectionService _raidProtectionService;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
 
+        // list of announcement channels
+        private List<ulong> announcementChannels;
 
-        public EventLoggerService(DiscordSocketClient client)
+
+        public EventHandlerService(DiscordSocketClient client)
         {
             _client = client;
 
@@ -43,6 +43,22 @@ namespace Floofbot.Services
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
             _client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
+
+            // a list of announcement channels for auto publishing
+            announcementChannels = BotConfigFactory.Config.AnnouncementChannels;
+        }
+        public async Task PublishAnnouncementMessages(SocketUserMessage msg)
+        {
+            foreach (ulong chan in announcementChannels)
+            {
+                if (msg.Channel.Id == chan)
+                {
+                    if (msg.Channel.GetType() == typeof(SocketNewsChannel))
+                    {
+                        await msg.CrosspostAsync();
+                    }
+                }
+            }
         }
         public async Task<ITextChannel> GetChannel(Discord.IGuild guild, string eventName = null)
         {
@@ -108,6 +124,9 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    // handle announcement messages
+                    await PublishAnnouncementMessages(userMsg);
+
                     if (msg == null || msg.Author.IsBot)
                         return;
                     var channel = msg.Channel as ITextChannel;

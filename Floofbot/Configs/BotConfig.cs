@@ -18,6 +18,7 @@ namespace Floofbot.Configs
         public string BackupOutputPath { get; set; }
         public string BackupScript { get; set; }
         public int NumberOfBackups { get; set; }
+        public List<ulong> AnnouncementChannels { get; set; }
         public Dictionary <string, int> RaidProtection { get; set; }
 
     }
