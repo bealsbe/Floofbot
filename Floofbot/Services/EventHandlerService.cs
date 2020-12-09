@@ -1,20 +1,16 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
 {
-    public class EventLoggerService
+    public class EventHandlerService
     {
 
         private DiscordSocketClient _client;
@@ -24,7 +20,7 @@ namespace Floofbot.Services
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
 
 
-        public EventLoggerService(DiscordSocketClient client)
+        public EventHandlerService(DiscordSocketClient client)
         {
             _client = client;
 
@@ -43,6 +39,13 @@ namespace Floofbot.Services
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
             _client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
+        }
+        public async Task PublishAnnouncementMessages(SocketUserMessage msg)
+        {
+            if (msg.Channel.GetType() == typeof(SocketNewsChannel))
+            {
+                await msg.CrosspostAsync();
+            }
         }
         public async Task<ITextChannel> GetChannel(Discord.IGuild guild, string eventName = null)
         {
@@ -100,6 +103,7 @@ namespace Floofbot.Services
         }
         public Task OnMessage(SocketMessage msg)
         {
+            // handle announcement messages
             if (msg.Channel.GetType() == typeof(SocketDMChannel))
                 return Task.CompletedTask;
 
@@ -108,6 +112,8 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    await PublishAnnouncementMessages(userMsg);
+
                     if (msg == null || msg.Author.IsBot)
                         return;
                     var channel = msg.Channel as ITextChannel;
