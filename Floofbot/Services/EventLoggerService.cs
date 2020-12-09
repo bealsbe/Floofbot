@@ -497,7 +497,7 @@ namespace Floofbot.Services
                         embed.WithTitle($"👥 Username Changed | {after.Username}#{after.Discriminator}")
                              .WithColor(Color.Purple)
                              .WithDescription($"{after.Mention} | ``{after.Id}``")
-                             .AddField("Old Username", after.Username, true)
+                             .AddField("Old Username", before.Username, true)
                              .AddField("New Name", after.Username, true)
                              .WithFooter($"user_username_change user_namelog {after.Id}")
                              .WithCurrentTimestamp();
