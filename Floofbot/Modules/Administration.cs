@@ -272,7 +272,7 @@ namespace Floofbot.Modules
         [Alias("w")]
         [Summary("Warns a user on the server, with a given reason")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task warnUser(
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "")
@@ -348,7 +348,7 @@ namespace Floofbot.Modules
         [Alias("un")]
         [Summary("Add a moderation-style user note, give a specified reason")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task userNote(
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "")
@@ -411,7 +411,7 @@ namespace Floofbot.Modules
         [Alias("p")]
         [Summary("Deletes recent messages from a given user for all channels on the server")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task PurgeUserMessages(
             [Summary("user")] string user)
         {
@@ -480,7 +480,7 @@ namespace Floofbot.Modules
             }
             else // a mod
             {
-                if (selfUser.GuildPermissions.BanMembers) // want to view their own warnlog 
+                if (selfUser.GuildPermissions.KickMembers) // want to view their own warnlog 
                 {
                     IUser badUser = resolveUser(user);
                     if (badUser == null)
@@ -511,7 +511,7 @@ namespace Floofbot.Modules
         [Command("forgive", RunMode = RunMode.Async)]
         [Summary("Remove a user's warning or user notes")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task forgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
         {
             await UpdateForgivenStatus("forgiven", type, badUser);
@@ -521,7 +521,7 @@ namespace Floofbot.Modules
         [Command("unforgive", RunMode = RunMode.Async)]
         [Summary("Unforgive a warning or user notes")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task unforgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
         {
             await UpdateForgivenStatus("unforgiven", type, badUser);
