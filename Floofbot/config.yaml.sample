@@ -24,6 +24,9 @@ ModMailServer: "0"
 # Path to the SQLite database file
 DbPath: "floofData.db"
 
+# List of announcement channels whos posts will be automatically published
+AnnouncementChannels: []
+
 # These configure the backup settings
 # BackupOutputPath = output path for backups, BackupScript = path to backup script
 # NumberOfBackups = The number of backups to store before overwriting

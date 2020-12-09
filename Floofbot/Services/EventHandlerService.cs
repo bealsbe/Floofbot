@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Floofbot.Configs;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Serilog;
@@ -18,6 +19,9 @@ namespace Floofbot.Services
         private NicknameAlertService _nicknameAlertService;
         private RaidProtectionService _raidProtectionService;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
+
+        // list of announcement channels
+        private List<ulong> announcementChannels;
 
 
         public EventHandlerService(DiscordSocketClient client)
@@ -39,12 +43,21 @@ namespace Floofbot.Services
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
             _client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
+
+            // a list of announcement channels for auto publishing
+            announcementChannels = BotConfigFactory.Config.AnnouncementChannels;
         }
         public async Task PublishAnnouncementMessages(SocketUserMessage msg)
         {
-            if (msg.Channel.GetType() == typeof(SocketNewsChannel))
+            foreach (ulong chan in announcementChannels)
             {
-                await msg.CrosspostAsync();
+                if (msg.Channel.Id == chan)
+                {
+                    if (msg.Channel.GetType() == typeof(SocketNewsChannel))
+                    {
+                        await msg.CrosspostAsync();
+                    }
+                }
             }
         }
         public async Task<ITextChannel> GetChannel(Discord.IGuild guild, string eventName = null)
