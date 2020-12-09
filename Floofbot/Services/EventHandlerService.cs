@@ -103,7 +103,6 @@ namespace Floofbot.Services
         }
         public Task OnMessage(SocketMessage msg)
         {
-            // handle announcement messages
             if (msg.Channel.GetType() == typeof(SocketDMChannel))
                 return Task.CompletedTask;
 
@@ -112,6 +111,7 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    // handle announcement messages
                     await PublishAnnouncementMessages(userMsg);
 
                     if (msg == null || msg.Author.IsBot)
