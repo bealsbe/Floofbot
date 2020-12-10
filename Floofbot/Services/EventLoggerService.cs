@@ -232,9 +232,16 @@ namespace Floofbot.Services
                     embed.WithTitle($"⚠️ Message Deleted | {message.Author.Username}#{message.Author.Discriminator}")
                          .WithColor(Color.Gold)
                          .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
-                         .AddField("Content", message.Content)
                          .WithCurrentTimestamp()
                          .WithFooter($"user_message_deleted user_messagelog {message.Author.Id}");
+                    if (message.Content.Length > 0)
+                    {
+                        embed.AddField("Content", message.Content);
+                    }
+                    if (message.Attachments.Count > 0)
+                    {
+                        embed.AddField("Attachments", String.Join("\n", message.Attachments.Select(it => it.Url)));
+                    }
 
                     if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
