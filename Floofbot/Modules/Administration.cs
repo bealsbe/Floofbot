@@ -35,7 +35,8 @@ namespace Floofbot.Modules
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null) {
+            if (badUser == null)
+            {
                 if (Regex.IsMatch(user, @"\d{16,}"))
                 {
                     string userID = Regex.Match(user, @"\d{16,}").Value;
@@ -52,7 +53,7 @@ namespace Floofbot.Modules
                             ModID = Context.Message.Author.Id,
                             ModUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}",
                             Reason = reason
-                        }) ;
+                        });
                         _floofDB.SaveChanges();
                         await Context.Channel.SendMessageAsync("⚠️ Could not find user, they will be banned next time they join the server!");
                         return;
@@ -65,17 +66,10 @@ namespace Floofbot.Modules
                 }
             }
 
-            //sends message to user
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = "⚖️ Ban Notification";
-            builder.Description = $"You have been banned from {Context.Guild.Name}";
-            builder.AddField("Reason", reason);
-            builder.Color = ADMIN_COLOR;
-            await badUser.SendMessageAsync("", false, builder.Build());
-
             //bans the user
             await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
 
+            EmbedBuilder builder = new EmbedBuilder();
             builder = new EmbedBuilder();
             builder.Title = (":shield: User Banned");
             builder.Color = ADMIN_COLOR;
@@ -84,6 +78,13 @@ namespace Floofbot.Modules
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+
+            //sends message to user
+            builder.Title = "⚖️ Ban Notification";
+            builder.Description = $"You have been banned from {Context.Guild.Name}";
+            builder.AddField("Reason", reason);
+            builder.Color = ADMIN_COLOR;
+            await badUser.SendMessageAsync("", false, builder.Build());
         }
 
         [Command("pruneban")]
