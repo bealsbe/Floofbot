@@ -8,6 +8,13 @@ class RandomResponseGenerator
 {
     public static string GenerateResponse(SocketUserMessage userMessage)
     {
+
+        // System messages (e.x. pin notifications)
+        if (userMessage == null)
+        {
+            return string.Empty;
+        }
+
         List<BotRandomResponse> responses = BotConfigFactory.Config.RandomResponses;
         if (responses == null || responses.Count == 0)
         {
