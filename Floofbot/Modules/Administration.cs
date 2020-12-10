@@ -143,7 +143,7 @@ namespace Floofbot.Modules
                 builder.Color = ADMIN_COLOR;
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
-            catch (HttpException ex)
+            catch (HttpException)
             {
                 await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their ban!");
             }
@@ -268,7 +268,7 @@ namespace Floofbot.Modules
                 builder.Color = ADMIN_COLOR;
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
-            catch (HttpException ex)
+            catch (HttpException)
             {
                 await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their kick!");
             }
@@ -352,7 +352,7 @@ namespace Floofbot.Modules
                     builder.Color = ADMIN_COLOR;
                     await badUser.SendMessageAsync("", false, builder.Build());
                 }
-                catch (HttpException ex)
+                catch (HttpException)
                 {
                     await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their warning!");
                 }
@@ -650,7 +650,7 @@ namespace Floofbot.Modules
                                 builder.Color = ADMIN_COLOR;
                                 await badUser.SendMessageAsync("", false, builder.Build());
                             }
-                            catch (HttpException ex)
+                            catch (HttpException)
                             {
                                 await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their unmute!");
                             }
@@ -678,7 +678,7 @@ namespace Floofbot.Modules
                 builder.Color = ADMIN_COLOR;
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
-            catch (HttpException ex)
+            catch (HttpException)
             {
                 await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their mute!");
             }
@@ -749,7 +749,7 @@ namespace Floofbot.Modules
                 builder.Color = ADMIN_COLOR;
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
-            catch (HttpException ex)
+            catch (HttpException)
             {
                 await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their unmute!");
             }
