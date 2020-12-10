@@ -67,25 +67,33 @@ namespace Floofbot.Modules
                 }
             }
 
+            try
+            {
+                //sends message to user
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.Title = "⚖️ Ban Notification";
+                builder.Description = $"You have been banned from {Context.Guild.Name}";
+                builder.AddField("Reason", reason);
+                builder.Color = ADMIN_COLOR;
+                await badUser.SendMessageAsync("", false, builder.Build());
+            }
+            catch (HttpException)
+            {
+                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their ban!");
+            }
+
             //bans the user
             await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
 
-            EmbedBuilder builder = new EmbedBuilder();
-            builder = new EmbedBuilder();
-            builder.Title = (":shield: User Banned");
-            builder.Color = ADMIN_COLOR;
-            builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
-            builder.AddField("User ID", badUser.Id);
-            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            EmbedBuilder modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder.Title = (":shield: User Banned");
+            modEmbedBuilder.Color = ADMIN_COLOR;
+            modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            modEmbedBuilder.AddField("User ID", badUser.Id);
+            modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
-
-            //sends message to user
-            builder.Title = "⚖️ Ban Notification";
-            builder.Description = $"You have been banned from {Context.Guild.Name}";
-            builder.AddField("Reason", reason);
-            builder.Color = ADMIN_COLOR;
-            await badUser.SendMessageAsync("", false, builder.Build());
         }
 
         [Command("pruneban")]
@@ -130,9 +138,6 @@ namespace Floofbot.Modules
                 }
             }
 
-            //bans the user
-            await Context.Guild.AddBanAsync(badUser.Id, pruneDays, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
-
             try
             {
                 //sends message to user
@@ -148,6 +153,9 @@ namespace Floofbot.Modules
                 await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their ban!");
             }
 
+            //bans the user
+            await Context.Guild.AddBanAsync(badUser.Id, pruneDays, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
+
             EmbedBuilder modEmbedBuilder = new EmbedBuilder();
             modEmbedBuilder = new EmbedBuilder();
             modEmbedBuilder.Title = (":shield: User Banned");
@@ -156,7 +164,6 @@ namespace Floofbot.Modules
             modEmbedBuilder.AddField("User ID", badUser.Id);
             modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
             await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
-
         }
 
         [Command("viewautobans")]
@@ -275,13 +282,13 @@ namespace Floofbot.Modules
 
             //kicks users
             await Context.Guild.GetUser(badUser.Id).KickAsync(reason);
-            builder = new EmbedBuilder();
-            builder.Title = ("🥾 User Kicked");
-            builder.Color = ADMIN_COLOR;
-            builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been kicked from {Context.Guild.Name}";
-            builder.AddField("User ID", badUser.Id);
-            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            EmbedBuilder kickBuilder = new EmbedBuilder();
+            kickBuilder.Title = ("🥾 User Kicked");
+            kickBuilder.Color = ADMIN_COLOR;
+            kickBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been kicked from {Context.Guild.Name}";
+            kickBuilder.AddField("User ID", badUser.Id);
+            kickBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
         }
 
         [Command("warn")]
