@@ -811,21 +811,6 @@ namespace Floofbot.Modules
                 await Context.Channel.SendMessageAsync("Something went wrong!");
             }
         }
-
-        // r/furry Discord Rules Gate
-        [Command("ireadtherules")]
-        [Summary("Confirms a user has read the server rules by giving them a new role")]
-        public async Task getaccess()
-        {
-            ulong serverId = 225980129799700481;
-            ulong readRulesRoleId = 494149550622375936;
-            if (Context.Guild.Id == serverId) {
-                var user = (IGuildUser)Context.User;
-                await user.AddRoleAsync(Context.Guild.GetRole(readRulesRoleId));
-            }
-            await Context.Message.DeleteAsync();
-        }
-
         private IUser resolveUser(string input)
         {
             IUser user = null;
