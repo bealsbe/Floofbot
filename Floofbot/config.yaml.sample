@@ -78,3 +78,10 @@ RaidProtection:
   MaxNumberEmojis: 5
   # The max number of times a user can post the same character in a row
   MaxNumberSequentialCharacters: 8
+
+# This handles the configuration for the rules gate
+RulesGate:
+  # The Channel ID for the rules
+  RulesChannel: 225980129799700481
+  # The Role ID for the role given to bypass the rules gate
+  RulesRole: 494149550622375936

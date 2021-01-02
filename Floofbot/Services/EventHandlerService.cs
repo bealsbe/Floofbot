@@ -23,6 +23,9 @@ namespace Floofbot.Services
         // list of announcement channels
         private List<ulong> announcementChannels;
 
+        // rules gate config
+        private Dictionary <string, ulong> rulesGateConfig = BotConfigFactory.Config.RulesGate;
+
 
         public EventHandlerService(DiscordSocketClient client)
         {
@@ -124,8 +127,8 @@ namespace Floofbot.Services
                 return;
 
             // rules gate info
-            ulong rulesChannelId = 225980129799700481;
-            ulong readRulesRoleId = 494149550622375936;
+            ulong rulesChannelId = rulesGateConfig["RulesChannel"];
+            ulong readRulesRoleId = rulesGateConfig["RulesRole"];
             string rulesBypassString = "yes";
 
             if (msg.Channel.Id == rulesChannelId && userMsg.Content.ToLower().Contains(rulesBypassString)) 
