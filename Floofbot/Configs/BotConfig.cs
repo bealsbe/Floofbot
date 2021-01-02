@@ -20,6 +20,7 @@ namespace Floofbot.Configs
         public int NumberOfBackups { get; set; }
         public List<ulong> AnnouncementChannels { get; set; }
         public Dictionary <string, int> RaidProtection { get; set; }
+        public Dictionary <string, string> RulesGate { get; set; }
 
     }
 }

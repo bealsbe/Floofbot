@@ -23,6 +23,9 @@ namespace Floofbot.Services
         // list of announcement channels
         private List<ulong> announcementChannels;
 
+        // rules gate config
+        private Dictionary <string, string> rulesGateConfig = BotConfigFactory.Config.RulesGate;
+
 
         public EventHandlerService(DiscordSocketClient client)
         {
@@ -42,6 +45,7 @@ namespace Floofbot.Services
             _client.GuildMemberUpdated += GuildMemberUpdated;
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
+            _client.MessageReceived += RulesGate; // rfurry rules gate
             _client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
 
             // a list of announcement channels for auto publishing
@@ -112,6 +116,26 @@ namespace Floofbot.Services
                     Log.Error("Error with the auto ban on join system: " + ex);
                     return;
                 }
+            }
+        }
+
+        // rfurry rules gate
+        public async Task RulesGate(SocketMessage msg)
+        {
+            var userMsg = msg as SocketUserMessage;
+            if (msg == null || msg.Author.IsBot)
+                return;
+
+            // rules gate info
+            ulong rulesChannelId = Convert.ToUInt64(rulesGateConfig["RulesChannel"]);
+            ulong readRulesRoleId = Convert.ToUInt64(rulesGateConfig["RulesRole"]);
+            string rulesBypassString = rulesGateConfig["Keyword"];
+
+            if (msg.Channel.Id == rulesChannelId && userMsg.Content.ToLower().Contains(rulesBypassString)) 
+            {
+                var user = (IGuildUser)msg.Author;
+                await user.AddRoleAsync(user.Guild.GetRole(readRulesRoleId));
+                await userMsg.DeleteAsync();
             }
         }
         public Task OnMessage(SocketMessage msg)
