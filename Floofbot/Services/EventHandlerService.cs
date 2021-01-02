@@ -125,15 +125,13 @@ namespace Floofbot.Services
 
             // rules gate info
             ulong rulesChannelId = 225980129799700481;
-            ulong rulesServerId = 225980129799700481;
             ulong readRulesRoleId = 494149550622375936;
             string rulesBypassString = "yes";
 
             if (msg.Channel.Id == rulesChannelId && userMsg.Content.ToLower().Contains(rulesBypassString)) 
             {
                 var user = (IGuildUser)msg.Author;
-                SocketGuild guild = _client.GetGuild(rulesServerId);
-                await user.AddRoleAsync(guild.GetRole(readRulesRoleId));
+                await user.AddRoleAsync(user.Guild.GetRole(readRulesRoleId));
                 await userMsg.DeleteAsync();
             }
         }
