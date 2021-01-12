@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20210112224918_WelcomeGate.cs" />
+    <Compile Remove="Migrations\20210112224918_WelcomeGate.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Discord.Addons.Interactive/Discord.Addons.Interactive.csproj" />
     <PackageReference Include="Discord.Net" Version="2.3.0-dev-20201109.3" />
