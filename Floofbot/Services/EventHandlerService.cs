@@ -692,31 +692,33 @@ namespace Floofbot.Services
             return Task.CompletedTask;
 
         }
-        public async Task HandleWelcomeGate(SocketGuildUser before, SocketGuildUser after) 
+        public Task HandleWelcomeGate(SocketGuildUser before, SocketGuildUser after) 
         {
-            if (before.IsPending == after.IsPending) // no welcome gate change
-                return;
-
-            FloofDataContext floofDb = new FloofDataContext();
-            var guild = after.Guild;
-            WelcomeGate serverConfig = floofDb.WelcomeGateConfigs.Find(guild.Id);
-
-            if (serverConfig == null || serverConfig.Toggle == false || serverConfig.RoleId == null) // disabled
-                return;
-
-            try
+            var _ = Task.Run(async () =>
             {
-                var userRole = guild.GetRole((ulong)serverConfig.RoleId);
-                if (userRole == null)
-                    return; // role does not exist anymore
+                if (before.IsPending == after.IsPending) // no welcome gate change
+                    return;
+                FloofDataContext floofDb = new FloofDataContext();
+                var guild = after.Guild;
+                WelcomeGate serverConfig = floofDb.WelcomeGateConfigs.Find(guild.Id);
 
-                await after.AddRoleAsync(userRole);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("An exception occured when trying to add roles for the welcome gate: " + ex.ToString());
-            }
+                if (serverConfig == null || serverConfig.Toggle == false || serverConfig.RoleId == null) // disabled
+                    return;
 
+                try
+                {
+                    var userRole = guild.GetRole((ulong)serverConfig.RoleId);
+                    if (userRole == null)
+                        return; // role does not exist anymore
+
+                    await after.AddRoleAsync(userRole);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("An exception occured when trying to add roles for the welcome gate: " + ex.ToString());
+                }
+            });
+            return Task.CompletedTask;
         }
         public Task UserKicked(IUser user, IUser kicker, IGuild guild)
         {
