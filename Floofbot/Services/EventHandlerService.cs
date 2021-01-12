@@ -43,6 +43,7 @@ namespace Floofbot.Services
             _client.UserJoined += UserJoined;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
+            _client.GuildMemberUpdated += HandleWelcomeGate; // welcome gate handler
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
             _client.MessageReceived += RulesGate; // rfurry rules gate
@@ -689,6 +690,32 @@ namespace Floofbot.Services
                 }
             });
             return Task.CompletedTask;
+
+        }
+        public async Task HandleWelcomeGate(SocketGuildUser before, SocketGuildUser after) 
+        {
+            if (before.IsPending == after.IsPending) // no welcome gate change
+                return;
+
+            FloofDataContext floofDb = new FloofDataContext();
+            var guild = after.Guild;
+            WelcomeGate serverConfig = floofDb.WelcomeGateConfigs.Find(guild.Id);
+
+            if (serverConfig == null || serverConfig.Toggle == false || serverConfig.RoleId == null) // disabled
+                return;
+
+            try
+            {
+                var userRole = guild.GetRole((ulong)serverConfig.RoleId);
+                if (userRole == null)
+                    return; // role does not exist anymore
+
+                await after.AddRoleAsync(userRole);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("An exception occured when trying to add roles for the welcome gate: " + ex.ToString());
+            }
 
         }
         public Task UserKicked(IUser user, IUser kicker, IGuild guild)
