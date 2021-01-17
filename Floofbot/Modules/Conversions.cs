@@ -26,6 +26,12 @@ namespace Floofbot
             Regex celReg = new Regex(celPat, RegexOptions.IgnoreCase);
             string miPat = "\\b(\\d+)(mi)\\b";
             Regex miReg = new Regex(miPat, RegexOptions.IgnoreCase);
+            string kmPat = "\\b(\\d+)(km)\\b";
+            Regex kmReg = new Regex(kmPat, RegexOptions.IgnoreCase);
+            string kgPat = "\\b(\\d+)(kg)\\b";
+            Regex kgReg = new Regex(kgPat, RegexOptions.IgnoreCase);
+            string lbPat = "\\b(\\d+)(lb)||(lbs)\\b";
+            Regex lbReg = new Regex(lbPat, RegexOptions.IgnoreCase);
 
             if (fahReg.Match(input).Success)
             {
@@ -83,8 +89,72 @@ namespace Floofbot
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
-                    Title = "Temperature conversion",
+                    Title = "Length conversion",
                     Description = $"📏 {(Length)mi} is equal to {(double)Math.Round(km, 3, MidpointRounding.ToEven)}Km.",
+                    Color = EMBED_COLOR
+                };
+
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            else if (kmReg.Match(input).Success)
+            {
+                Match m = kmReg.Match(input);
+
+                Group g = m.Groups[1];
+
+                string kmStr = Convert.ToString(g);
+                double kmTmp = Convert.ToDouble(kmStr);
+
+                Length km = Length.FromKilometers(kmTmp);
+                double mi = km.Miles;
+
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Title = "Length conversion",
+                    Description = $"📏 {(Length)km} is equal to {(double)Math.Round(mi, 3, MidpointRounding.ToEven)}mi.",
+                    Color = EMBED_COLOR
+                };
+
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            else if (kgReg.Match(input).Success)
+            {
+                Match m = kgReg.Match(input);
+
+                Group g = m.Groups[1];
+
+                string kgStr = Convert.ToString(g);
+                double kgTmp = Convert.ToDouble(kgStr);
+
+
+                Mass kg = Mass.FromKilograms(kgTmp);
+                double lb = kg.Pounds;
+
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Title = "Mass conversion",
+                    Description = $"⚖️ {(Mass)kg} is equal to {(double)Math.Round(lb, 3, MidpointRounding.ToEven)}lbs.",
+                    Color = EMBED_COLOR
+                };
+
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            else if (lbReg.Match(input).Success)
+            {
+                Match m = lbReg.Match(input);
+
+                Group g = m.Groups[1];
+
+                string lbStr = Convert.ToString(g);
+                double lbTmp = Convert.ToDouble(lbStr);
+
+                Mass lb = Mass.FromPounds(lbTmp);
+                double kg = lb.Kilograms;
+
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Title = "Mass conversion",
+                    Description = $"⚖️ {(Mass)lb} is equal to {(double)Math.Round(kg, 3, MidpointRounding.ToEven)}Kg.",
                     Color = EMBED_COLOR
                 };
 
