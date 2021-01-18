@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 namespace Floofbot.Modules
 {
     [Summary("Send a message directly to the server's moderators")]
+    [Name("ModMail")]
     [Group("modmail")]
     public class ModMailModule : InteractiveBase
     {
@@ -27,6 +28,8 @@ namespace Floofbot.Modules
         }
 
         [Command("")]
+        [Name("modmail <content>")]
+        [Summary("Send a message to the moderators")]
         public async Task sendModMail([Summary("Message Content")][Remainder] string content = "")
         {
             try
