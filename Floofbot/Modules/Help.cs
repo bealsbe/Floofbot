@@ -4,6 +4,7 @@ using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Floofbot.Modules
@@ -43,21 +44,24 @@ namespace Floofbot.Modules
             { 
                 foreach (CommandInfo command in moduleCommands[module.Name])
                 {
-                    var userMeetsCommandPreconditions = await command.CheckPreconditionsAsync(Context);
-                    if (userMeetsCommandPreconditions.IsSuccess)
+                    if (!string.IsNullOrEmpty(command.Name)) // only show commands with names
                     {
-                        string aliases;
-                        if (command.Aliases != null)
-                            aliases = string.Join(", ", command.Aliases);
-                        else
-                            aliases = "None";
-
-                        fields.Add(new EmbedFieldBuilder()
+                        var userMeetsCommandPreconditions = await command.CheckPreconditionsAsync(Context);
+                        if (userMeetsCommandPreconditions.IsSuccess)
                         {
-                            Name = $"{command.Name} (aliases: {aliases})",
-                            Value = command.Summary ?? "No command description available",
-                            IsInline = false
-                        });
+                            string aliases = "";
+                            var aliasesWithoutCommandName = command.Aliases.Where(x => !x.Contains(command.Name) && !x.Contains(module.Group)); // remove the cmd name/group from aliases
+
+                            if (aliasesWithoutCommandName != null && aliasesWithoutCommandName.Any()) // is not null or empty
+                                aliases = "(aliases: " + string.Join(", ", aliasesWithoutCommandName) + ")";
+
+                            fields.Add(new EmbedFieldBuilder()
+                            {
+                                Name = $"{command.Name} {aliases}",
+                                Value = command.Summary ?? "No command description available",
+                                IsInline = false
+                            });
+                        }
                     }
                 }
                 if (fields.Count > 0) // don't show empty pages
@@ -78,6 +82,7 @@ namespace Floofbot.Modules
 
         [Summary("Show help for a specific set of commands (a module)")]
         [Command("help")]
+        [Name("help <module name>")]
         public async Task HelpCommand([Summary("module name")] string requestedModule)
         {
             List<string> moduleNames = _commandService.Modules.Select(x => x.Name.ToLower()).ToList();
