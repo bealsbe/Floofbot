@@ -30,6 +30,7 @@ namespace Floofbot.Services.Repository
         public virtual DbSet<ModMail> ModMails { get; set; }
         public virtual DbSet<ErrorLogging> ErrorLoggingConfigs { get; set; }
         public virtual DbSet<RaidProtectionConfig> RaidProtectionConfigs { get; set; }
+        public virtual DbSet<UserRolesList> UserRolesLists { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
