@@ -50,7 +50,7 @@ namespace Floofbot.Modules
                         if (userMeetsCommandPreconditions.IsSuccess)
                         {
                             string aliases = "";
-                            var aliasesWithoutCommandName = command.Aliases.Where(x => !x.Contains(command.Name) && !x.Contains(module.Group)); // remove the cmd name/group from aliases
+                            var aliasesWithoutCommandName = command.Aliases.Where(x => !x.Contains(command.Name)); // remove the cmd name/group from aliases
 
                             if (aliasesWithoutCommandName != null && aliasesWithoutCommandName.Any()) // is not null or empty
                                 aliases = "(aliases: " + string.Join(", ", aliasesWithoutCommandName) + ")";
