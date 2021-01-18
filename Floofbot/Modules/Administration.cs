@@ -17,7 +17,7 @@ using Discord.Net;
 namespace Floofbot.Modules
 {
     [Summary("Administration commands")]
-    [Discord.Commands.Name("Administration")]
+    [Name("Administration")]
     public class Administration : InteractiveBase
     {
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;

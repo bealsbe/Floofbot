@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Floofbot.Modules
 {
     [Summary("Nickname alert configuration commands")]
-    [Discord.Commands.Name("NicknameAlert")]
+    [Name("NicknameAlert")]
     [RequireUserPermission(GuildPermission.Administrator)]
     [Group("nicknamealert")]
     public class NicknameAlert : ModuleBase<SocketCommandContext>

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace Floofbot.Modules
 {
     [Summary("Tag commands")]
-    [Discord.Commands.Name("Tag")]
+    [Name("Tag")]
     [Group("tag")]
     [RequireContext(ContextType.Guild)]
     [RequireUserPermission(Discord.GuildPermission.AttachFiles)]
