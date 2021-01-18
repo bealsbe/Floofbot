@@ -21,7 +21,7 @@ namespace Floofbot.Modules
     public class ModMailModule : InteractiveBase
     {
         private FloofDataContext _floofDb;
-        static readonly ulong RFURRY_SERVER_ID = BotConfigFactory.Config.ModMailServer; // TODO: Replace this so that it works on more servers
+        static readonly ulong SERVER_ID = BotConfigFactory.Config.ModMailServer; // TODO: Replace this so that it works on more servers
         public ModMailModule(FloofDataContext _floofDB)
         {
             _floofDb = _floofDB;
@@ -46,10 +46,13 @@ namespace Floofbot.Modules
                 }
 
                 // get values
-                ModMail serverConfig = _floofDb.ModMails.Find(RFURRY_SERVER_ID);
-                IGuild guild = Context.Client.GetGuild(RFURRY_SERVER_ID); // can return null
+                ModMail serverConfig = _floofDb.ModMails.Find(SERVER_ID);
+                IGuild guild = Context.Client.GetGuild(SERVER_ID); // can return null
                 Discord.ITextChannel channel = await guild.GetTextChannelAsync((ulong)serverConfig.ChannelId); // can return null
                 IRole role = null;
+
+                if (!Context.User.MutualGuilds.Contains(guild)) // the modmail server is not a mutual server
+                    return;
 
                 if (serverConfig == null || serverConfig.IsEnabled == false || guild == null || channel == null) // not configured
                 {
