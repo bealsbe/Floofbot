@@ -48,8 +48,9 @@ namespace Floofbot.Modules
                 Discord.ITextChannel channel = await guild.GetTextChannelAsync((ulong)serverConfig.ChannelId); // can return null
                 IRole role = null;
 
-                if (Context.User.MutualGuilds.Count() == 0) // no mutual guilds, disable modmail
+                if (!Context.User.MutualGuilds.Contains(guild)) // the modmail server is not a mutual server
                     return;
+
                 if (serverConfig == null || serverConfig.IsEnabled == false || guild == null || channel == null) // not configured
                 {
                     await Context.Channel.SendMessageAsync("Modmail is not configured on this server.");
