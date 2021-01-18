@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using Discord.Addons.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Drawing.Printing;
 using Discord.Net;
+using Floofbot.Modules.Helpers;
 
 namespace Floofbot.Modules
 {
@@ -23,8 +23,12 @@ namespace Floofbot.Modules
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
         private static readonly int MESSAGES_TO_SCAN_PER_CHANNEL_ON_PURGE = 100;
         private FloofDataContext _floofDB;
-
-        public Administration(FloofDataContext floofDB) => _floofDB = floofDB;
+        private ChannelOverwriteCache _channelOverwriteCache;
+        public Administration(FloofDataContext floofDB)
+        {
+            _floofDB = floofDB;
+            _channelOverwriteCache = new ChannelOverwriteCache();
+        }
 
         [Command("ban")]
         [Alias("b")]
@@ -775,6 +779,18 @@ namespace Floofbot.Modules
                     Color = Color.Orange,
 
                 };
+
+                var guildChannel = Context.Channel as IGuildChannel;
+                if (guildChannel == null)
+                    return;
+
+                if (_channelOverwriteCache.GetEntry(guildChannel.Id) != null)
+                    _channelOverwriteCache.RemoveItemFromCache(Context.Channel.Id); // clear old permission overwrites that we had saved
+
+                await Context.Channel.SendMessageAsync("Locking channel...");
+
+                _channelOverwriteCache.AddItemToCache(Context.Channel.Id, guildChannel.PermissionOverwrites); // store a copy of the old permissions for unlock later
+
                 foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages)) {
                     var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
 
@@ -798,12 +814,23 @@ namespace Floofbot.Modules
                 EmbedBuilder builder = new EmbedBuilder {
                     Description = $"🔓  <#{textChannel.Id}> Unlocked",
                     Color = Color.DarkGreen,
-
                 };
-                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages)) {
-                    var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
-                    if (role.Name != "nadeko-mute" && role.Name != "Muted")
-                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                if (_channelOverwriteCache.GetEntry(textChannel.Id) == null) // we do not have saved copy of old overwrites, lets just allow all roles as a default
+                {
+                    await Context.Channel.SendMessageAsync("Unable to restore old overwrites, defaulting permissions...");
+                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    {
+                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                        if (role.Name != "nadeko-mute" && role.Name != "Muted")
+                            await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                    }
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("Restoring Permissions...");
+                    var oldOverwrites = _channelOverwriteCache.GetEntry(textChannel.Id);
+                    await textChannel.ModifyAsync(x => x.PermissionOverwrites = oldOverwrites.ToList()); // apply old overwrites
+                    _channelOverwriteCache.RemoveItemFromCache(textChannel.Id); // remove old entry
                 }
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
