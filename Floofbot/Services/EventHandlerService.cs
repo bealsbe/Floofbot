@@ -18,6 +18,7 @@ namespace Floofbot.Services
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
         private RaidProtectionService _raidProtectionService;
+        private UserRoleRetentionService _userRoleRetentionService;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
 
         // list of announcement channels
@@ -35,12 +36,16 @@ namespace Floofbot.Services
             _wordFilterService = new WordFilterService();
             _nicknameAlertService = new NicknameAlertService(new FloofDataContext());
             _raidProtectionService = new RaidProtectionService();
+            _userRoleRetentionService = new UserRoleRetentionService(new FloofDataContext());
+
             // event handlers
             _client.MessageUpdated += MessageUpdated;
             _client.MessageDeleted += MessageDeleted;
             _client.UserBanned += UserBanned;
             _client.UserUnbanned += UserUnbanned;
             _client.UserJoined += UserJoined;
+            _client.UserJoined += _userRoleRetentionService.LogUserRoles;
+            _client.UserLeft += _userRoleRetentionService.RemoveUserRoleLog;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
             _client.UserUpdated += UserUpdated;
