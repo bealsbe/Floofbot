@@ -42,6 +42,8 @@ namespace Floofbot.Services
         private static int userJoinsDelay;
         private static int maxNumberEmojis;
         private static int maxNumberSequentialCharacters;
+        private static int repeatingPhrasesLimit;
+        private static int distanceBetweenPhrases;
         private static int durationBetweenMessages;
         private static int maxMessageSpam;
 
@@ -60,6 +62,8 @@ namespace Floofbot.Services
             userJoinsDelay = raidConfig["UserJoinsDelay"];
             maxNumberEmojis = raidConfig["MaxNumberEmojis"];
             maxNumberSequentialCharacters = raidConfig["MaxNumberSequentialCharacters"];
+            repeatingPhrasesLimit = raidConfig["RepeatingPhrasesLimit"];
+            distanceBetweenPhrases = raidConfig["DistanceBetweenPhrases"];
             durationBetweenMessages = raidConfig["DurationBetweenMessages"];
             maxMessageSpam = raidConfig["MaxMessageSpam"];
         }
@@ -247,31 +251,27 @@ namespace Floofbot.Services
         }
         private bool CheckLetterSpam(SocketMessage msg, ulong guildId)
         {
-            var matches = Regex.Matches(msg.Content.ToLower(), @"([^\u200d])\1+");
-            foreach (Match m in matches)
+            bool isMatch = Regex.IsMatch(msg.Content.ToLower(), @"((.)\2{" + maxNumberSequentialCharacters + @",})|((\w.+)(?=((.{0," + (distanceBetweenPhrases - 1) + @"}|\s*)\4){" + (repeatingPhrasesLimit - 1) + @"}))");
+            if (isMatch)
             {
-                // string has too many characters in a row
-                if (m.Length > maxNumberSequentialCharacters)
+                // add a bad boye point for the user
+                if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
                 {
-                    // add a bad boye point for the user
-                    if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
-                    {
-                        userPunishmentCount[guildId][msg.Author.Id] += 1;
-                    }
-                    else // they were a good boye but now they are not
-                    {
-                        userPunishmentCount[guildId].Add(msg.Author.Id, 1);
-                    }
-                    // we run an async task to remove their point after the specified duration
-                    UserPunishmentTimeout(guildId, msg.Author.Id);
+                    userPunishmentCount[guildId][msg.Author.Id] += 1;
+                }
+                else // they were a good boye but now they are not
+                {
+                    userPunishmentCount[guildId].Add(msg.Author.Id, 1);
+                }
+                // we run an async task to remove their point after the specified duration
+                UserPunishmentTimeout(guildId, msg.Author.Id);
 
-                    SendMessageAndDelete(msg.Author.Mention + " no spamming!", msg.Channel);
+                SendMessageAndDelete(msg.Author.Mention + " no spamming!", msg.Channel);
 
-                    Log.Information("User ID " + msg.Author.Id + " triggered excess letter spam and received a warning.");
+                Log.Information("User ID " + msg.Author.Id + " triggered excess letter/phrase spam and received a warning.");
 
-                    // we return here because we only need to check for at least one match, doesnt matter if there are more
-                    return true;
-                }                     
+                // we return here because we only need to check for at least one match, doesnt matter if there are more
+                return true;                    
             }
             return false;
 
