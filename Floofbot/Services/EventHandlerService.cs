@@ -44,8 +44,6 @@ namespace Floofbot.Services
             _client.UserBanned += UserBanned;
             _client.UserUnbanned += UserUnbanned;
             _client.UserJoined += UserJoined;
-            _client.UserJoined += _userRoleRetentionService.LogUserRoles;
-            _client.UserLeft += _userRoleRetentionService.RemoveUserRoleLog;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
             _client.UserUpdated += UserUpdated;
@@ -445,6 +443,7 @@ namespace Floofbot.Services
                         return;
 
                     await _raidProtectionService.CheckForExcessiveJoins(user.Guild);
+                    await _userRoleRetentionService.RestoreUserRoles(user);
 
                     if ((IsToggled(user.Guild)) == false)
                         return;
@@ -485,6 +484,8 @@ namespace Floofbot.Services
                 {
                     if (user.IsBot)
                         return;
+
+                    await _userRoleRetentionService.LogUserRoles(user);
 
                     if ((IsToggled(user.Guild)) == false)
                         return;

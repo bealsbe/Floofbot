@@ -29,9 +29,7 @@ namespace Floofbot.Services
         }
         public async Task LogUserRoles(IGuildUser user)
         {
-            Console.WriteLine("ping!");
             string userRoles = string.Join(",", user.RoleIds);
-            Console.WriteLine(userRoles);
             await RemoveUserRoleLog(user);
 
             _floofDb.UserRolesLists.Add(new UserRolesList{
