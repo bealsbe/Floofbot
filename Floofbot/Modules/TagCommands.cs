@@ -312,6 +312,7 @@ namespace Floofbot.Modules
         }
 
         [Command("")]
+        [Name("tag x")]
         [Summary("Displays a tag")]
         [RequireUserPermission(ChannelPermission.EmbedLinks)]
         [RequireBotPermission(ChannelPermission.AttachFiles)]
