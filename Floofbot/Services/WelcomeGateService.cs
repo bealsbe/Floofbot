@@ -14,10 +14,12 @@ namespace Floofbot.Services
         {
             _floofDb = floofDb;
         }
-        public async Task HandleWelcomeGate(SocketGuildUser user)
+        public async Task HandleWelcomeGate(SocketGuildUser before, SocketGuildUser after)
         {
+            if (before.IsPending == after.IsPending) // no welcome gate change
+                return;
             FloofDataContext floofDb = new FloofDataContext();
-            var guild = user.Guild;
+            var guild = after.Guild;
             WelcomeGate serverConfig = floofDb.WelcomeGateConfigs.Find(guild.Id);
 
             if (serverConfig == null || serverConfig.Toggle == false || serverConfig.RoleId == null) // disabled
@@ -29,7 +31,7 @@ namespace Floofbot.Services
                 if (userRole == null)
                     return; // role does not exist anymore
 
-                await user.AddRoleAsync(userRole);
+                await after.AddRoleAsync(userRole);
             }
             catch (Exception ex)
             {

@@ -18,6 +18,7 @@ namespace Floofbot.Services
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
         private RaidProtectionService _raidProtectionService;
+        private WelcomeGateService _welcomeGateService;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
 
         // list of announcement channels
@@ -35,6 +36,7 @@ namespace Floofbot.Services
             _wordFilterService = new WordFilterService();
             _nicknameAlertService = new NicknameAlertService(new FloofDataContext());
             _raidProtectionService = new RaidProtectionService();
+            _welcomeGateService = new WelcomeGateService(new FloofDataContext());
             // event handlers
             _client.MessageUpdated += MessageUpdated;
             _client.MessageDeleted += MessageDeleted;
@@ -43,7 +45,7 @@ namespace Floofbot.Services
             _client.UserJoined += UserJoined;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
-            _client.GuildMemberUpdated += HandleWelcomeGate; // welcome gate handler
+            _client.GuildMemberUpdated += _welcomeGateService.HandleWelcomeGate; ; // welcome gate handler
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
             _client.MessageReceived += RulesGate; // rfurry rules gate
@@ -691,34 +693,6 @@ namespace Floofbot.Services
             });
             return Task.CompletedTask;
 
-        }
-        public Task HandleWelcomeGate(SocketGuildUser before, SocketGuildUser after) 
-        {
-            var _ = Task.Run(async () =>
-            {
-                if (before.IsPending == after.IsPending) // no welcome gate change
-                    return;
-                FloofDataContext floofDb = new FloofDataContext();
-                var guild = after.Guild;
-                WelcomeGate serverConfig = floofDb.WelcomeGateConfigs.Find(guild.Id);
-
-                if (serverConfig == null || serverConfig.Toggle == false || serverConfig.RoleId == null) // disabled
-                    return;
-
-                try
-                {
-                    var userRole = guild.GetRole((ulong)serverConfig.RoleId);
-                    if (userRole == null)
-                        return; // role does not exist anymore
-
-                    await after.AddRoleAsync(userRole);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("An exception occured when trying to add roles for the welcome gate: " + ex.ToString());
-                }
-            });
-            return Task.CompletedTask;
         }
         public Task UserKicked(IUser user, IUser kicker, IGuild guild)
         {
