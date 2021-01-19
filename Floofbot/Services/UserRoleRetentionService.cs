@@ -18,15 +18,6 @@ namespace Floofbot.Services
         {
             _floofDb = floofDb;
         }
-        private SocketRole GetRole(string roleId, IGuild guild)
-        {
-            foreach (SocketRole r in guild.Roles)
-            {
-                if (r.Id.ToString() == roleId)
-                    return r;
-            }
-            return null;
-        }
         public async Task LogUserRoles(IGuildUser user)
         {
             string userRoles = string.Join(",", user.RoleIds);
@@ -72,7 +63,7 @@ namespace Floofbot.Services
                 // restore each role 1 by 1
                 foreach (string roleId in oldUserRolesList)
                 {
-                    SocketRole role = GetRole(roleId, user.Guild);
+                    IRole role = user.Guild.GetRole(Convert.ToUInt64(roleId));
 
                     if (role == null) // role does not exist
                         continue;
