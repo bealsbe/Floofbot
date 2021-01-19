@@ -69,7 +69,10 @@ namespace Floofbot.Services
                     IRole role = user.Guild.GetRole(Convert.ToUInt64(roleId));
 
                     if (role == null) // role does not exist
+                    {
+                        Log.Error("Unable to return role ID " + roleId + " to user ID " + user.Id + " as it does not exist anymore!");
                         continue;
+                    }
                     else
                     {
                         try
