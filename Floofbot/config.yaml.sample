@@ -78,6 +78,10 @@ RaidProtection:
   MaxNumberEmojis: 5
   # The max number of times a user can post the same character in a row
   MaxNumberSequentialCharacters: 8
+  # The max number of repeated phrases that can be said
+  RepeatingPhrasesLimit: 5
+  # The maximum distance in number of characters between repeated phrases
+  DistanceBetweenPhrases: 5
 
 # This handles the configuration for the rules gate
 RulesGate:

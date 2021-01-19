@@ -4,6 +4,7 @@ using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Floofbot.Modules
@@ -40,29 +41,39 @@ namespace Floofbot.Modules
             List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
             List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
             foreach (ModuleInfo module in modules)
-            {
+            { 
                 foreach (CommandInfo command in moduleCommands[module.Name])
                 {
-                    string aliases;
-                    if (command.Aliases != null)
-                        aliases = string.Join(", ", command.Aliases);
-                    else
-                        aliases = "None";
-
-                    fields.Add(new EmbedFieldBuilder()
+                    if (!string.IsNullOrEmpty(command.Name)) // only show commands with names
                     {
-                        Name = $"{command.Name} (aliases: {aliases})",
-                        Value = command.Summary ?? "No command description available",
-                        IsInline = false
-                    });
+                        var userMeetsCommandPreconditions = await command.CheckPreconditionsAsync(Context);
+                        if (userMeetsCommandPreconditions.IsSuccess)
+                        {
+                            string aliases = "";
+                            var aliasesWithoutCommandName = command.Aliases.Where(x => !x.Contains(command.Name)); // remove the cmd name/group from aliases
+
+                            if (aliasesWithoutCommandName != null && aliasesWithoutCommandName.Any()) // is not null or empty
+                                aliases = "(aliases: " + string.Join(", ", aliasesWithoutCommandName) + ")";
+
+                            fields.Add(new EmbedFieldBuilder()
+                            {
+                                Name = $"{command.Name} {aliases}",
+                                Value = command.Summary ?? "No command description available",
+                                IsInline = false
+                            });
+                        }
+                    }
                 }
-                pages.Add(new PaginatedMessage.Page
+                if (fields.Count > 0) // don't show empty pages
                 {
-                    Author = new EmbedAuthorBuilder { Name = module.Name },
-                    Fields = new List<EmbedFieldBuilder>(fields),
-                    Description = module.Summary ?? "No module description available"
-                });
-                fields.Clear();
+                    pages.Add(new PaginatedMessage.Page
+                    {
+                        Author = new EmbedAuthorBuilder { Name = module.Name },
+                        Fields = new List<EmbedFieldBuilder>(fields),
+                        Description = module.Summary ?? "No module description available"
+                    });
+                    fields.Clear();
+                }
             }
 
             string message = Context.User.Mention;
@@ -71,6 +82,7 @@ namespace Floofbot.Modules
 
         [Summary("Show help for a specific set of commands (a module)")]
         [Command("help")]
+        [Name("help <module name>")]
         public async Task HelpCommand([Summary("module name")] string requestedModule)
         {
             List<string> moduleNames = _commandService.Modules.Select(x => x.Name.ToLower()).ToList();
@@ -82,30 +94,39 @@ namespace Floofbot.Modules
 
             IEnumerable<CommandInfo> moduleCommands = _commandService.Commands
                 .Where(command => command.Module.Name.ToLower() == requestedModule.ToLower());
+
             List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
             List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
             foreach (var cmd in moduleCommands)
             {
-                foreach (ParameterInfo param in cmd.Parameters)
+                var userMeetsCommandPreconditions = await cmd.CheckPreconditionsAsync(Context);
+                if (userMeetsCommandPreconditions.IsSuccess)
                 {
-                    fields.Add(new EmbedFieldBuilder()
+                    foreach (ParameterInfo param in cmd.Parameters)
                     {
-                        Name = param.Name,
-                        Value = param.Summary ?? "No parameter description available",
-                        IsInline = false
+                        fields.Add(new EmbedFieldBuilder()
+                        {
+                            Name = param.Name,
+                            Value = param.Summary ?? "No parameter description available",
+                            IsInline = false
+                        });
+                    }
+                    pages.Add(new PaginatedMessage.Page
+                    {
+                        Author = new EmbedAuthorBuilder { Name = cmd.Name },
+                        Fields = new List<EmbedFieldBuilder>(fields),
+                        Description = cmd.Summary ?? "No command description available"
                     });
+                    fields.Clear();
                 }
-                pages.Add(new PaginatedMessage.Page
-                {
-                    Author = new EmbedAuthorBuilder { Name = cmd.Name },
-                    Fields = new List<EmbedFieldBuilder>(fields),
-                    Description = cmd.Summary ?? "No command description available"
-                });
-                fields.Clear();
             }
-
-            string message = $"{Context.User.Mention} here are the commands available for '{requestedModule}'!";
-            await PostHelpPages(message, pages);
+            if (pages.Count > 0)
+            {
+                string message = $"{Context.User.Mention} here are the commands available for '{requestedModule}'!";
+                await PostHelpPages(message, pages);
+            }
+            else // user doesnt meet preconditions to use any of the commands in the module
+                return;
         }
 
         private async Task PostHelpPages(string message, List<PaginatedMessage.Page> pages)
