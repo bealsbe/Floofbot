@@ -13,7 +13,7 @@ using System.Collections.Generic;
 namespace Floofbot.Modules
 {
     [Summary("Settings that control the automatic word filtering in a server")]
-    [Discord.Commands.Name("Filter")]
+    [Name("Filter")]
     [Group("filter")]
     [Alias("f")]
     [RequireContext(ContextType.Guild)]

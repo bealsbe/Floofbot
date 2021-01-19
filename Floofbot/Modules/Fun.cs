@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Floofbot.Modules
 {
     [Summary("Fun commands")]
-    [Discord.Commands.Name("Fun")]
+    [Name("Fun")]
     public class Fun : ModuleBase<SocketCommandContext>
     {
         private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;

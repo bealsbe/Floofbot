@@ -31,6 +31,7 @@ namespace Floofbot.Services.Repository
         public virtual DbSet<ErrorLogging> ErrorLoggingConfigs { get; set; }
         public virtual DbSet<RaidProtectionConfig> RaidProtectionConfigs { get; set; }
         public virtual DbSet<UserRolesList> UserRolesLists { get; set; }
+        public virtual DbSet<WelcomeGate> WelcomeGateConfigs { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
