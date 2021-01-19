@@ -3,8 +3,10 @@ using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Microsoft.EntityFrameworkCore.Internal;
+using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,8 +75,9 @@ namespace Floofbot.Services
                         {
                             await user.AddRoleAsync(role);
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Log.Information("Cannot return the role ID " + role.Id + " to user ID " + user.Id + ". Error: " + ex.ToString());
                             continue; // try add next role
                         }
                     }

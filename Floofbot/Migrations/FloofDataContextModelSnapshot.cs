@@ -317,26 +317,6 @@ namespace Floofbot.Migrations
                     b.ToTable("UserNotes");
                 });
 
-            modelBuilder.Entity("Floofbot.Services.Repository.Models.UserRolesList", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ListOfRoleIds")
-                        .HasColumnType("TEXT");
-
-                    b.Property<ulong>("ServerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<ulong>("UserID")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserRolesLists");
-                });
-
             modelBuilder.Entity("Floofbot.Services.Repository.Models.Warning", b =>
                 {
                     b.Property<ulong>("Id")
