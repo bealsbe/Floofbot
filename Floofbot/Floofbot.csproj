@@ -8,11 +8,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Migrations\20210118220333_UserRolesList.cs" />
-    <Compile Remove="Migrations\20210118220333_UserRolesList.Designer.cs" />
-  </ItemGroup>
 	
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
