@@ -13,5 +13,6 @@ namespace Floofbot.Services.Repository.Models
         public ulong UserID { get; set; }
         public ulong ServerId { get; set; }
         public string ListOfRoleIds { get; set; }
+        public DateTime UTCTimestamp { get; set; }
     }
 }

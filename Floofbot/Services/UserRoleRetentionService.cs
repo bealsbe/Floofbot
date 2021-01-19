@@ -28,7 +28,8 @@ namespace Floofbot.Services
             _floofDb.UserRolesLists.Add(new UserRolesList{
                 ListOfRoleIds = userRoles,
                 ServerId = user.Guild.Id,
-                UserID = user.Id
+                UserID = user.Id,
+                UTCTimestamp = DateTime.Now
             });
             await _floofDb.SaveChangesAsync();
         }
