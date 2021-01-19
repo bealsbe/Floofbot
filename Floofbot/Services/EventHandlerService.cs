@@ -45,7 +45,7 @@ namespace Floofbot.Services
             _client.UserJoined += UserJoined;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
-            _client.GuildMemberUpdated += _welcomeGateService.HandleWelcomeGate; ; // welcome gate handler
+            _client.GuildMemberUpdated += _welcomeGateService.HandleWelcomeGate; // welcome gate handler
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
             _client.MessageReceived += RulesGate; // rfurry rules gate
