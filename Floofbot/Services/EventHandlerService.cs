@@ -18,6 +18,7 @@ namespace Floofbot.Services
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
         private RaidProtectionService _raidProtectionService;
+        private UserRoleRetentionService _userRoleRetentionService;
         private WelcomeGateService _welcomeGateService;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
 
@@ -36,7 +37,9 @@ namespace Floofbot.Services
             _wordFilterService = new WordFilterService();
             _nicknameAlertService = new NicknameAlertService(new FloofDataContext());
             _raidProtectionService = new RaidProtectionService();
+            _userRoleRetentionService = new UserRoleRetentionService(new FloofDataContext());
             _welcomeGateService = new WelcomeGateService(new FloofDataContext());
+
             // event handlers
             _client.MessageUpdated += MessageUpdated;
             _client.MessageDeleted += MessageDeleted;
@@ -443,6 +446,7 @@ namespace Floofbot.Services
                         return;
 
                     await _raidProtectionService.CheckForExcessiveJoins(user.Guild);
+                    await _userRoleRetentionService.RestoreUserRoles(user);
 
                     if ((IsToggled(user.Guild)) == false)
                         return;
@@ -483,6 +487,8 @@ namespace Floofbot.Services
                 {
                     if (user.IsBot)
                         return;
+
+                    await _userRoleRetentionService.LogUserRoles(user);
 
                     if ((IsToggled(user.Guild)) == false)
                         return;

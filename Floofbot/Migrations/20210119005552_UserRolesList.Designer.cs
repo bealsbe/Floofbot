@@ -3,14 +3,16 @@ using System;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    partial class FloofDataContextModelSnapshot : ModelSnapshot
+    [Migration("20210119005552_UserRolesList")]
+    partial class UserRolesList
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -376,23 +378,6 @@ namespace Floofbot.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Warnings");
-                });
-
-            modelBuilder.Entity("Floofbot.Services.Repository.Models.WelcomeGate", b =>
-                {
-                    b.Property<ulong>("GuildID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<ulong?>("RoleId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Toggle")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("GuildID");
-
-                    b.ToTable("WelcomeGateConfigs");
                 });
 #pragma warning restore 612, 618
         }
