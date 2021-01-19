@@ -28,8 +28,11 @@ namespace Floofbot.Services
             try
             {
                 var userRole = guild.GetRole((ulong)serverConfig.RoleId);
-                if (userRole == null)
-                    return; // role does not exist anymore
+                if (userRole == null)// role does not exist anymore
+                {
+                    Log.Error("Unable to automatically assign a role for the welcome gate - role does not exist");
+                    return; 
+                }
 
                 await after.AddRoleAsync(userRole);
             }
