@@ -32,6 +32,7 @@ namespace Floofbot.Services.Repository
         public virtual DbSet<RaidProtectionConfig> RaidProtectionConfigs { get; set; }
         public virtual DbSet<UserRolesList> UserRolesLists { get; set; }
         public virtual DbSet<WelcomeGate> WelcomeGateConfigs { get; set; }
+        public virtual DbSet<BlacklistedUser> BlacklistedUsers { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
