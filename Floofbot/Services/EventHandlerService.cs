@@ -18,6 +18,7 @@ namespace Floofbot.Services
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
         private RaidProtectionService _raidProtectionService;
+        private WelcomeGateService _welcomeGateService;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
 
         // list of announcement channels
@@ -35,6 +36,7 @@ namespace Floofbot.Services
             _wordFilterService = new WordFilterService();
             _nicknameAlertService = new NicknameAlertService(new FloofDataContext());
             _raidProtectionService = new RaidProtectionService();
+            _welcomeGateService = new WelcomeGateService(new FloofDataContext());
             // event handlers
             _client.MessageUpdated += MessageUpdated;
             _client.MessageDeleted += MessageDeleted;
@@ -43,6 +45,7 @@ namespace Floofbot.Services
             _client.UserJoined += UserJoined;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
+            _client.GuildMemberUpdated += _welcomeGateService.HandleWelcomeGate; // welcome gate handler
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
             _client.MessageReceived += RulesGate; // rfurry rules gate
