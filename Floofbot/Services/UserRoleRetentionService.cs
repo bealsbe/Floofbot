@@ -73,6 +73,10 @@ namespace Floofbot.Services
                         Log.Error("Unable to return role ID " + roleId + " to user ID " + user.Id + " as it does not exist anymore!");
                         continue;
                     }
+                    else if (role.Name == "@everyone")
+                    {
+                        continue;
+                    }
                     else
                     {
                         try
