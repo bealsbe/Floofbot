@@ -306,7 +306,7 @@ namespace Floofbot.Services
         {
             // check for repeated custom and normal emojis. 
             // custom emojis have format <:name:id> and normal emojis use unicode emoji
-            var regex = "( ?(<:.*:[0-9]*>)|(\u00a9|\u00ae|[\u2000-\u200c]|[\u200e-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]) ?){" + maxNumberEmojis + ",}";
+            var regex = @"( ?(<a?:[\w\d]+:\d*>)|(\u00a9|\u00ae|[\u2000-\u200c]|[\u200e-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]) ?){" + maxNumberEmojis + ",}";
             var matchEmoji = Regex.Match(msg.Content, regex);
             if (matchEmoji.Success) // emoji spam
             {
