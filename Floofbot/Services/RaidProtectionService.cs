@@ -251,7 +251,7 @@ namespace Floofbot.Services
         }
         private bool CheckLetterSpam(SocketMessage msg, ulong guildId)
         {
-            bool isMatch = Regex.IsMatch(msg.Content.ToLower(), @"((.)\2{" + maxNumberSequentialCharacters + @",})|((\w.+)(?=((.{0," + (distanceBetweenPhrases - 1) + @"}|\s*)\4){" + (repeatingPhrasesLimit - 1) + @"}))");
+            bool isMatch = Regex.IsMatch(msg.Content.ToLower(), @"((.)\2{" + maxNumberSequentialCharacters + @",})|((\w\S+)(?=((.{0," + (distanceBetweenPhrases - 1) + @"}|\s*)\4){" + (repeatingPhrasesLimit - 1) + @"}))");
             if (isMatch)
             {
                 // add a bad boye point for the user
