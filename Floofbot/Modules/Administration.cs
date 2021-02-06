@@ -12,11 +12,12 @@ using Discord.Addons.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Drawing.Printing;
+using Discord.Net;
 
 namespace Floofbot.Modules
 {
     [Summary("Administration commands")]
-    [Discord.Commands.Name("Administration")]
+    [Name("Administration")]
     public class Administration : InteractiveBase
     {
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
@@ -35,7 +36,8 @@ namespace Floofbot.Modules
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
-            if (badUser == null) {
+            if (badUser == null)
+            {
                 if (Regex.IsMatch(user, @"\d{16,}"))
                 {
                     string userID = Regex.Match(user, @"\d{16,}").Value;
@@ -52,7 +54,7 @@ namespace Floofbot.Modules
                             ModID = Context.Message.Author.Id,
                             ModUsername = $"{Context.Message.Author.Username}#{Context.Message.Author.Discriminator}",
                             Reason = reason
-                        }) ;
+                        });
                         _floofDB.SaveChanges();
                         await Context.Channel.SendMessageAsync("⚠️ Could not find user, they will be banned next time they join the server!");
                         return;
@@ -65,25 +67,33 @@ namespace Floofbot.Modules
                 }
             }
 
-            //sends message to user
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = "⚖️ Ban Notification";
-            builder.Description = $"You have been banned from {Context.Guild.Name}";
-            builder.AddField("Reason", reason);
-            builder.Color = ADMIN_COLOR;
-            await badUser.SendMessageAsync("", false, builder.Build());
+            try
+            {
+                //sends message to user
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.Title = "⚖️ Ban Notification";
+                builder.Description = $"You have been banned from {Context.Guild.Name}";
+                builder.AddField("Reason", reason);
+                builder.Color = ADMIN_COLOR;
+                await badUser.SendMessageAsync("", false, builder.Build());
+            }
+            catch (HttpException)
+            {
+                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their ban!");
+            }
 
             //bans the user
             await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
 
-            builder = new EmbedBuilder();
-            builder.Title = (":shield: User Banned");
-            builder.Color = ADMIN_COLOR;
-            builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
-            builder.AddField("User ID", badUser.Id);
-            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            EmbedBuilder modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder.Title = (":shield: User Banned");
+            modEmbedBuilder.Color = ADMIN_COLOR;
+            modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            modEmbedBuilder.AddField("User ID", badUser.Id);
+            modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
         }
 
         [Command("pruneban")]
@@ -128,25 +138,32 @@ namespace Floofbot.Modules
                 }
             }
 
-            //sends message to user
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = "⚖️ Ban Notification";
-            builder.Description = $"You have been banned from {Context.Guild.Name}";
-            builder.AddField("Reason", reason);
-            builder.Color = ADMIN_COLOR;
-            await badUser.SendMessageAsync("", false, builder.Build());
+            try
+            {
+                //sends message to user
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.Title = "⚖️ Ban Notification";
+                builder.Description = $"You have been banned from {Context.Guild.Name}";
+                builder.AddField("Reason", reason);
+                builder.Color = ADMIN_COLOR;
+                await badUser.SendMessageAsync("", false, builder.Build());
+            }
+            catch (HttpException)
+            {
+                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their ban!");
+            }
 
             //bans the user
             await Context.Guild.AddBanAsync(badUser.Id, pruneDays, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
 
-            builder = new EmbedBuilder();
-            builder.Title = (":shield: User Banned");
-            builder.Color = ADMIN_COLOR;
-            builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
-            builder.AddField("User ID", badUser.Id);
-            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
-
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            EmbedBuilder modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder.Title = (":shield: User Banned");
+            modEmbedBuilder.Color = ADMIN_COLOR;
+            modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            modEmbedBuilder.AddField("User ID", badUser.Id);
+            modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
         }
 
         [Command("viewautobans")]
@@ -248,31 +265,37 @@ namespace Floofbot.Modules
                 await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
                 return;
             }
-
-            //sends message to user
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = "🥾 Kick Notification";
-            builder.Description = $"You have been Kicked from {Context.Guild.Name}";
-            builder.AddField("Reason", reason);
-            builder.Color = ADMIN_COLOR;
-            await badUser.SendMessageAsync("", false, builder.Build());
+            try
+            {
+                //sends message to user
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.Title = "🥾 Kick Notification";
+                builder.Description = $"You have been Kicked from {Context.Guild.Name}";
+                builder.AddField("Reason", reason);
+                builder.Color = ADMIN_COLOR;
+                await badUser.SendMessageAsync("", false, builder.Build());
+            }
+            catch (HttpException)
+            {
+                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their kick!");
+            }
 
             //kicks users
             await Context.Guild.GetUser(badUser.Id).KickAsync(reason);
-            builder = new EmbedBuilder();
-            builder.Title = ("🥾 User Kicked");
-            builder.Color = ADMIN_COLOR;
-            builder.Description = $"{badUser.Username}#{badUser.Discriminator} has been kicked from {Context.Guild.Name}";
-            builder.AddField("User ID", badUser.Id);
-            builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            EmbedBuilder kickBuilder = new EmbedBuilder();
+            kickBuilder.Title = ("🥾 User Kicked");
+            kickBuilder.Color = ADMIN_COLOR;
+            kickBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been kicked from {Context.Guild.Name}";
+            kickBuilder.AddField("User ID", badUser.Id);
+            kickBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
         }
 
         [Command("warn")]
         [Alias("w")]
         [Summary("Warns a user on the server, with a given reason")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task warnUser(
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "")
@@ -326,13 +349,20 @@ namespace Floofbot.Modules
 
             if (badUser != null) // only send if resolved user
             {
-                //sends message to user
-                builder = new EmbedBuilder();
-                builder.Title = "⚖️ Warn Notification";
-                builder.Description = $"You have recieved a warning in {Context.Guild.Name}";
-                builder.AddField("Reason", reason);
-                builder.Color = ADMIN_COLOR;
-                await badUser.SendMessageAsync("", false, builder.Build());
+                try
+                {
+                    //sends message to user
+                    builder = new EmbedBuilder();
+                    builder.Title = "⚖️ Warn Notification";
+                    builder.Description = $"You have recieved a warning in {Context.Guild.Name}";
+                    builder.AddField("Reason", reason);
+                    builder.Color = ADMIN_COLOR;
+                    await badUser.SendMessageAsync("", false, builder.Build());
+                }
+                catch (HttpException)
+                {
+                    await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their warning!");
+                }
             }
 
             builder = new EmbedBuilder();
@@ -348,7 +378,7 @@ namespace Floofbot.Modules
         [Alias("un")]
         [Summary("Add a moderation-style user note, give a specified reason")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task userNote(
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "")
@@ -411,7 +441,7 @@ namespace Floofbot.Modules
         [Alias("p")]
         [Summary("Deletes recent messages from a given user for all channels on the server")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task PurgeUserMessages(
             [Summary("user")] string user)
         {
@@ -480,7 +510,7 @@ namespace Floofbot.Modules
             }
             else // a mod
             {
-                if (selfUser.GuildPermissions.BanMembers) // want to view their own warnlog 
+                if (selfUser.GuildPermissions.KickMembers) // want to view their own warnlog 
                 {
                     IUser badUser = resolveUser(user);
                     if (badUser == null)
@@ -511,7 +541,7 @@ namespace Floofbot.Modules
         [Command("forgive", RunMode = RunMode.Async)]
         [Summary("Remove a user's warning or user notes")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task forgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
         {
             await UpdateForgivenStatus("forgiven", type, badUser);
@@ -521,7 +551,7 @@ namespace Floofbot.Modules
         [Command("unforgive", RunMode = RunMode.Async)]
         [Summary("Unforgive a warning or user notes")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task unforgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
         {
             await UpdateForgivenStatus("unforgiven", type, badUser);
@@ -618,13 +648,19 @@ namespace Floofbot.Modules
 
                         if (Context.Guild.GetUser(badUser.Id).Roles.Contains(muteRole)) {
                             await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(muteRole);
-
-                            //notify user that they were unmuted
-                            builder = new EmbedBuilder();
-                            builder.Title = "🔊  Unmute Notification";
-                            builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
-                            builder.Color = ADMIN_COLOR;
-                            await badUser.SendMessageAsync("", false, builder.Build());
+                            try
+                            {
+                                //notify user that they were unmuted
+                                builder = new EmbedBuilder();
+                                builder.Title = "🔊  Unmute Notification";
+                                builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
+                                builder.Color = ADMIN_COLOR;
+                                await badUser.SendMessageAsync("", false, builder.Build());
+                            }
+                            catch (HttpException)
+                            {
+                                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their unmute!");
+                            }
                         }
                     });
 
@@ -636,17 +672,23 @@ namespace Floofbot.Modules
 
             }
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+            try
+            {
+                //notify user that they were muted
+                builder = new EmbedBuilder();
+                builder.Title = "🔇  Mute Notification";
+                builder.Description = $"You have been muted on {Context.Guild.Name}";
 
-            //notify user that they were muted
-            builder = new EmbedBuilder();
-            builder.Title = "🔇  Mute Notification";
-            builder.Description = $"You have been muted on {Context.Guild.Name}";
+                if (durationNotifyString != null)
+                    builder.AddField("Duration", durationNotifyString);
 
-            if (durationNotifyString != null)
-                builder.AddField("Duration", durationNotifyString);
-
-            builder.Color = ADMIN_COLOR;
-            await badUser.SendMessageAsync("", false, builder.Build());
+                builder.Color = ADMIN_COLOR;
+                await badUser.SendMessageAsync("", false, builder.Build());
+            }
+            catch (HttpException)
+            {
+                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their mute!");
+            }
         }
 
         public async Task<IRole> CreateMuteRole()
@@ -705,13 +747,19 @@ namespace Floofbot.Modules
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
-
-            //notify user that they were unmuted
-            builder = new EmbedBuilder();
-            builder.Title = "🔊  Unmute Notification";
-            builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
-            builder.Color = ADMIN_COLOR;
-            await badUser.SendMessageAsync("", false, builder.Build());
+            try
+            {
+                //notify user that they were unmuted
+                builder = new EmbedBuilder();
+                builder.Title = "🔊  Unmute Notification";
+                builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
+                builder.Color = ADMIN_COLOR;
+                await badUser.SendMessageAsync("", false, builder.Build());
+            }
+            catch (HttpException)
+            {
+                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their unmute!");
+            }
         }
 
         [Command("lock")]
@@ -763,21 +811,6 @@ namespace Floofbot.Modules
                 await Context.Channel.SendMessageAsync("Something went wrong!");
             }
         }
-
-        // r/furry Discord Rules Gate
-        [Command("ireadtherules")]
-        [Summary("Confirms a user has read the server rules by giving them a new role")]
-        public async Task getaccess()
-        {
-            ulong serverId = 225980129799700481;
-            ulong readRulesRoleId = 494149550622375936;
-            if (Context.Guild.Id == serverId) {
-                var user = (IGuildUser)Context.User;
-                await user.AddRoleAsync(Context.Guild.GetRole(readRulesRoleId));
-            }
-            await Context.Message.DeleteAsync();
-        }
-
         private IUser resolveUser(string input)
         {
             IUser user = null;

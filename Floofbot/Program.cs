@@ -67,7 +67,7 @@ namespace Floofbot
 
             try
             {
-                var _EventLoggerService = new EventLoggerService(_client);
+                var _EventLoggerService = new EventHandlerService(_client);
                 await _client.LoginAsync(TokenType.Bot, token);
                 await _client.StartAsync();
             }

@@ -24,6 +24,9 @@ ModMailServer: "0"
 # Path to the SQLite database file
 DbPath: "floofData.db"
 
+# List of announcement channels where posts will be automatically published
+AnnouncementChannels: []
+
 # These configure the backup settings
 # BackupOutputPath = output path for backups, BackupScript = path to backup script
 # NumberOfBackups = The number of backups to store before overwriting
@@ -75,3 +78,16 @@ RaidProtection:
   MaxNumberEmojis: 5
   # The max number of times a user can post the same character in a row
   MaxNumberSequentialCharacters: 8
+  # The max number of repeated phrases that can be said
+  RepeatingPhrasesLimit: 5
+  # The maximum distance in number of characters between repeated phrases
+  DistanceBetweenPhrases: 5
+
+# This handles the configuration for the rules gate
+RulesGate:
+  # The Channel ID for the rules
+  RulesChannel: 225980129799700481
+  # The Role ID for the role given to bypass the rules gate
+  RulesRole: 494149550622375936
+  # The keyphrase used to bypass the rules gate
+  Keyword: yes

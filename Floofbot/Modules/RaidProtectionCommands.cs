@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 namespace Floofbot.Modules
 {
     [Summary("Raid protection configuration commands")]
+    [Name("Raid Protection Configuration Commands")]
     [RequireUserPermission(GuildPermission.Administrator)]
     [Group("raidconfig")]
     public class RaidProtectionCommands : InteractiveBase

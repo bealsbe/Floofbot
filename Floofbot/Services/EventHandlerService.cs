@@ -1,30 +1,35 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
+using Floofbot.Configs;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
 {
-    public class EventLoggerService
+    public class EventHandlerService
     {
 
         private DiscordSocketClient _client;
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
         private RaidProtectionService _raidProtectionService;
+        private UserRoleRetentionService _userRoleRetentionService;
+        private WelcomeGateService _welcomeGateService;
         private static readonly Color ADMIN_COLOR = Color.DarkOrange;
 
+        // list of announcement channels
+        private List<ulong> announcementChannels;
 
-        public EventLoggerService(DiscordSocketClient client)
+        // rules gate config
+        private Dictionary <string, string> rulesGateConfig = BotConfigFactory.Config.RulesGate;
+
+
+        public EventHandlerService(DiscordSocketClient client)
         {
             _client = client;
 
@@ -32,6 +37,9 @@ namespace Floofbot.Services
             _wordFilterService = new WordFilterService();
             _nicknameAlertService = new NicknameAlertService(new FloofDataContext());
             _raidProtectionService = new RaidProtectionService();
+            _userRoleRetentionService = new UserRoleRetentionService(new FloofDataContext());
+            _welcomeGateService = new WelcomeGateService(new FloofDataContext());
+
             // event handlers
             _client.MessageUpdated += MessageUpdated;
             _client.MessageDeleted += MessageDeleted;
@@ -40,9 +48,27 @@ namespace Floofbot.Services
             _client.UserJoined += UserJoined;
             _client.UserLeft += UserLeft;
             _client.GuildMemberUpdated += GuildMemberUpdated;
+            _client.GuildMemberUpdated += _welcomeGateService.HandleWelcomeGate; // welcome gate handler
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
+            _client.MessageReceived += RulesGate; // rfurry rules gate
             _client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
+
+            // a list of announcement channels for auto publishing
+            announcementChannels = BotConfigFactory.Config.AnnouncementChannels;
+        }
+        public async Task PublishAnnouncementMessages(SocketUserMessage msg)
+        {
+            foreach (ulong chan in announcementChannels)
+            {
+                if (msg.Channel.Id == chan)
+                {
+                    if (msg.Channel.GetType() == typeof(SocketNewsChannel))
+                    {
+                        await msg.CrosspostAsync();
+                    }
+                }
+            }
         }
         public async Task<ITextChannel> GetChannel(Discord.IGuild guild, string eventName = null)
         {
@@ -98,6 +124,26 @@ namespace Floofbot.Services
                 }
             }
         }
+
+        // rfurry rules gate
+        public async Task RulesGate(SocketMessage msg)
+        {
+            var userMsg = msg as SocketUserMessage;
+            if (msg == null || msg.Author.IsBot)
+                return;
+
+            // rules gate info
+            ulong rulesChannelId = Convert.ToUInt64(rulesGateConfig["RulesChannel"]);
+            ulong readRulesRoleId = Convert.ToUInt64(rulesGateConfig["RulesRole"]);
+            string rulesBypassString = rulesGateConfig["Keyword"];
+
+            if (msg.Channel.Id == rulesChannelId && userMsg.Content.ToLower().Contains(rulesBypassString)) 
+            {
+                var user = (IGuildUser)msg.Author;
+                await user.AddRoleAsync(user.Guild.GetRole(readRulesRoleId));
+                await userMsg.DeleteAsync();
+            }
+        }
         public Task OnMessage(SocketMessage msg)
         {
             if (msg.Channel.GetType() == typeof(SocketDMChannel))
@@ -108,6 +154,9 @@ namespace Floofbot.Services
             {
                 try
                 {
+                    // handle announcement messages
+                    await PublishAnnouncementMessages(userMsg);
+
                     if (msg == null || msg.Author.IsBot)
                         return;
                     var channel = msg.Channel as ITextChannel;
@@ -232,9 +281,16 @@ namespace Floofbot.Services
                     embed.WithTitle($"⚠️ Message Deleted | {message.Author.Username}#{message.Author.Discriminator}")
                          .WithColor(Color.Gold)
                          .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
-                         .AddField("Content", message.Content)
                          .WithCurrentTimestamp()
                          .WithFooter($"user_message_deleted user_messagelog {message.Author.Id}");
+                    if (message.Content.Length > 0)
+                    {
+                        embed.AddField("Content", message.Content);
+                    }
+                    if (message.Attachments.Count > 0)
+                    {
+                        embed.AddField("Attachments", String.Join("\n", message.Attachments.Select(it => it.Url)));
+                    }
 
                     if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
@@ -390,6 +446,7 @@ namespace Floofbot.Services
                         return;
 
                     await _raidProtectionService.CheckForExcessiveJoins(user.Guild);
+                    await _userRoleRetentionService.RestoreUserRoles(user);
 
                     if ((IsToggled(user.Guild)) == false)
                         return;
@@ -430,6 +487,8 @@ namespace Floofbot.Services
                 {
                     if (user.IsBot)
                         return;
+
+                    await _userRoleRetentionService.LogUserRoles(user);
 
                     if ((IsToggled(user.Guild)) == false)
                         return;

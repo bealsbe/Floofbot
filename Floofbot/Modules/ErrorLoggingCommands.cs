@@ -6,6 +6,7 @@ using Floofbot.Services.Repository.Models;
 using System.Threading.Tasks;
 
 [Summary("Error logging configuration commands")]
+[Name("Error Logging Configuration Commands")]
 [RequireUserPermission(GuildPermission.Administrator)]
 [Group("errorloggingconfig")]
 public class ErrorLoggingCommands : InteractiveBase
