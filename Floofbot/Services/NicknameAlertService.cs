@@ -3,10 +3,12 @@ using Discord.Addons.Interactive;
 using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
+using Microsoft.EntityFrameworkCore.Internal;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
@@ -32,7 +34,7 @@ namespace Floofbot.Services
             return await guild.GetTextChannelAsync(channelId);
         }
 
-        public async Task HandleBadNickname(SocketGuildUser badUser, IGuild guild)
+        public async Task HandleBadNickname(SocketGuildUser badUser, IGuild guild, List<string> badWords)
         {
             var serverConfig = _floofDb.NicknameAlertConfigs.Find(guild.Id);
 
@@ -52,7 +54,8 @@ namespace Floofbot.Services
 
             var message = await _channel.SendMessageAsync($"{badUser.Mention} ({badUser.Username}#{badUser.Discriminator}) has been " +
                 $"detected with a bad name! What should I do?" + 
-                (badUser.Nickname != null ? $"\n\nNickname: {badUser.Nickname}" : $"\n\nUsername: {badUser.Username}#{badUser.Discriminator}"), false, embed);
+                (badUser.Nickname != null ? $"\n\nNickname: {badUser.Nickname}" : $"\n\nUsername: {badUser.Username}#{badUser.Discriminator}") +
+                $"\n\nDetected word(s): **{string.Join(", ", badWords)}**", false, embed);
             await message.AddReactionAsync(REMOVE_NICKNAME_EMOJI);
             await message.AddReactionAsync(KICK_EMOJI);
             await message.AddReactionAsync(WARN_EMOJI);
