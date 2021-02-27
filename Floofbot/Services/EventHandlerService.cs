@@ -543,6 +543,10 @@ namespace Floofbot.Services
                     if (after.IsBot)
                         return;
 
+                    List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, channel.Guild.Id);
+                    if (badWords != null)
+                        await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
+
                     if (IsToggled(after.Guild) == false) // turned off
                         return;
 
@@ -564,10 +568,6 @@ namespace Floofbot.Services
 
                         if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(after.GetAvatarUrl());
-
-                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, channel.Guild.Id);
-                        if (badWords != null)
-                            await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
 
                     }
                     else if (before.AvatarId != after.AvatarId)
@@ -610,6 +610,13 @@ namespace Floofbot.Services
                     if (after.IsBot)
                         return;
 
+                    if (after.Nickname != null)
+                    {
+                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Nickname, channel.Guild.Id);
+                        if (badWords != null)
+                            await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
+                    }
+
                     if (IsToggled(after.Guild) == false) // turned off
                         return;
 
@@ -639,12 +646,6 @@ namespace Floofbot.Services
 
                         if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(after.GetAvatarUrl());
-                        if (after.Nickname != null)
-                        {
-                            List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Nickname, channel.Guild.Id);
-                            if (badWords != null)
-                                await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
-                        }
 
                     }
                     else if (before.Roles.Count != after.Roles.Count)
