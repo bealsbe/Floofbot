@@ -13,13 +13,13 @@ namespace Floofbot.Services
         List<FilteredWord> _filteredWords;
         DateTime _lastRefreshedTime;
 
-        public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId) // names
+        public List<string> filteredWordsInName(FloofDataContext floofDb, string messageContent, ulong serverId) // names
         {
             // return false if none of the serverIds match or filtering has been disabled for the server
             if (!floofDb.FilterConfigs.AsQueryable()
                 .Any(x => x.ServerId == serverId && x.IsOn))
             {
-                return false;
+                return null;
             }
 
             DateTime currentTime = DateTime.Now;
@@ -30,16 +30,21 @@ namespace Floofbot.Services
                 _lastRefreshedTime = currentTime;
             }
 
+            List<string> DetectedWords = new List<string>();
+
             foreach (var filteredWord in _filteredWords)
             {
                 Regex r = new Regex($"{filteredWord.Word}",
                     RegexOptions.IgnoreCase | RegexOptions.Singleline);
                 if (r.IsMatch(messageContent))
                 {
-                    return true;
+                    DetectedWords.Add(filteredWord.Word);
                 }
             }
-            return false;
+            if (DetectedWords.Count() == 0)
+                return null;
+            else
+                return DetectedWords;
         }
         public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId) // messages
         {
