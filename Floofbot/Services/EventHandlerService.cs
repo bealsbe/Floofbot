@@ -610,6 +610,10 @@ namespace Floofbot.Services
                     if (after.IsBot)
                         return;
 
+                    Discord.ITextChannel channel = await GetChannel(after.Guild, "MemberUpdatesChannel");
+                    if (channel == null) // no log channel set
+                        return;
+
                     if (after.Nickname != null)
                     {
                         List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Nickname, channel.Guild.Id);
@@ -618,10 +622,6 @@ namespace Floofbot.Services
                     }
 
                     if (IsToggled(after.Guild) == false) // turned off
-                        return;
-
-                    Discord.ITextChannel channel = await GetChannel(after.Guild, "MemberUpdatesChannel");
-                    if (channel == null) // no log channel set
                         return;
 
                     var embed = new EmbedBuilder();
