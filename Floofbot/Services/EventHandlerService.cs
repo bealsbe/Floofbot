@@ -543,15 +543,15 @@ namespace Floofbot.Services
                     if (after.IsBot)
                         return;
 
+                    Discord.ITextChannel channel = await GetChannel(after.Guild, "MemberUpdatesChannel");
+                    if (channel == null) // no log channel set
+                        return;
+
                     List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, channel.Guild.Id);
                     if (badWords != null)
                         await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
 
                     if (IsToggled(after.Guild) == false) // turned off
-                        return;
-
-                    Discord.ITextChannel channel = await GetChannel(after.Guild, "MemberUpdatesChannel");
-                    if (channel == null) // no log channel set
                         return;
 
                     var embed = new EmbedBuilder();
