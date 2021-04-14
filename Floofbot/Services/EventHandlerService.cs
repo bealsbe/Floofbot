@@ -544,10 +544,13 @@ namespace Floofbot.Services
 
                     if (after.IsBot)
                         return;
-                    
-                    List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, after.Guild.Id);
-                    if (badWords != null)
-                        await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
+
+                    if (before.Username != after.Username)
+                    {
+                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, after.Guild.Id);
+                        if (badWords != null)
+                            await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
+                    }
 
                     if (IsToggled(after.Guild) == false) // turned off
                         return;
@@ -613,7 +616,7 @@ namespace Floofbot.Services
                         return;
 
 
-                    if (after.Nickname != null)
+                    if (after.Nickname != null && (after.Nickname != before.Nickname))
                     {
                         List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Nickname, after.Guild.Id);
                         if (badWords != null)
