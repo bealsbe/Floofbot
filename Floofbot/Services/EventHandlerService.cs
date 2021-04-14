@@ -79,6 +79,8 @@ namespace Floofbot.Services
             FloofDataContext _floofDb = new FloofDataContext();
 
             var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
+            if (serverConfig == null) // guild not in database
+                return null;
             System.Reflection.PropertyInfo propertyInfo = serverConfig.GetType().GetProperty(eventName);
             ulong logChannel = (ulong)(propertyInfo.GetValue(serverConfig, null));
             var textChannel = await guild.GetTextChannelAsync(logChannel);
