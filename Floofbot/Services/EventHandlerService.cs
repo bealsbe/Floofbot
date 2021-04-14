@@ -79,6 +79,8 @@ namespace Floofbot.Services
             FloofDataContext _floofDb = new FloofDataContext();
 
             var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
+            if (serverConfig == null) // guild not in database
+                return null;
             System.Reflection.PropertyInfo propertyInfo = serverConfig.GetType().GetProperty(eventName);
             ulong logChannel = (ulong)(propertyInfo.GetValue(serverConfig, null));
             var textChannel = await guild.GetTextChannelAsync(logChannel);
@@ -542,16 +544,16 @@ namespace Floofbot.Services
 
                     if (after.IsBot)
                         return;
-
-                    Discord.ITextChannel channel = await GetChannel(after.Guild, "MemberUpdatesChannel");
-                    if (channel == null) // no log channel set
-                        return;
-
-                    List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, channel.Guild.Id);
+                    
+                    List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, after.Guild.Id);
                     if (badWords != null)
                         await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
 
                     if (IsToggled(after.Guild) == false) // turned off
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel(after.Guild, "MemberUpdatesChannel");
+                    if (channel == null) // no log channel set
                         return;
 
                     var embed = new EmbedBuilder();
@@ -610,18 +612,19 @@ namespace Floofbot.Services
                     if (after.IsBot)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel(after.Guild, "MemberUpdatesChannel");
-                    if (channel == null) // no log channel set
-                        return;
 
                     if (after.Nickname != null)
                     {
-                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Nickname, channel.Guild.Id);
+                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Nickname, after.Guild.Id);
                         if (badWords != null)
                             await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
                     }
 
                     if (IsToggled(after.Guild) == false) // turned off
+                        return;
+
+                    Discord.ITextChannel channel = await GetChannel(after.Guild, "MemberUpdatesChannel");
+                    if (channel == null) // no log channel set
                         return;
 
                     var embed = new EmbedBuilder();
