@@ -55,7 +55,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     outputs:
-      cr_pat_exists: ${{ steps.pat_check.outputs.cr_pat_exists }}
       new_release_version: ${{ steps.get_new_release_version.outputs.new_version }}
     steps:
 
@@ -71,10 +70,6 @@ jobs:
         new_version = datetime.datetime.utcnow().strftime('%Y.%m.%d'), -1;
         base, patch = new_version if new_version[0] != cur_version[0] else cur_version;
         print('::set-env name=NEW_VERSION::{0}\n::set-output name=new_version::{0}'.format(f'{base}.{int(patch) + 1}'))"
-
-    - name: Set secret existence variable
-      id: pat_check
-      run: echo "::set-output name=cr_pat_exists::$([ -z "${{ secrets.CR_PAT }}" ] && echo "false" || echo "true")"
 
     - name: Download built artifacts
       uses: actions/download-artifact@v2
@@ -136,7 +131,6 @@ jobs:
   ## Uploads a new Docker image of the build. Requires the release step for the version variable
   release_image:
     needs: release
-    if: needs.release.outputs.cr_pat_exists == 'true'
     runs-on: ubuntu-latest
     steps:
 
@@ -160,7 +154,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Docker build and push
       uses: docker/build-push-action@v2
