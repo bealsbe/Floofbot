@@ -7,6 +7,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Floofbot.Services
@@ -78,6 +79,8 @@ namespace Floofbot.Services
             FloofDataContext _floofDb = new FloofDataContext();
 
             var serverConfig = _floofDb.LogConfigs.Find(guild.Id);
+            if (serverConfig == null) // guild not in database
+                return null;
             System.Reflection.PropertyInfo propertyInfo = serverConfig.GetType().GetProperty(eventName);
             ulong logChannel = (ulong)(propertyInfo.GetValue(serverConfig, null));
             var textChannel = await guild.GetTextChannelAsync(logChannel);
@@ -542,6 +545,13 @@ namespace Floofbot.Services
                     if (after.IsBot)
                         return;
 
+                    if (before.Username != after.Username)
+                    {
+                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, after.Guild.Id);
+                        if (badWords != null)
+                            await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
+                    }
+
                     if (IsToggled(after.Guild) == false) // turned off
                         return;
 
@@ -563,10 +573,6 @@ namespace Floofbot.Services
 
                         if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(after.GetAvatarUrl());
-
-                        bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Username, channel.Guild.Id);
-                        if (hasBadWord)
-                            await _nicknameAlertService.HandleBadNickname(after, after.Guild);
 
                     }
                     else if (before.AvatarId != after.AvatarId)
@@ -609,6 +615,14 @@ namespace Floofbot.Services
                     if (after.IsBot)
                         return;
 
+
+                    if (after.Nickname != null && (after.Nickname != before.Nickname))
+                    {
+                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Nickname, after.Guild.Id);
+                        if (badWords != null)
+                            await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
+                    }
+
                     if (IsToggled(after.Guild) == false) // turned off
                         return;
 
@@ -638,12 +652,6 @@ namespace Floofbot.Services
 
                         if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(after.GetAvatarUrl());
-                        if (after.Nickname != null)
-                        {
-                            bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Nickname, channel.Guild.Id);
-                            if (hasBadWord)
-                                await _nicknameAlertService.HandleBadNickname(after, after.Guild);
-                        }
 
                     }
                     else if (before.Roles.Count != after.Roles.Count)
