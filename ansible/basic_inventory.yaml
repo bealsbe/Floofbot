@@ -1,0 +1,5 @@
+all:
+  hosts:
+    target:
+      ansible_host: "" # IP address of machine to target
+      ansible_user: "ubuntu" # Username to connect as

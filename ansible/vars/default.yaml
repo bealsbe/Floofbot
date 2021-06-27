@@ -1,0 +1,38 @@
+---
+# Name of the user to pull release information from
+github_user: "bealsbe"
+
+# Version of the config to download. Ex. "2021.04.20.0", or blank ("") for the latest version
+config_version: ""
+
+# Bot token. If not provided here, it will be prompted for when running the playbook.
+# It can be found on the bot application page here: https://discord.com/developers/applications
+bot_token: ""
+
+# Dropbox backup token. Used to enable uploading backups to the cloud.
+dropbox_token: ""
+
+# Backup archive URL. Should be a link to a .tar.gz file in Dropbox that looks like this:
+# https://www.dropbox.com/sh/.../floofbot-YYYY_MM_DD-HH_MM_DD.tar.gz?dl=0
+# This link can be obtained by visiting the backup directory in Dropbox,
+# right clicking the desired backup, then clicking "Copy link address"
+# (or your browser equivalent)
+backup_url: ""
+
+# This directory is created in the home directory
+# of the connecting user as determined by the inventory.
+# For example, this directory is likely located at /home/ubuntu/<data_directory>
+data_directory: &ddname "floofbot"
+
+# This is the name of the container for Floofbot on the host.
+# Should be the same name as the data directory to keep it simple.
+container_name: *ddname
+
+# A list of regex search/replace key/values. These are used to replace config file values.
+# These are only simple replacements used for mostly unique keys.
+# They cannot be used to, for example, change random responses. This must be done by hand.
+config_replacements:
+  "DbPath": "/root/data/floofData.db"
+  "BackupOutputPath": "/root/data/backups"
+  "BackupScript": "/root/data/cloud_backup.sh"
+  "NumberOfBackups": "14"
