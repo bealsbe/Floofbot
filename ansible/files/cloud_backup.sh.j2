@@ -1,0 +1,100 @@
+# /bin/sh
+## NOTE: This script should only be run by the bot itself (i.e. from inside the container).
+
+## Version 2021.06.26.0
+## Quick and dirty script for uploading bot backups to Dropbox.
+## Designed to work with the Docker version of Floofbot.
+## Requires curl and tar
+
+## Arguments:
+## 1: Path of the database file (passed to LinuxDBBackup.sh)
+## 2: Backups directory (passed to LinuxDBBackup.sh)
+## 3: Total number of backups (used in this script and passed to LinuxDBBackup.sh)
+
+BACKUP_NAME="{{ container_name }}"
+TOKEN="{{ dropbox_token }}"
+BASE_DIRECTORY="/root"
+TMP_FILE="/tmp/db_backup_tmp"
+TMP_DIRECTORY="/tmp/db_backup_staging"
+TMP_BACKUP_FILE="/tmp/bot_backup.tar.gz"
+BASE_BACKUP_SCRIPT="/root/LinuxDBBackup.sh"
+DROPBOX_FOLDER="/backups"
+MAX_BACKUP_FILES="$3"
+{% raw %}
+AUTH_HEADER="Authorization: Bearer $TOKEN"
+JSON_HEADER="Content-Type: application/json"
+
+_db_api () {
+    RESULT=$(\
+        curl -X POST "https://api.dropboxapi.com/2/$1" \
+        --header "Authorization: Bearer $TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "{\"path\": \"$DROPBOX_FOLDER$2\"}"
+    )
+}
+
+_db_upload () {
+    RESULT=$(\
+        curl -X POST "https://content.dropboxapi.com/2/files/upload" \
+        --header "Authorization: Bearer $TOKEN" \
+        --header "Content-Type: application/octet-stream" \
+        --header "Dropbox-API-Arg: {\"path\": \"$DROPBOX_FOLDER/$1\"}" \
+        --data-binary "@$2"
+    )
+}
+
+dropbox_backup () {
+
+    ## Get existing cloud backups
+    echo "Fetching cloud backup file list"
+    _db_api "files/list_folder" ""
+    echo $RESULT \
+        | grep '\"name\":\s\?\"[^\"]\+\"' -o \
+        | grep "\"$BACKUP_NAME-.\+\"" -o \
+        | sed 's/^.\(.*\).$/\1/' \
+        | sort > $TMP_FILE
+
+    ## Copy necessary files to temp backup directory and censor bot token
+    echo "Copying backup files"
+    if [ -d $TMP_DIRECTORY ]; then
+        rm -rf $TMP_DIRECTORY
+    fi
+    mkdir -p $TMP_DIRECTORY
+    cp -r "$BASE_DIRECTORY/logs" "$TMP_DIRECTORY/"
+    cp -r "$BASE_DIRECTORY/data/backups" "$TMP_DIRECTORY/"
+    cp "$BASE_DIRECTORY/FloofLog.log" "$TMP_DIRECTORY/"
+    cp "$BASE_DIRECTORY/data/config.yaml" "$TMP_DIRECTORY/"
+    cp "$BASE_DIRECTORY/data/floofData.db" "$TMP_DIRECTORY/"
+    sed -i 's/^Token:.*/Token: "***"/g' "$TMP_DIRECTORY/config.yaml"
+
+    ## Compress files and upload
+    tar -czf $TMP_BACKUP_FILE -C $TMP_DIRECTORY .
+    NEW_BACKUP_NAME="$BACKUP_NAME-$(date -u '+%Y_%m_%d-%H_%M_%S').tar.gz"
+    echo "Uploading new backup $NEW_BACKUP_NAME"
+    _db_upload $NEW_BACKUP_NAME $TMP_BACKUP_FILE
+
+    ## Remove extra cloud backup files
+    TOTAL_BACKUP_FILES=$(cat $TMP_FILE | wc -l)
+    TO_REMOVE="$(( $TOTAL_BACKUP_FILES - $MAX_BACKUP_FILES + 1 ))"
+    if [ "$TO_REMOVE" -gt 0 ]; then
+        echo "Removing $TO_REMOVE backup(s) from Dropbox..."
+        head -n $TO_REMOVE $TMP_FILE > "$TMP_FILE.remove"
+        while read CURRENT_BACKUP
+        do
+            echo "Removing $CURRENT_BACKUP"
+            _db_api "files/delete_v2" "/$CURRENT_BACKUP"
+        done < "$TMP_FILE.remove"
+    fi
+
+}
+
+if [ -z "$TOKEN" ]; then
+    echo "WARNING: Skipping Dropbox backup because no token was provided"
+else
+    echo "Running backup to Dropbox..."
+    dropbox_backup
+fi
+
+echo "Running base backup script..."
+/bin/sh $BASE_BACKUP_SCRIPT $1 $2 $3
+exit $?{% endraw %}
