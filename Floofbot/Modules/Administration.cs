@@ -24,7 +24,97 @@ namespace Floofbot.Modules
         private static readonly int MESSAGES_TO_SCAN_PER_CHANNEL_ON_PURGE = 100;
         private FloofDataContext _floofDB;
 
+        // will store user mutes
+        private Dictionary<ulong, Dictionary<ulong, int>> userMutes = new Dictionary<ulong, Dictionary<ulong, int>>();
+
         public Administration(FloofDataContext floofDB) => _floofDB = floofDB;
+
+        private async void handleMuteTimeout(IGuild guild, IUser badUser, IRole muteRole, ISocketMessageChannel contextChannel, int delay)
+        {
+            // user already has mute timeout
+            if (userMutes.ContainsKey(guild.Id) && userMutes[guild.Id].ContainsKey(badUser.Id))
+            {
+                // process time left
+                TimeSpan duration = TimeSpan.FromSeconds(userMutes[guild.Id][badUser.Id]);
+
+                string delayString = "";
+
+                if (duration.Days > 0)
+                    delayString += $" {duration.Days} days";
+                if (duration.Hours > 0)
+                    delayString += $" {duration.Hours} hours";
+                if (duration.Minutes > 0)
+                    delayString += $" {duration.Minutes} minutes";
+                if (duration.Seconds > 0)
+                    delayString += $" {duration.Seconds} seconds";
+
+                await contextChannel.SendMessageAsync($"⚠️ User {badUser.Username}#{badUser.Discriminator} is already muted for{delayString}");
+                return;
+            }
+            else
+            {
+                // make sure entries exist in dict
+                if (!userMutes.ContainsKey(guild.Id))
+                    userMutes.Add(guild.Id, new Dictionary<ulong, int>());
+
+                if (!userMutes[guild.Id].ContainsKey(badUser.Id))
+                    userMutes[guild.Id].Add(badUser.Id, delay);
+
+                // notify mods of mute
+                EmbedBuilder modNoticeBuilder = new EmbedBuilder()
+                {
+                    Title = "🔇 User Muted",
+                    Description = $"{badUser.Username}#{badUser.Discriminator} Muted!",
+                    Color = ADMIN_COLOR
+                };
+
+                if (delay > 0)
+                {
+                    TimeSpan duration = TimeSpan.FromSeconds(delay);
+
+                    string delayString = "";
+
+                    if (duration.Days > 0)
+                        delayString += $"Days: {duration.Days} ";
+                    if (duration.Hours > 0)
+                        delayString += $"Hours: {duration.Hours} ";
+                    if (duration.Minutes > 0)
+                        delayString += $"Minutes: {duration.Minutes} ";
+                    if (duration.Seconds > 0)
+                        delayString += $"Seconds: {duration.Seconds} ";
+
+                    modNoticeBuilder.AddField("Duration", delayString);
+                }
+
+                await contextChannel.SendMessageAsync("", false, modNoticeBuilder.Build());
+
+                await Task.Delay(delay * 1000);
+
+                // remove mute
+                if (Context.Guild.GetUser(badUser.Id).Roles.Contains(muteRole))
+                {
+                    await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(muteRole);
+                    try
+                    {
+                        //notify user that they were unmuted
+                        EmbedBuilder builder = new EmbedBuilder();
+                        builder.Title = "🔊  Unmute Notification";
+                        builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
+                        builder.Color = ADMIN_COLOR;
+                        await badUser.SendMessageAsync("", false, builder.Build());
+                    }
+                    catch (HttpException)
+                    {
+                        Log.Information($"Unable to DM user {badUser.Username}#{badUser.Discriminator} ({badUser.Id}) to notify them of their unmute!");
+                    }
+                }
+
+                // remove them from the list of muted users if they exist there
+                if (userMutes.ContainsKey(guild.Id) && userMutes[guild.Id].ContainsKey(badUser.Id))
+                    userMutes[guild.Id].Remove(badUser.Id);
+            }
+
+        }
 
         [Command("ban")]
         [Alias("b")]
@@ -628,21 +718,28 @@ namespace Floofbot.Modules
                 }
             }
 
-            if (Context.Guild.GetUser(badUser.Id).Roles.Contains(muteRole)) {
-                await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is already muted!");
-                return;
+            // allow them to append a timeout to existing mutes
+            if (Context.Guild.GetUser(badUser.Id).Roles.Contains(muteRole))
+            {
+                if (time == null)
+                {
+                    await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is already muted! Please specify a timeout if you want me to apply one!");
+                    return;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is already muted! I'll try apply a timeout to their mute!");
+                }
+
+            }
+            else
+            {
+                await Context.Guild.GetUser(badUser.Id).AddRoleAsync(muteRole);
             }
 
-            await Context.Guild.GetUser(badUser.Id).AddRoleAsync(muteRole);
-
-            EmbedBuilder builder = new EmbedBuilder() {
-                Title = "🔇 User Muted",
-                Description = $"{badUser.Username}#{badUser.Discriminator} Muted!",
-                Color = ADMIN_COLOR
-            };
-
-            string durationNotifyString = null;
-            if (time != null) {
+            // parse time
+            if (time != null)
+            {
                 var m = Regex.Match(time, @"^((?<days>\d+)d)?((?<hours>\d+)h)?((?<minutes>\d+)m)?((?<seconds>\d+)s)?$", RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.RightToLeft);
 
                 int dd = m.Groups["days"].Success ? int.Parse(m.Groups["days"].Value) : 0;
@@ -652,70 +749,27 @@ namespace Floofbot.Modules
 
                 int seconds = dd * 86400 + hs * 60 * 60 + ms * 60 + ss;
 
-                if (seconds > 0) {
-                    TimeSpan duration = TimeSpan.FromSeconds(seconds);
-
-                    string delayString = "";
-
-                    if (duration.Days > 0)
-                        delayString += $"Days: {duration.Days} ";
-                    if (duration.Hours > 0)
-                        delayString += $"Hours: {duration.Hours} ";
-                    if (duration.Minutes > 0)
-                        delayString += $"Minutes: {duration.Minutes} ";
-                    if (duration.Seconds > 0)
-                        delayString += $"Seconds: {duration.Seconds} ";
-
-                    durationNotifyString = delayString;
-                    builder.AddField("Duration", delayString);
-                    //unmute user after duration has expired
-                    _ = Task.Run(async () =>
-                    {
-                        await Task.Delay(duration);
-
-                        if (Context.Guild.GetUser(badUser.Id).Roles.Contains(muteRole)) {
-                            await Context.Guild.GetUser(badUser.Id).RemoveRoleAsync(muteRole);
-                            try
-                            {
-                                //notify user that they were unmuted
-                                builder = new EmbedBuilder();
-                                builder.Title = "🔊  Unmute Notification";
-                                builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
-                                builder.Color = ADMIN_COLOR;
-                                await badUser.SendMessageAsync("", false, builder.Build());
-                            }
-                            catch (HttpException)
-                            {
-                                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their unmute!");
-                            }
-                        }
-                    });
-
-                }
-                else {
-                    await Context.Channel.SendMessageAsync("Invalid Time format... \nExamples: `.mute Talon#6237 1d` `.mute Talon#6237 6h30m`");
+                if (seconds == 0)
+                {
+                    await Context.Channel.SendMessageAsync("Invalid time specified... \nExamples: `.mute Talon#6237 1d` `.mute Talon#6237 6h30m`");
                     return;
                 }
 
+                //unmute user after duration has expired
+                handleMuteTimeout(Context.Guild, badUser, muteRole, Context.Channel, seconds);
             }
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
-            try
+            else
             {
-                //notify user that they were muted
-                builder = new EmbedBuilder();
-                builder.Title = "🔇  Mute Notification";
-                builder.Description = $"You have been muted on {Context.Guild.Name}";
+                EmbedBuilder modNoticeBuilder = new EmbedBuilder()
+                {
+                    Title = "🔇 User Muted",
+                    Description = $"{badUser.Username}#{badUser.Discriminator} Muted!",
+                    Color = ADMIN_COLOR
+                };
 
-                if (durationNotifyString != null)
-                    builder.AddField("Duration", durationNotifyString);
+                await Context.Channel.SendMessageAsync("", false, modNoticeBuilder.Build());
+            }
 
-                builder.Color = ADMIN_COLOR;
-                await badUser.SendMessageAsync("", false, builder.Build());
-            }
-            catch (HttpException)
-            {
-                await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their mute!");
-            }
         }
 
         public async Task<IRole> CreateMuteRole()
@@ -766,6 +820,10 @@ namespace Floofbot.Modules
                 await Context.Channel.SendMessageAsync($"{badUser.Username}#{badUser.Discriminator} is not muted");
                 return;
             }
+
+            // remove them from the list of muted users if they exist there
+            if (userMutes.ContainsKey(Context.Guild.Id) && userMutes[Context.Guild.Id].ContainsKey(badUser.Id))
+                userMutes[Context.Guild.Id].Remove(badUser.Id);
 
             EmbedBuilder builder = new EmbedBuilder() {
                 Title = "🔊 User Unmuted",
