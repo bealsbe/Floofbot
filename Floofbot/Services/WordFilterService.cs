@@ -34,9 +34,7 @@ namespace Floofbot.Services
 
             foreach (var filteredWord in _filteredWords)
             {
-                Regex r = new Regex($"{filteredWord.Word}",
-                    RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                if (r.IsMatch(messageContent))
+                if (messageContent.ToLower().Contains(filteredWord.Word.ToLower()))
                 {
                     DetectedWords.Add(filteredWord.Word);
                 }
@@ -74,7 +72,7 @@ namespace Floofbot.Services
             {
                 Regex r = new Regex(@$"\b({filteredWord.Word})\b",
                     RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                if (r.IsMatch(messageContent))
+                if (r.IsMatch(Regex.Escape(messageContent)))
                 {
                     return true;
                 }
