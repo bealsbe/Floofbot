@@ -70,9 +70,9 @@ namespace Floofbot.Services
 
             foreach (var filteredWord in _filteredWords)
             {
-                Regex r = new Regex(@$"\b({filteredWord.Word})\b",
+                Regex r = new Regex(@$"\b({Regex.Escape(filteredWord.Word)}\b",
                     RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                if (r.IsMatch(Regex.Escape(messageContent)))
+                if (r.IsMatch(messageContent))
                 {
                     return true;
                 }
