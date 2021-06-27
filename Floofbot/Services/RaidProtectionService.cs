@@ -448,6 +448,21 @@ namespace Floofbot.Services
                             {
                                 await guildUser.AddRoleAsync(mutedRole);
                                 await msg.Channel.SendMessageAsync(userMsg.Author.Mention + " you have received too many warnings. You are muted as a result.");
+
+                                if (modChannel != null) 
+                                {
+                                    var embed = new EmbedBuilder();
+
+                                    embed.WithTitle($"🔇 User Muted | {userMsg.Author.Username}#{userMsg.Author.Discriminator}")
+                                         .WithColor(Color.Teal)
+                                         .WithDescription($"{userMsg.Author.Mention} | ``{userMsg.Author.Id}`` has been automatically muted by the raid protection system.")
+                                         .WithCurrentTimestamp();
+
+                                    if (Uri.IsWellFormedUriString(userMsg.Author.GetAvatarUrl(), UriKind.Absolute))
+                                        embed.WithThumbnailUrl(userMsg.Author.GetAvatarUrl());
+
+                                    await modChannel.SendMessageAsync("", false, embed.Build());
+                                }
                             }
                             catch (Exception e)
                             {
