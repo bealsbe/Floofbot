@@ -3,8 +3,8 @@
 
 FROM alpine:latest
 
-# dependencies
-RUN apk add --no-cache libintl libstdc++
+# Dependencies and curl for custom backup scripts
+RUN apk add --no-cache libintl libstdc++ curl
 
 # Set and add working directory
 WORKDIR /root/
@@ -17,5 +17,9 @@ COPY artifacts/linux-musl-x64/Floofbot .
 # Fix for running in a container
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
+# Add version from CI build
+ARG floofbot_version=unknown
+ENV FLOOFBOT_VERSION=$floofbot_version
+
 ENTRYPOINT ["./Floofbot"]
-CMD ["data/config.yaml"]
+CMD ["/root/data/config.yaml"]
