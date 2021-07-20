@@ -26,6 +26,7 @@ namespace Floofbot
             Regex kmReg = new Regex("\\b(\\d+)(km)\\b", RegexOptions.IgnoreCase);
             Regex kgReg = new Regex("\\b(\\d+)(kg)\\b", RegexOptions.IgnoreCase);
             Regex lbReg = new Regex("\\b(\\d+)(lb)||(lbs)\\b", RegexOptions.IgnoreCase);
+            Regex anythingElse = new Regex("\\b(\\d+)(p)\\b", RegexOptions.IgnoreCase);
 
             if (fahReg.Match(input).Success) {
                 Match m = fahReg.Match(input);
