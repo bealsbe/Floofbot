@@ -27,8 +27,7 @@ namespace Floofbot
             Regex kgReg = new Regex("\\b(\\d+)(kg)\\b", RegexOptions.IgnoreCase);
             Regex lbReg = new Regex("\\b(\\d+)(lb)||(lbs)\\b", RegexOptions.IgnoreCase);
 
-            if (fahReg.Match(input).Success)
-            {
+            if (fahReg.Match(input).Success) {
                 Match m = fahReg.Match(input);
 
                 Group g = m.Groups[1];
@@ -48,8 +47,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if(celReg.Match(input).Success)
-            {
+            else if(celReg.Match(input).Success) {
                 Match m = celReg.Match(input);
 
                 Group g = m.Groups[1];
@@ -69,8 +67,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (miReg.Match(input).Success)
-            {
+            else if (miReg.Match(input).Success) {
                 Match m = miReg.Match(input);
 
                 Group g = m.Groups[1];
@@ -90,8 +87,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (kmReg.Match(input).Success)
-            {
+            else if (kmReg.Match(input).Success) {
                 Match m = kmReg.Match(input);
 
                 Group g = m.Groups[1];
@@ -111,8 +107,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (kgReg.Match(input).Success)
-            {
+            else if (kgReg.Match(input).Success) {
                 Match m = kgReg.Match(input);
 
                 Group g = m.Groups[1];
@@ -133,8 +128,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (lbReg.Match(input).Success)
-            {
+            else if (lbReg.Match(input).Success) {
                 Match m = lbReg.Match(input);
 
                 Group g = m.Groups[1];
