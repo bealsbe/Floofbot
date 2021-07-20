@@ -48,7 +48,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if(celReg.Match(input).Success) {
+            else if (celReg.Match(input).Success) {
                 Match m = celReg.Match(input);
 
                 Group g = m.Groups[1];
@@ -144,6 +144,16 @@ namespace Floofbot
                 {
                     Title = "Mass conversion",
                     Description = $"⚖️ {(Mass)lb} is equal to {(double)Math.Round(kg, 3, MidpointRounding.ToEven)}Kg.",
+                    Color = EMBED_COLOR
+                };
+
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            else if (anythingElse.Match(input).Success) {
+                EmbedBuilder builder = new EmbedBuilder()
+                {
+                    Title = "Conversion module",
+                    Description = $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lb.",
                     Color = EMBED_COLOR
                 };
 
