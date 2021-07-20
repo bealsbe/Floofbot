@@ -20,18 +20,12 @@ namespace Floofbot
 
         public async Task convert(string input)
         {
-            string fahPat = "\\b(\\d+)(f)\\b";
-            Regex fahReg = new Regex(fahPat, RegexOptions.IgnoreCase);
-            string celPat = "\\b(\\d+)(c)\\b";
-            Regex celReg = new Regex(celPat, RegexOptions.IgnoreCase);
-            string miPat = "\\b(\\d+)(mi)\\b";
-            Regex miReg = new Regex(miPat, RegexOptions.IgnoreCase);
-            string kmPat = "\\b(\\d+)(km)\\b";
-            Regex kmReg = new Regex(kmPat, RegexOptions.IgnoreCase);
-            string kgPat = "\\b(\\d+)(kg)\\b";
-            Regex kgReg = new Regex(kgPat, RegexOptions.IgnoreCase);
-            string lbPat = "\\b(\\d+)(lb)||(lbs)\\b";
-            Regex lbReg = new Regex(lbPat, RegexOptions.IgnoreCase);
+            Regex fahReg = new Regex("\\b(\\d+)(f)\\b", RegexOptions.IgnoreCase);
+            Regex celReg = new Regex("\\b(\\d+)(c)\\b", RegexOptions.IgnoreCase);
+            Regex miReg = new Regex("\\b(\\d+)(mi)\\b", RegexOptions.IgnoreCase);
+            Regex kmReg = new Regex("\\b(\\d+)(km)\\b", RegexOptions.IgnoreCase);
+            Regex kgReg = new Regex("\\b(\\d+)(kg)\\b", RegexOptions.IgnoreCase);
+            Regex lbReg = new Regex("\\b(\\d+)(lb)||(lbs)\\b", RegexOptions.IgnoreCase);
 
             if (fahReg.Match(input).Success)
             {
