@@ -25,8 +25,7 @@ namespace Floofbot
             Regex miReg = new Regex("\\b(\\d+)(mi)\\b", RegexOptions.IgnoreCase);
             Regex kmReg = new Regex("\\b(\\d+)(km)\\b", RegexOptions.IgnoreCase);
             Regex kgReg = new Regex("\\b(\\d+)(kg)\\b", RegexOptions.IgnoreCase);
-            Regex lbReg = new Regex("\\b(\\d+)(lb)||(lbs)\\b", RegexOptions.IgnoreCase);
-            Regex anythingElse = new Regex("\\b(\\d+)(p)\\b", RegexOptions.IgnoreCase);
+            Regex lbReg = new Regex("\\b(\\d+)(lbs)\\b", RegexOptions.IgnoreCase);
 
             if (fahReg.Match(input).Success) {
                 Match m = fahReg.Match(input);
@@ -149,11 +148,11 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (anythingElse.Match(input).Success) {
+            else {
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Conversion module",
-                    Description = $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lb.",
+                    Description = $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lbs.",
                     Color = EMBED_COLOR
                 };
 
