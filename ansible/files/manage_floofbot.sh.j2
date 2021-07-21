@@ -1,0 +1,217 @@
+#! /bin/bash
+set -eE
+
+HLC='\033[0;36m'
+EC='\033[0;31m'
+NC='\033[0m'
+
+trap "echo -e '$EC!Script failed!$NC'" ERR
+
+GITHUB_USER="{{ github_user }}"
+IMAGE_BASE="ghcr.io/$GITHUB_USER/floofbot"
+CONTAINER_NAME="{{ container_name }}"
+IMAGE_NAME="$CONTAINER_NAME:current"
+DATA_DIRECTORY="{{ base_directory }}"
+{% raw %}
+! IFS='' read -r -d '' HELP_STRING << EOF
+Floofbot container management script, version 2021.06.26.0
+This script allows for a basic level of management over Floofbot running as a Docker container
+
+This script should be provided via the Ansible playbook for preparing a machine for Floofbot
+https://github.com/$GITHUB_USER/Floofbot/tree/master/ansible
+
+Commands include:
+
+status: Tells you if the container is running or not, as well as the current image version if available.
+    $0 status
+
+start: Starts the currently downloaded Floofbot image. If not image exists, this downloads the latest one first.
+    $0 start
+
+stop: Stops Floofbot if it is running.
+    $0 stop
+
+restart: Restarts Floofbot if it is running, or starts it if it is not. Equivalent to running the stop command, then the start command.
+    $0 restart
+
+update: Updates the current Floofbot image. Stops Floofbot if it is running, deletes the image, downloads the new one,
+    then runs starts Floofbot if it was running originally.
+    VERSION must either be "latest" or a version number, such as "2021.04.20.0"
+    $0 update VERSION
+
+logs: Shows the logs of the Floofbot container.
+    $0 logs
+
+To copy the current logs out of the container for analysis, run:
+sudo docker cp $CONTAINER_NAME:/root/FloofLog.log .
+EOF
+
+_pull_image () {
+    echo "Pulling image <$IMAGE_BASE:$1>..."
+    sudo docker pull "$IMAGE_BASE:$1"
+}
+
+_replace_image () {
+    # Assume container has already been stopped
+    _check_container_running
+    if [ "$CONTAINER_AVAILABLE" = true ]; then
+        echo "Removing existing container <$CONTAINER_NAME>"
+        sudo docker rm "$CONTAINER_NAME"
+    fi
+
+    _check_image_exists
+    if [ "$IMAGE_EXISTS" = true ]; then
+        echo "Removing existing image <$IMAGE_NAME>"
+        sudo docker image rm "$IMAGE_NAME"
+    fi
+
+    sudo docker tag "$IMAGE_BASE:$1" "$IMAGE_NAME"
+    sudo docker image rm "$IMAGE_BASE:$1"
+    echo "<$IMAGE_NAME> image updated."
+}
+
+_check_image_exists () {
+    if [ -z "$(sudo docker images $IMAGE_NAME -q)" ]; then
+        IMAGE_EXISTS=false
+    else
+        IMAGE_EXISTS=true
+    fi
+}
+
+_check_container_running () {
+    if [ -z "$(sudo docker ps --format '{{.Names}}' | grep -w $CONTAINER_NAME)" ]; then
+        CONTAINER_RUNNING=false
+    else
+        CONTAINER_RUNNING=true
+    fi
+
+    if [ -z "$(sudo docker ps -a --format '{{.Names}}' | grep -w $CONTAINER_NAME)" ]; then
+        CONTAINER_AVAILABLE=false
+    else
+        CONTAINER_AVAILABLE=true
+    fi
+}
+
+status_command() {
+    echo -e "$HLC::status$NC"
+    _check_container_running
+    if [ "$CONTAINER_RUNNING" = true ]; then
+        echo "Container <$CONTAINER_NAME> is running. To attach to the logs, run: $0 logs"
+    else
+        echo "Container <$CONTAINER_NAME> is not running. To start, run: $0 start"
+    fi
+
+    _check_image_exists
+    if [ "$IMAGE_EXISTS" = true ]; then
+        VERSION_STRING=$(sudo docker run --rm -it --entrypoint sh $IMAGE_NAME -c 'echo "$FLOOFBOT_VERSION"')
+        # VERSION_STRING has length one even if FLOOFBOT_VERSION is missing
+        if [ ${#VERSION_STRING} -le 1 ]; then
+            echo "Image is present, but version information is unavailable."
+        else
+            echo "Current image <$IMAGE_NAME> is version $VERSION_STRING"
+        fi
+    else
+        echo "Image not available, cannot check for version."
+    fi
+}
+
+start_command () {
+    echo -e "$HLC::start$NC"
+    _check_container_running
+    if [ "$CONTAINER_RUNNING" = true ]; then
+        echo "Container <$CONTAINER_NAME> is already running."
+        return
+    fi
+
+    _check_image_exists
+    if [ "$IMAGE_EXISTS" = false ]; then
+        _pull_image latest
+        _replace_image latest
+    fi
+
+    if [ "$CONTAINER_AVAILABLE" = true ]; then
+        sudo docker start "$CONTAINER_NAME"
+    else
+        sudo docker run --name "$CONTAINER_NAME" -d \
+            --restart unless-stopped \
+            -v $DATA_DIRECTORY:/root/data \
+            -v $DATA_DIRECTORY/logs:/root/logs \
+            "$IMAGE_NAME"
+    fi
+
+    echo "Container <$CONTAINER_NAME> started."
+    echo "To attach stdout, run: $0 logs"
+}
+
+stop_command () {
+    echo -e "$HLC::stop$NC"
+    _check_container_running
+    if [ "$CONTAINER_RUNNING" = false ]; then
+        echo "Container <$CONTAINER_NAME> is not running."
+        return
+    else
+        sudo docker stop $CONTAINER_NAME
+        echo "Container <$CONTAINER_NAME> stopped."
+    fi
+}
+
+update_command () {
+    echo -e "$HLC::update$NC"
+    _pull_image $1
+
+    _check_container_running
+    WAS_RUNNING=$CONTAINER_RUNNING
+    if [ "$CONTAINER_RUNNING" = true ]; then
+        stop_command
+    fi
+
+    _replace_image $1
+
+    if [ "$WAS_RUNNING" = true ]; then
+        echo "Starting <$CONTAINER_NAME> automatically after update..."
+        start_command
+    fi
+}
+
+logs_command () {
+    echo -e "$HLC::logs$NC"
+    echo "Press ctrl + c to exit (however, this does not stop the container)."
+    sudo docker logs --follow "$CONTAINER_NAME"
+}
+
+case $1 in
+
+    "status")
+        status_command
+        ;;
+
+    "start")
+        start_command
+        ;;
+
+    "stop")
+        stop_command
+        ;;
+
+    "restart")
+        stop_command
+        start_command
+        ;;
+
+    "update")
+        if [ -z "$2" ]; then
+            echo "Need to specify update version. Either \"latest\" or a specific version, like \"2021.04.20.0\"."
+        else
+            update_command $2
+        fi
+        ;;
+
+    "logs")
+        logs_command
+        ;;
+
+    *)
+        echo "$HELP_STRING"
+        ;;
+
+esac{% endraw %}

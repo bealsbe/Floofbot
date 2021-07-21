@@ -291,6 +291,33 @@ namespace Floofbot.Modules
             await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
         }
 
+        [Command("silentkick")]
+        [Alias("sk")]
+        [Summary("Kicks a user from the server. Does not notify the user.")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
+        public async Task silentKickUser(
+            [Summary("user")] string user,
+            [Summary("reason")][Remainder] string reason = "No Reason Provided")
+        {
+            IUser badUser = resolveUser(user);
+            if (badUser == null)
+            {
+                await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
+                return;
+            }
+
+            //kicks users
+            await Context.Guild.GetUser(badUser.Id).KickAsync(reason);
+            EmbedBuilder kickBuilder = new EmbedBuilder();
+            kickBuilder.Title = ("🥾 User Silently Kicked");
+            kickBuilder.Color = ADMIN_COLOR;
+            kickBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been silently kicked from {Context.Guild.Name}";
+            kickBuilder.AddField("User ID", badUser.Id);
+            kickBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
+        }
+
         [Command("warn")]
         [Alias("w")]
         [Summary("Warns a user on the server, with a given reason")]
