@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Floofbot.Modules
 {
     [Summary("Fun commands")]
-    [Discord.Commands.Name("Fun")]
+    [Name("Fun")]
     public class Fun : ModuleBase<SocketCommandContext>
     {
         private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;
@@ -189,9 +189,19 @@ namespace Floofbot.Modules
                 string[] splitChoices = choices.Split(";")
                     .Select(choice => choice.Trim())
                     .Where(choice => !string.IsNullOrEmpty(choice)).ToArray();
-                if (splitChoices.Length != 0)
+                if (splitChoices.Length == 1)
                 {
-                    await Context.Channel.SendMessageAsync(splitChoices[rand.Next(splitChoices.Length)]);
+                    await Context.Channel.SendMessageAsync("You need to give me more than one choice!");
+                    return;
+                }
+                else if (splitChoices.Length != 0)
+                {
+                    EmbedBuilder choiceEmbed = new EmbedBuilder(){
+                        Description = "Chosen choice: " + splitChoices[rand.Next(splitChoices.Length)],
+                        Color = EMBED_COLOR
+                    };
+
+                    await Context.Channel.SendMessageAsync("", false, choiceEmbed.Build());
                     return;
                 }
             }

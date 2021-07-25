@@ -3,14 +3,16 @@ using System;
 using Floofbot.Services.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
-    partial class FloofDataContextModelSnapshot : ModelSnapshot
+    [Migration("20210112225014_WelcomeGate")]
+    partial class WelcomeGate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -315,29 +317,6 @@ namespace Floofbot.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserNotes");
-                });
-
-            modelBuilder.Entity("Floofbot.Services.Repository.Models.UserRolesList", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ListOfRoleIds")
-                        .HasColumnType("TEXT");
-
-                    b.Property<ulong>("ServerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UTCTimestamp")
-                        .HasColumnType("TEXT");
-
-                    b.Property<ulong>("UserID")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserRolesLists");
                 });
 
             modelBuilder.Entity("Floofbot.Services.Repository.Models.Warning", b =>

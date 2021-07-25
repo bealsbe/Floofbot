@@ -14,6 +14,7 @@ namespace Floofbot.Modules
 {
     [RequireContext(ContextType.Guild)]
     [Summary("Add/Remove allowable roles for yourself")]
+    [Name("User Assignable Roles")]
     public class UserAssignableRoleCommands : InteractiveBase
     {
         private FloofDataContext _floofDb;
@@ -146,6 +147,7 @@ namespace Floofbot.Modules
     }
 
     [Summary("Configures the joinable user roles")]
+    [Name("User Assignable Roles Configuration")]
     [RequireUserPermission(GuildPermission.Administrator)]
     [Group("iamconfig")]
     public class UserAssignableRoleAdminCommands : InteractiveBase

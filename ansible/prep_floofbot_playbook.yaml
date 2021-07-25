@@ -1,0 +1,164 @@
+---
+
+# Version 2021.06.26.0
+# Playbook for installing Docker, optionally extracting a bot backup,
+# replacing config values, and providing container management scripts.
+# Requirements: Ubuntu (18.04, 20.04)
+
+# Docker Installation derived from DO community playbooks:
+# https://github.com/do-community/ansible-playbooks/blob/master/docker_ubuntu1804/playbook.yml
+
+- hosts: all
+  vars_files:
+    - vars/default.yaml
+
+  tasks:
+    - name: Get bot_token if not provided
+      when: bot_token | length == 0
+      run_once: true
+      block:
+        - name: Pause for bot_token input
+          pause:
+            prompt: "bot_token not provided in vars/default.yaml. Please enter it here"
+            echo: false
+          register: token_prompt_result
+
+        - name: Check input
+          meta: end_play
+          when: token_prompt_result.user_input | length == 0
+
+        - name: "Set fact: bot_token"
+          set_fact:
+            bot_token: "{{ token_prompt_result.user_input }}"
+
+    - name: "Set fact: base_directory"
+      set_fact:
+        base_directory: "{{ ansible_env.HOME }}/{{ data_directory }}"
+
+    - name: Install aptitude using apt
+      become: true
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: Install required system packages
+      become: true
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: 
+        # Docker installation dependencies
+        - 'apt-transport-https'
+        - 'ca-certificates'
+        - 'curl'
+        - 'software-properties-common'
+        - 'python3-pip'
+        - 'virtualenv'
+        - 'python3-setuptools'
+        # Nice to haves
+        - 'tmux'
+        - 'vim'
+        - 'htop'
+        - 'rsync'
+
+    - name: Add Docker GPG apt Key
+      become: true
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      become: true
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      become: true
+      apt: update_cache=yes name=docker-ce state=latest
+
+    - name: Create bot directories
+      file: name={{ item }} state=directory
+      loop:
+        - "{{ base_directory }}/backups"
+
+    - name: Fetch files from backup
+      when: backup_url | length > 0
+      block:
+        - name: Download backup file
+          get_url:
+            url: "{{ backup_url }}"
+            dest: "/tmp/floofbot_backup.tar.gz"
+            force: true
+            http_agent: "curl/7.58" # Necessary for Dropbox downloads
+
+        - name: Extract backup file
+          unarchive:
+            src: "/tmp/floofbot_backup.tar.gz"
+            dest: "{{ base_directory }}"
+            remote_src: true
+
+    - name: Download and setup initial config file
+      when: backup_url | length == 0
+      block:
+        - name: Check if existing config file exists
+          stat:
+            path: "{{ base_directory }}/config.yaml"
+          register: stat_result
+
+        - name: Download template config file
+          when: not stat_result.stat.exists
+          block:
+            - name: Get latest release information
+              when: config_version | length == 0
+              uri:
+                url: "https://api.github.com/repos/{{ github_user }}/floofbot/releases/latest"
+              register: releases_api_result
+
+            - when: releases_api_result is not skipped
+              set_fact:
+                releases_data: "{{ releases_api_result.json }}"
+
+            - name: Get specific release information ({{ config_version }})
+              when: config_version | length > 0
+              uri:
+                url: "https://api.github.com/repos/{{ github_user }}/floofbot/releases/tags/{{ config_version }}"
+              register: releases_api_result
+
+            - when: releases_api_result is not skipped
+              set_fact:
+                releases_data: "{{ releases_api_result.json }}"
+
+            - name: Find config template file in release information
+              set_fact:
+                config_template_data: '{{ releases_data.assets | selectattr("name", "equalto", "config.yaml.sample") | first }}'
+
+            - name: Download specified config template
+              get_url:
+                url: "{{ config_template_data.browser_download_url }}"
+                dest: "{{ base_directory }}/config.yaml"
+                force: true
+
+    - name: Do config replacements
+      with_dict: '{{ config_replacements | combine({"Token": bot_token}) }}'
+      replace:
+        path: "{{ base_directory }}/config.yaml"
+        regexp: '\b{{ item.key }}:.+\n'
+        replace: '{{ item.key }}: {{ item.value }}\n'
+
+    - name: Upload backup script
+      template:
+        src: files/cloud_backup.sh.j2
+        dest: "{{ base_directory }}/cloud_backup.sh"
+        mode: 0744
+
+    - name: Upload management script
+      template:
+        src: files/manage_floofbot.sh.j2
+        dest: "{{ base_directory }}/manage_floofbot.sh"
+        mode: 0744
+
+    ## Nice to have: tmux mouse support
+    - name: Adjust tmux conf
+      become: true
+      lineinfile:
+        path: /etc/tmux.conf
+        line: set -g mouse on
+        create: true
+        state: present

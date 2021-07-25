@@ -14,7 +14,7 @@ namespace Floofbot.Modules
     public class Logging
     {
         [Summary("Logging commands")]
-        [Discord.Commands.Name("Logger")]
+        [Name("Logger Configuration Commands")]
         [Group("logger")]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireContext(ContextType.Guild)]
