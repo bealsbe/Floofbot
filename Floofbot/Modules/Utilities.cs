@@ -283,10 +283,10 @@ namespace Floofbot
 
                 Group g = m.Groups[1];
 
-                string FahStr = Convert.ToString(g);
-                double FahTmp = Convert.ToDouble(FahStr);
+                string fahStr = Convert.ToString(g);
+                double fahTmp = Convert.ToDouble(fahStr);
 
-                Temperature Fah = Temperature.FromDegreesFahrenheit(FahTmp);
+                Temperature Fah = Temperature.FromDegreesFahrenheit(fahTmp);
                 double Cel = Fah.DegreesCelsius;
 
                 EmbedBuilder builder = new EmbedBuilder()
