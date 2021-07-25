@@ -272,7 +272,7 @@ namespace Floofbot
 
             if (fahReg.IsMatch(input))
             {
-                double fahTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
+                double fahTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+").Value);
 
                 Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
                 double cel = Math.Round(fah.DegreesCelsius, 2, MidpointRounding.ToEven);
@@ -288,7 +288,7 @@ namespace Floofbot
             }
             else if (celReg.IsMatch(input))
             {
-                double celTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
+                double celTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+").Value);
 
                 Temperature cel = Temperature.FromDegreesCelsius(celTmp);
                 double fah = Math.Round(cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
