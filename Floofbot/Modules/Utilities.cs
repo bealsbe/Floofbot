@@ -277,8 +277,7 @@ namespace Floofbot
             Regex kgReg = new Regex("\\b(\\d+)(kg)\\b", RegexOptions.IgnoreCase);
             Regex lbReg = new Regex("\\b(\\d+)(lbs)\\b", RegexOptions.IgnoreCase);
 
-            if (fahReg.Match(input).Success)
-            {
+            if (fahReg.IsMatch(input)) {
                 double fahTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
@@ -293,8 +292,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (celReg.Match(input).Success)
-            {
+            else if (celReg.IsMatch(input)) {
                 double celTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Temperature cel = Temperature.FromDegreesCelsius(celTmp);
@@ -309,8 +307,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (miReg.Match(input).Success)
-            {
+            else if (miReg.IsMatch(input)) {
                 double miTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Length mi = Length.FromMiles(miTmp);
@@ -325,8 +322,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (kmReg.Match(input).Success)
-            {
+            else if (kmReg.IsMatch(input)) {
                 double kmTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Length km = Length.FromKilometers(kmTmp);
@@ -341,8 +337,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (kgReg.Match(input).Success)
-            {
+            else if (kgReg.IsMatch(input)) {
                 double kgTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
 
@@ -358,8 +353,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (lbReg.Match(input).Success)
-            {
+            else if (lbReg.IsMatch(input)) {
                 double lbTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Mass lb = Mass.FromPounds(lbTmp);
@@ -374,8 +368,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else
-            {
+            else {
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Conversion module",
