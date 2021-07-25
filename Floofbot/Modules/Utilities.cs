@@ -305,7 +305,7 @@ namespace Floofbot
                 Group g = m.Groups[1];
 
                 string celStr = Convert.ToString(g);
-                double celTmp = Convert.ToDouble(celReg.Match(input));
+                double celTmp = Convert.ToDouble(celStr);
 
                 Temperature Cel = Temperature.FromDegreesCelsius(celTmp);
                 double Fah = Math.Round(Cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
