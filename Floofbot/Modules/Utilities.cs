@@ -263,12 +263,12 @@ namespace Floofbot
 
         public async Task convert(string input)
         {
-            Regex fahReg = new Regex("\\b(\\d+)(f)\\b", RegexOptions.IgnoreCase);
-            Regex celReg = new Regex("\\b(\\d+)(c)\\b", RegexOptions.IgnoreCase);
-            Regex miReg = new Regex("\\b(\\d+)(mi)\\b", RegexOptions.IgnoreCase);
-            Regex kmReg = new Regex("\\b(\\d+)(km)\\b", RegexOptions.IgnoreCase);
-            Regex kgReg = new Regex("\\b(\\d+)(kg)\\b", RegexOptions.IgnoreCase);
-            Regex lbReg = new Regex("\\b(\\d+)(lbs)\\b", RegexOptions.IgnoreCase);
+            Regex fahReg = new Regex(@"\d+(?=f)", RegexOptions.IgnoreCase);
+            Regex celReg = new Regex(@"\d+(?=c)", RegexOptions.IgnoreCase);
+            Regex miReg = new Regex(@"\d+(?=mi)", RegexOptions.IgnoreCase);
+            Regex kmReg = new Regex(@"\d+(?=km)", RegexOptions.IgnoreCase);
+            Regex kgReg = new Regex(@"\d+(?=kg)", RegexOptions.IgnoreCase);
+            Regex lbReg = new Regex(@"\d+(?=lbs)", RegexOptions.IgnoreCase);
 
             if (fahReg.IsMatch(input))
             {
