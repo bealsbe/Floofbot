@@ -281,13 +281,13 @@ namespace Floofbot
             {
                 double fahTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
-                Temperature Fah = Temperature.FromDegreesFahrenheit(fahTmp);
-                double Cel = Math.Round(Fah.DegreesCelsius, 2, MidpointRounding.ToEven);
+                Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
+                double cel = Math.Round(fah.DegreesCelsius, 2, MidpointRounding.ToEven);
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Temperature conversion",
-                    Description = $"🌡 {Fah} is equal to {Cel}°C.",
+                    Description = $"🌡 {fah} is equal to {cel}°C.",
                     Color = EMBED_COLOR
                 };
 
@@ -297,13 +297,13 @@ namespace Floofbot
             {
                 double celTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
-                Temperature Cel = Temperature.FromDegreesCelsius(celTmp);
-                double Fah = Math.Round(Cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
+                Temperature cel = Temperature.FromDegreesCelsius(celTmp);
+                double fah = Math.Round(cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Temperature conversion",
-                    Description = $"🌡 {Cel} is equal to {Fah}F.",
+                    Description = $"🌡 {cel} is equal to {fah}F.",
                     Color = EMBED_COLOR
                 };
 
