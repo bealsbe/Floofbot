@@ -279,12 +279,7 @@ namespace Floofbot
 
             if (fahReg.Match(input).Success)
             {
-                Match m = fahReg.Match(input);
-
-                Group g = m.Groups[1];
-
-                string fahStr = Convert.ToString(g);
-                double fahTmp = Convert.ToDouble(fahStr);
+                double fahTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Temperature Fah = Temperature.FromDegreesFahrenheit(fahTmp);
                 double Cel = Math.Round(Fah.DegreesCelsius, 2, MidpointRounding.ToEven);
@@ -300,12 +295,7 @@ namespace Floofbot
             }
             else if (celReg.Match(input).Success)
             {
-                Match m = celReg.Match(input);
-
-                Group g = m.Groups[1];
-
-                string celStr = Convert.ToString(g);
-                double celTmp = Convert.ToDouble(celStr);
+                double celTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Temperature Cel = Temperature.FromDegreesCelsius(celTmp);
                 double Fah = Math.Round(Cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
@@ -321,12 +311,7 @@ namespace Floofbot
             }
             else if (miReg.Match(input).Success)
             {
-                Match m = miReg.Match(input);
-
-                Group g = m.Groups[1];
-
-                string miStr = Convert.ToString(g);
-                double miTmp = Convert.ToDouble(miStr);
+                double miTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Length mi = Length.FromMiles(miTmp);
                 double km = Math.Round(mi.Kilometers, 3, MidpointRounding.ToEven);
@@ -342,12 +327,7 @@ namespace Floofbot
             }
             else if (kmReg.Match(input).Success)
             {
-                Match m = kmReg.Match(input);
-
-                Group g = m.Groups[1];
-
-                string kmStr = Convert.ToString(g);
-                double kmTmp = Convert.ToDouble(kmStr);
+                double kmTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Length km = Length.FromKilometers(kmTmp);
                 double mi = Math.Round(km.Miles, 3, MidpointRounding.ToEven);
@@ -363,12 +343,7 @@ namespace Floofbot
             }
             else if (kgReg.Match(input).Success)
             {
-                Match m = kgReg.Match(input);
-
-                Group g = m.Groups[1];
-
-                string kgStr = Convert.ToString(g);
-                double kgTmp = Convert.ToDouble(kgStr);
+                double kgTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
 
                 Mass kg = Mass.FromKilograms(kgTmp);
@@ -385,12 +360,7 @@ namespace Floofbot
             }
             else if (lbReg.Match(input).Success)
             {
-                Match m = lbReg.Match(input);
-
-                Group g = m.Groups[1];
-
-                string lbStr = Convert.ToString(g);
-                double lbTmp = Convert.ToDouble(lbStr);
+                double lbTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Mass lb = Mass.FromPounds(lbTmp);
                 double kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
