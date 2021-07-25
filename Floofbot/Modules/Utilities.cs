@@ -257,13 +257,6 @@ namespace Floofbot
                 Trash = true
             }, true);
         }
-    }
-    [Summary("Conversion commands")]
-    [Discord.Commands.Name("Conversions")]
-    public class Conversions : InteractiveBase
-    {
-        private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
-
         [Command("convert")]
         [Alias("conv")]
         [Summary("Converts units to other units, such as Celcius to Fahrenheit.")]
@@ -277,7 +270,8 @@ namespace Floofbot
             Regex kgReg = new Regex("\\b(\\d+)(kg)\\b", RegexOptions.IgnoreCase);
             Regex lbReg = new Regex("\\b(\\d+)(lbs)\\b", RegexOptions.IgnoreCase);
 
-            if (fahReg.IsMatch(input)) {
+            if (fahReg.IsMatch(input))
+            {
                 double fahTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
@@ -292,7 +286,8 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (celReg.IsMatch(input)) {
+            else if (celReg.IsMatch(input))
+            {
                 double celTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Temperature cel = Temperature.FromDegreesCelsius(celTmp);
@@ -307,7 +302,8 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (miReg.IsMatch(input)) {
+            else if (miReg.IsMatch(input))
+            {
                 double miTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Length mi = Length.FromMiles(miTmp);
@@ -322,7 +318,8 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (kmReg.IsMatch(input)) {
+            else if (kmReg.IsMatch(input))
+            {
                 double kmTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Length km = Length.FromKilometers(kmTmp);
@@ -337,7 +334,8 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (kgReg.IsMatch(input)) {
+            else if (kgReg.IsMatch(input))
+            {
                 double kgTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
 
@@ -353,7 +351,8 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else if (lbReg.IsMatch(input)) {
+            else if (lbReg.IsMatch(input))
+            {
                 double lbTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
 
                 Mass lb = Mass.FromPounds(lbTmp);
@@ -368,7 +367,8 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
-            else {
+            else
+            {
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Conversion module",
