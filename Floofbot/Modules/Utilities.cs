@@ -287,12 +287,12 @@ namespace Floofbot
                 double fahTmp = Convert.ToDouble(fahStr);
 
                 Temperature Fah = Temperature.FromDegreesFahrenheit(fahTmp);
-                double Cel = Fah.DegreesCelsius;
+                double Cel = Math.Round(Fah.DegreesCelsius, 2, MidpointRounding.ToEven);
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Temperature conversion",
-                    Description = $"🌡 {(Temperature)Fah} is equal to {(double)Math.Round(Cel, 2, MidpointRounding.ToEven)}°C.",
+                    Description = $"🌡 {Fah} is equal to {Cel}°C.",
                     Color = EMBED_COLOR
                 };
 
@@ -305,15 +305,15 @@ namespace Floofbot
                 Group g = m.Groups[1];
 
                 string celStr = Convert.ToString(g);
-                double celTmp = Convert.ToDouble(celStr);
+                double celTmp = Convert.ToDouble(celReg.Match(input));
 
                 Temperature Cel = Temperature.FromDegreesCelsius(celTmp);
-                double Fah = Cel.DegreesFahrenheit;
+                double Fah = Math.Round(Cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Temperature conversion",
-                    Description = $"🌡 {(Temperature)Cel} is equal to {(double)Math.Round(Fah, 2, MidpointRounding.ToEven)}°F.",
+                    Description = $"🌡 {Cel} is equal to {Fah}F.",
                     Color = EMBED_COLOR
                 };
 
@@ -329,12 +329,12 @@ namespace Floofbot
                 double miTmp = Convert.ToDouble(miStr);
 
                 Length mi = Length.FromMiles(miTmp);
-                double km = mi.Kilometers;
+                double km = Math.Round(mi.Kilometers, 3, MidpointRounding.ToEven);
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Length conversion",
-                    Description = $"📏 {(Length)mi} is equal to {(double)Math.Round(km, 3, MidpointRounding.ToEven)}Km.",
+                    Description = $"📏 {mi} is equal to {km}Km.",
                     Color = EMBED_COLOR
                 };
 
@@ -350,12 +350,12 @@ namespace Floofbot
                 double kmTmp = Convert.ToDouble(kmStr);
 
                 Length km = Length.FromKilometers(kmTmp);
-                double mi = km.Miles;
+                double mi = Math.Round(km.Miles, 3, MidpointRounding.ToEven);
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Length conversion",
-                    Description = $"📏 {(Length)km} is equal to {(double)Math.Round(mi, 3, MidpointRounding.ToEven)}mi.",
+                    Description = $"📏 {km} is equal to {mi}mi.",
                     Color = EMBED_COLOR
                 };
 
@@ -372,12 +372,12 @@ namespace Floofbot
 
 
                 Mass kg = Mass.FromKilograms(kgTmp);
-                double lb = kg.Pounds;
+                double lb = Math.Round(kg.Pounds, 3, MidpointRounding.ToEven);
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Mass conversion",
-                    Description = $"⚖️ {(Mass)kg} is equal to {(double)Math.Round(lb, 3, MidpointRounding.ToEven)}lbs.",
+                    Description = $"⚖️ {kg} is equal to {lb}lbs.",
                     Color = EMBED_COLOR
                 };
 
@@ -393,12 +393,12 @@ namespace Floofbot
                 double lbTmp = Convert.ToDouble(lbStr);
 
                 Mass lb = Mass.FromPounds(lbTmp);
-                double kg = lb.Kilograms;
+                double kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
 
                 EmbedBuilder builder = new EmbedBuilder()
                 {
                     Title = "Mass conversion",
-                    Description = $"⚖️ {(Mass)lb} is equal to {(double)Math.Round(kg, 3, MidpointRounding.ToEven)}Kg.",
+                    Description = $"⚖️ {lb} is equal to {kg}Kg.",
                     Color = EMBED_COLOR
                 };
 
