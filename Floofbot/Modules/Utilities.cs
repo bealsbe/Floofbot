@@ -259,6 +259,8 @@ namespace Floofbot
 
         [Command("convert")]
         [Alias("conv")]
+        [Summary("Converts between Temperature, Length, and Mass units.")]
+        public async Task convert([Remainder] string input = "")
         {
             Regex fahReg = new Regex(@"\d+(?=f)", RegexOptions.IgnoreCase);
             Regex celReg = new Regex(@"\d+(?=c)", RegexOptions.IgnoreCase);
