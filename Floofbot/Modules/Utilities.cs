@@ -277,15 +277,6 @@ namespace Floofbot
                 Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
                 double cel = Math.Round(fah.DegreesCelsius, 2, MidpointRounding.ToEven);
 
-                /*EmbedBuilder builder = new EmbedBuilder()
-                {
-                    Title = "Temperature conversion",
-                    Description = $"🌡 {fah} is equal to {cel}°C.",
-                    Color = EMBED_COLOR
-                };
-                
-                await Context.Channel.SendMessageAsync("", false, builder.Build());*/
-
                 embedDesc += $"🌡 {fah} is equal to {cel}°C.";
             }
             else if (celReg.IsMatch(input))
@@ -294,15 +285,6 @@ namespace Floofbot
 
                 Temperature cel = Temperature.FromDegreesCelsius(celTmp);
                 double fah = Math.Round(cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
-
-                /*EmbedBuilder builder = new EmbedBuilder()
-                {
-                    Title = "Temperature conversion",
-                    Description = $"🌡 {cel} is equal to {fah}F.",
-                    Color = EMBED_COLOR
-                };
-
-                await Context.Channel.SendMessageAsync("", false, builder.Build());*/
 
                 embedDesc += $"🌡 {cel} is equal to {fah}F.";
             }
@@ -313,15 +295,6 @@ namespace Floofbot
                 Length mi = Length.FromMiles(miTmp);
                 double km = Math.Round(mi.Kilometers, 3, MidpointRounding.ToEven);
 
-                /*EmbedBuilder builder = new EmbedBuilder()
-                {
-                    Title = "Length conversion",
-                    Description = $"📏 {mi} is equal to {km}Km.",
-                    Color = EMBED_COLOR
-                };
-
-                await Context.Channel.SendMessageAsync("", false, builder.Build());*/
-
                 embedDesc += $"📏 {mi} is equal to {km}Km.";
             }
             else if (kmReg.IsMatch(input))
@@ -330,15 +303,6 @@ namespace Floofbot
 
                 Length km = Length.FromKilometers(kmTmp);
                 double mi = Math.Round(km.Miles, 3, MidpointRounding.ToEven);
-
-                /*EmbedBuilder builder = new EmbedBuilder()
-                {
-                    Title = "Length conversion",
-                    Description = $"📏 {km} is equal to {mi}mi.",
-                    Color = EMBED_COLOR
-                };
-
-                await Context.Channel.SendMessageAsync("", false, builder.Build());*/
 
                 embedDesc += $"📏 {km} is equal to {mi}mi.";
             }
@@ -350,15 +314,6 @@ namespace Floofbot
                 Mass kg = Mass.FromKilograms(kgTmp);
                 double lb = Math.Round(kg.Pounds, 3, MidpointRounding.ToEven);
 
-                /*EmbedBuilder builder = new EmbedBuilder()
-                {
-                    Title = "Mass conversion",
-                    Description = $"⚖️ {kg} is equal to {lb}lbs.",
-                    Color = EMBED_COLOR
-                };
-                
-                await Context.Channel.SendMessageAsync("", false, builder.Build());*/
-
                 embedDesc += $"⚖️ {kg} is equal to {lb}lbs.";
             }
             else if (lbReg.IsMatch(input))
@@ -367,27 +322,11 @@ namespace Floofbot
 
                 Mass lb = Mass.FromPounds(lbTmp);
                 double kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
-
-                /*EmbedBuilder builder = new EmbedBuilder()
-                {
-                    Title = "Mass conversion",
-                    Description = $"⚖️ {lb} is equal to {kg}Kg.",
-                    Color = EMBED_COLOR
-                };
-
-                await Context.Channel.SendMessageAsync("", false, builder.Build());*/
-
+                
                 embedDesc += $"⚖️ {lb} is equal to {kg}Kg.";
             }
             else
             {
-                /*EmbedBuilder builder = new EmbedBuilder()
-                {
-                    Title = "Conversion module",
-                    Description = $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lbs.",
-                    Color = EMBED_COLOR
-                };*/
-
                 embedDesc += $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lbs.";
             }
             EmbedBuilder builder = new EmbedBuilder()
