@@ -259,8 +259,6 @@ namespace Floofbot
 
         [Command("convert")]
         [Alias("conv")]
-        [Summary("Converts units to other units, such as Celcius to Fahrenheit.")]
-        public async Task convert(string input)
         {
             Regex fahReg = new Regex(@"\d+(?=f)", RegexOptions.IgnoreCase);
             Regex celReg = new Regex(@"\d+(?=c)", RegexOptions.IgnoreCase);
@@ -277,7 +275,7 @@ namespace Floofbot
                 Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
                 double cel = Math.Round(fah.DegreesCelsius, 2, MidpointRounding.ToEven);
 
-                embedDesc += $"🌡 {fah} is equal to {cel}°C.";
+                embedDesc += $"🌡 {fah} is equal to {cel}°C.\n";
             }
             else if (celReg.IsMatch(input))
             {
@@ -286,7 +284,7 @@ namespace Floofbot
                 Temperature cel = Temperature.FromDegreesCelsius(celTmp);
                 double fah = Math.Round(cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
 
-                embedDesc += $"🌡 {cel} is equal to {fah}F.";
+                embedDesc += $"🌡 {cel} is equal to {fah}F.\n";
             }
             else if (miReg.IsMatch(input))
             {
@@ -295,7 +293,7 @@ namespace Floofbot
                 Length mi = Length.FromMiles(miTmp);
                 double km = Math.Round(mi.Kilometers, 3, MidpointRounding.ToEven);
 
-                embedDesc += $"📏 {mi} is equal to {km}Km.";
+                embedDesc += $"📏 {mi} is equal to {km}Km.\n";
             }
             else if (kmReg.IsMatch(input))
             {
@@ -304,7 +302,7 @@ namespace Floofbot
                 Length km = Length.FromKilometers(kmTmp);
                 double mi = Math.Round(km.Miles, 3, MidpointRounding.ToEven);
 
-                embedDesc += $"📏 {km} is equal to {mi}mi.";
+                embedDesc += $"📏 {km} is equal to {mi}mi.\n";
             }
             else if (kgReg.IsMatch(input))
             {
@@ -314,7 +312,7 @@ namespace Floofbot
                 Mass kg = Mass.FromKilograms(kgTmp);
                 double lb = Math.Round(kg.Pounds, 3, MidpointRounding.ToEven);
 
-                embedDesc += $"⚖️ {kg} is equal to {lb}lbs.";
+                embedDesc += $"⚖️ {kg} is equal to {lb}lbs.\n";
             }
             else if (lbReg.IsMatch(input))
             {
@@ -323,7 +321,7 @@ namespace Floofbot
                 Mass lb = Mass.FromPounds(lbTmp);
                 double kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
                 
-                embedDesc += $"⚖️ {lb} is equal to {kg}Kg.";
+                embedDesc += $"⚖️ {lb} is equal to {kg}Kg.\n";
             }
             else
             {
