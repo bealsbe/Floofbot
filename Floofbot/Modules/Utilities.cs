@@ -286,7 +286,7 @@ namespace Floofbot
                 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());*/
 
-                await Context.Channel.SendMessageAsync("", false, builder.Build());
+                embedDesc += $"🌡 {fah} is equal to {cel}°C.";
             }
             else if (celReg.IsMatch(input))
             {
@@ -304,6 +304,7 @@ namespace Floofbot
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());*/
 
+                embedDesc += $"🌡 {cel} is equal to {fah}F.";
             }
             else if (miReg.IsMatch(input))
             {
@@ -320,6 +321,8 @@ namespace Floofbot
                 };
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());*/
+
+                embedDesc += $"📏 {mi} is equal to {km}Km.";
             }
             else if (kmReg.IsMatch(input))
             {
@@ -336,6 +339,8 @@ namespace Floofbot
                 };
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());*/
+
+                embedDesc += $"📏 {km} is equal to {mi}mi.";
             }
             else if (kgReg.IsMatch(input))
             {
@@ -353,6 +358,8 @@ namespace Floofbot
                 };
                 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());*/
+
+                embedDesc += $"⚖️ {kg} is equal to {lb}lbs.";
             }
             else if (lbReg.IsMatch(input))
             {
@@ -369,6 +376,8 @@ namespace Floofbot
                 };
 
                 await Context.Channel.SendMessageAsync("", false, builder.Build());*/
+
+                embedDesc += $"⚖️ {lb} is equal to {kg}Kg.";
             }
             else
             {
@@ -379,8 +388,15 @@ namespace Floofbot
                     Color = EMBED_COLOR
                 };*/
 
-                await Context.Channel.SendMessageAsync("", false, builder.Build());
+                embedDesc += $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lbs.";
             }
+            EmbedBuilder builder = new EmbedBuilder()
+            {
+                Title = "Conversion",
+                Description = embedDesc,
+                Color = EMBED_COLOR
+            };
+
         }
     }
 }
