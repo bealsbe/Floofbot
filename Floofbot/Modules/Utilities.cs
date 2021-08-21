@@ -268,6 +268,7 @@ namespace Floofbot
             Regex kmReg = new Regex(@"\d+(?=km)", RegexOptions.IgnoreCase);
             Regex kgReg = new Regex(@"\d+(?=kg)", RegexOptions.IgnoreCase);
             Regex lbReg = new Regex(@"\d+(?=lbs)", RegexOptions.IgnoreCase);
+            string embedDesc = "";
 
             if (fahReg.IsMatch(input))
             {
