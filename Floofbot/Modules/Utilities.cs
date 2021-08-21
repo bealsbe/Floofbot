@@ -179,7 +179,6 @@ namespace Floofbot
 
         }
 
-
         [RequireOwner]
         [Command("reloadconfig")]
         [Summary("Reloads the config file")]
@@ -257,10 +256,10 @@ namespace Floofbot
                 Trash = true
             }, true);
         }
+
         [Command("convert")]
         [Alias("conv")]
         [Summary("Converts units to other units, such as Celcius to Fahrenheit.")]
-
         public async Task convert(string input)
         {
             Regex fahReg = new Regex(@"\d+(?=f)", RegexOptions.IgnoreCase);
