@@ -269,46 +269,61 @@ namespace Floofbot
             Regex kgReg = new Regex(@"\d+(?=kg)", RegexOptions.IgnoreCase);
             Regex lbReg = new Regex(@"\d+(?=lbs)", RegexOptions.IgnoreCase);
             string embedDesc = "";
+            int okInt = 0; //This will be used to check for command success
 
             if (fahReg.IsMatch(input))
             {
-                double fahTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+").Value);
+                okInt++;
+
+                double fahTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+(?=f)").Value);
 
                 Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
                 double cel = Math.Round(fah.DegreesCelsius, 2, MidpointRounding.ToEven);
 
                 embedDesc += $"🌡 {fah} is equal to {cel}°C.\n";
             }
-            else if (celReg.IsMatch(input))
+
+            if (celReg.IsMatch(input))
             {
-                double celTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+").Value);
+                okInt++;
+
+                double celTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+(?=c)").Value);
 
                 Temperature cel = Temperature.FromDegreesCelsius(celTmp);
                 double fah = Math.Round(cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
 
                 embedDesc += $"🌡 {cel} is equal to {fah}F.\n";
             }
-            else if (miReg.IsMatch(input))
+
+            if (miReg.IsMatch(input))
             {
-                double miTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
+                okInt++;
+
+                double miTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=mi)").Value);
 
                 Length mi = Length.FromMiles(miTmp);
                 double km = Math.Round(mi.Kilometers, 3, MidpointRounding.ToEven);
 
                 embedDesc += $"📏 {mi} is equal to {km}Km.\n";
             }
-            else if (kmReg.IsMatch(input))
+
+            if (kmReg.IsMatch(input))
             {
-                double kmTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
+                okInt++;
+
+                double kmTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=km)").Value);
 
                 Length km = Length.FromKilometers(kmTmp);
                 double mi = Math.Round(km.Miles, 3, MidpointRounding.ToEven);
 
                 embedDesc += $"📏 {km} is equal to {mi}mi.\n";
             }
-            else if (kgReg.IsMatch(input))
+
+            if (kgReg.IsMatch(input))
             {
-                double kgTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
+                okInt++;
+
+                double kgTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=kg)").Value);
 
 
                 Mass kg = Mass.FromKilograms(kgTmp);
@@ -316,19 +331,25 @@ namespace Floofbot
 
                 embedDesc += $"⚖️ {kg} is equal to {lb}lbs.\n";
             }
-            else if (lbReg.IsMatch(input))
+
+            if (lbReg.IsMatch(input))
             {
-                double lbTmp = Convert.ToDouble(Regex.Match(input, @"\d+").Value);
+                okInt++;
+
+                double lbTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=lbs)").Value);
 
                 Mass lb = Mass.FromPounds(lbTmp);
                 double kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
                 
                 embedDesc += $"⚖️ {lb} is equal to {kg}Kg.\n";
             }
-            else
+
+            if (okInt == 0)
             {
                 embedDesc += $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lbs.";
             }
+
+
             EmbedBuilder builder = new EmbedBuilder()
             {
                 Title = "Conversion",
