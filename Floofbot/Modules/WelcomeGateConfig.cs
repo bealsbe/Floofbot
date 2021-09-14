@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Floofbot.Modules
 {
+    [Name("Welcome Gate Configuration")]
     [Summary("Configures auto-adding roles when users bypass the welcome gate")]
     [RequireUserPermission(GuildPermission.Administrator)]
     [Group("welcomegateconfig")]

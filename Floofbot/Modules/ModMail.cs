@@ -94,6 +94,7 @@ namespace Floofbot.Modules
     }
     [Summary("Modmail configuration commands")]
     [RequireUserPermission(GuildPermission.Administrator)]
+    [Name("ModMail Config")]
     [Group("modmailconfig")]
     public class ModMailConfigModule : InteractiveBase
     {
