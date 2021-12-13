@@ -169,7 +169,7 @@ namespace Floofbot.Modules
         public async Task RequestBirb()
         {
             string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Relative))
             {
                 fileUrl = "https://random.birb.pw/img/" + fileUrl;
                 await SendAnimalEmbed(":bird:", fileUrl);
