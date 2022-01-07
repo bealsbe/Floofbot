@@ -19,8 +19,10 @@ namespace Floofbot.Modules.Helpers
 
         static ApiFetcher()
         {
-            httpClient = new HttpClient();
-            httpClient.Timeout = new TimeSpan(0, 0, 0, 2); // 2 seconds
+            httpClient = new HttpClient
+            {
+                Timeout = new TimeSpan(0, 0, 0, 2) // 2 seconds
+            };
         }
 
         public static async Task<string> RequestEmbeddableUrlFromApi(string apiUrl, string key)

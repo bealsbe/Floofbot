@@ -25,6 +25,11 @@ namespace Floofbot.Modules
         {
             _floofDB = floofDB;
         }
+
+        /* TODO: Diagnose unused member function RaidProtectionCommands::GenerateColor()
+         * This was suppressed for the time being, to ensure we don't have a message from code analysis on every build.
+         */
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private Discord.Color GenerateColor()
         {
             return new Discord.Color((uint)new Random().Next(0x1000000));
@@ -54,7 +59,7 @@ namespace Floofbot.Modules
                 return serverConfig;
             }
         }
-        private async Task<SocketRole> resolveRole(string input, SocketGuild guild, ISocketMessageChannel channel)
+        private async Task<SocketRole> ResolveRole(string input, SocketGuild guild, ISocketMessageChannel channel)
         {
             SocketRole role = null;
             //resolve roleID or @mention
@@ -143,7 +148,7 @@ namespace Floofbot.Modules
                 return;
             }
 
-            var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
+            var foundRole = await ResolveRole(role, Context.Guild, Context.Channel);
 
             if (foundRole != null)
             {
@@ -171,7 +176,7 @@ namespace Floofbot.Modules
                 return;
             }
 
-            var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
+            var foundRole = await ResolveRole(role, Context.Guild, Context.Channel);
 
             if (foundRole != null)
             {
@@ -199,7 +204,7 @@ namespace Floofbot.Modules
                 return;
             }
 
-            var foundRole = await resolveRole(role, Context.Guild, Context.Channel);
+            var foundRole = await ResolveRole(role, Context.Guild, Context.Channel);
 
             if (foundRole != null)
             {

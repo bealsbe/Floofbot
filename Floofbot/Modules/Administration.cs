@@ -35,7 +35,7 @@ namespace Floofbot.Modules
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
-            IUser badUser = resolveUser(user);
+            IUser badUser = ResolveUser(user);
             if (badUser == null)
             {
                 if (Regex.IsMatch(user, @"\d{16,}"))
@@ -70,11 +70,13 @@ namespace Floofbot.Modules
             try
             {
                 //sends message to user
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.Title = "⚖️ Ban Notification";
-                builder.Description = $"You have been banned from {Context.Guild.Name}";
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Title = "⚖️ Ban Notification",
+                    Description = $"You have been banned from {Context.Guild.Name}",
+                    Color = ADMIN_COLOR,
+                };
                 builder.AddField("Reason", reason);
-                builder.Color = ADMIN_COLOR;
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
             catch (HttpException)
@@ -86,10 +88,12 @@ namespace Floofbot.Modules
             await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
 
             EmbedBuilder modEmbedBuilder = new EmbedBuilder();
-            modEmbedBuilder = new EmbedBuilder();
-            modEmbedBuilder.Title = (":shield: User Banned");
-            modEmbedBuilder.Color = ADMIN_COLOR;
-            modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            modEmbedBuilder = new EmbedBuilder
+            {
+                Title = (":shield: User Banned"),
+                Color = ADMIN_COLOR,
+                Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}"
+            };
             modEmbedBuilder.AddField("User ID", badUser.Id);
             modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
             await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
@@ -101,12 +105,12 @@ namespace Floofbot.Modules
         [Summary("Bans a user from the server, with an optional reason and prunes their messages")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task pruneBanUser(
+        public async Task PruneBanUser(
             [Summary("user")] string user,
             [Summary("Number Of Days To Prune")] int pruneDays = 0,
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
-            IUser badUser = resolveUser(user);
+            IUser badUser = ResolveUser(user);
             if (badUser == null)
             {
                 if (Regex.IsMatch(user, @"\d{16,}"))
@@ -141,11 +145,13 @@ namespace Floofbot.Modules
             try
             {
                 //sends message to user
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.Title = "⚖️ Ban Notification";
-                builder.Description = $"You have been banned from {Context.Guild.Name}";
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Title = "⚖️ Ban Notification",
+                    Description = $"You have been banned from {Context.Guild.Name}",
+                    Color = ADMIN_COLOR,
+                };
                 builder.AddField("Reason", reason);
-                builder.Color = ADMIN_COLOR;
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
             catch (HttpException)
@@ -157,10 +163,12 @@ namespace Floofbot.Modules
             await Context.Guild.AddBanAsync(badUser.Id, pruneDays, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
 
             EmbedBuilder modEmbedBuilder = new EmbedBuilder();
-            modEmbedBuilder = new EmbedBuilder();
-            modEmbedBuilder.Title = (":shield: User Banned");
-            modEmbedBuilder.Color = ADMIN_COLOR;
-            modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            modEmbedBuilder = new EmbedBuilder
+            {
+                Title = (":shield: User Banned"),
+                Color = ADMIN_COLOR,
+                Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}"
+            };
             modEmbedBuilder.AddField("User ID", badUser.Id);
             modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
             await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
@@ -190,7 +198,7 @@ namespace Floofbot.Modules
                     index = i * 20 + j;
                     if (index < autoBans.Count)
                     {
-                        var modUser = resolveUser(autoBans[index].ModID.ToString()); // try to resolve the mod who added it
+                        var modUser = ResolveUser(autoBans[index].ModID.ToString()); // try to resolve the mod who added it
                         var modUsername = ((modUser != null) ? $"{modUser.Username}#{modUser.Discriminator}" : $"{autoBans[index].ModUsername}"); // try to get mod's new username, otherwise, use database stored name
                         text += $"{index + 1}. {autoBans[index].UserID} - added by {modUsername}\n";
                     }
@@ -256,11 +264,11 @@ namespace Floofbot.Modules
         [Summary("Kicks a user from the server, with an optional reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task kickUser(
+        public async Task KickUser(
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
-            IUser badUser = resolveUser(user);
+            IUser badUser = ResolveUser(user);
             if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
                 return;
@@ -268,11 +276,13 @@ namespace Floofbot.Modules
             try
             {
                 //sends message to user
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.Title = "🥾 Kick Notification";
-                builder.Description = $"You have been Kicked from {Context.Guild.Name}";
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Title = "🥾 Kick Notification",
+                    Description = $"You have been Kicked from {Context.Guild.Name}",
+                    Color = ADMIN_COLOR,
+                };
                 builder.AddField("Reason", reason);
-                builder.Color = ADMIN_COLOR;
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
             catch (HttpException)
@@ -282,10 +292,12 @@ namespace Floofbot.Modules
 
             //kicks users
             await Context.Guild.GetUser(badUser.Id).KickAsync(reason);
-            EmbedBuilder kickBuilder = new EmbedBuilder();
-            kickBuilder.Title = ("🥾 User Kicked");
-            kickBuilder.Color = ADMIN_COLOR;
-            kickBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been kicked from {Context.Guild.Name}";
+            EmbedBuilder kickBuilder = new EmbedBuilder
+            {
+                Title = ("🥾 User Kicked"),
+                Color = ADMIN_COLOR,
+                Description = $"{badUser.Username}#{badUser.Discriminator} has been kicked from {Context.Guild.Name}"
+            };
             kickBuilder.AddField("User ID", badUser.Id);
             kickBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
             await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
@@ -296,11 +308,11 @@ namespace Floofbot.Modules
         [Summary("Kicks a user from the server. Does not notify the user.")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task silentKickUser(
+        public async Task SilentKickUser(
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
-            IUser badUser = resolveUser(user);
+            IUser badUser = ResolveUser(user);
             if (badUser == null)
             {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
@@ -309,10 +321,12 @@ namespace Floofbot.Modules
 
             //kicks users
             await Context.Guild.GetUser(badUser.Id).KickAsync(reason);
-            EmbedBuilder kickBuilder = new EmbedBuilder();
-            kickBuilder.Title = ("🥾 User Silently Kicked");
-            kickBuilder.Color = ADMIN_COLOR;
-            kickBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been silently kicked from {Context.Guild.Name}";
+            EmbedBuilder kickBuilder = new EmbedBuilder
+            {
+                Title = ("🥾 User Silently Kicked"),
+                Color = ADMIN_COLOR,
+                Description = $"{badUser.Username}#{badUser.Discriminator} has been silently kicked from {Context.Guild.Name}"
+            };
             kickBuilder.AddField("User ID", badUser.Id);
             kickBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
             await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
@@ -323,7 +337,7 @@ namespace Floofbot.Modules
         [Summary("Warns a user on the server, with a given reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task warnUser(
+        public async Task WarnUser(
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "")
         {
@@ -342,8 +356,8 @@ namespace Floofbot.Modules
                 return;
             }
 
-            IUser badUser = resolveUser(user);
-            ulong uid = 0; // used if no resolved user
+            IUser badUser = ResolveUser(user);
+            ulong uid;
             if (badUser == null)
             {
                 if (Regex.IsMatch(user, @"\d{16,}"))
@@ -370,7 +384,7 @@ namespace Floofbot.Modules
                 ModeratorId = Context.User.Id,
                 Reason = reason,
                 UserId = uid,
-                warningUrl = Context.Message.GetJumpUrl()
+                WarningUrl = Context.Message.GetJumpUrl()
             }) ;
             _floofDB.SaveChanges();
 
@@ -379,11 +393,13 @@ namespace Floofbot.Modules
                 try
                 {
                     //sends message to user
-                    builder = new EmbedBuilder();
-                    builder.Title = "⚖️ Warn Notification";
-                    builder.Description = $"You have recieved a warning in {Context.Guild.Name}";
+                    builder = new EmbedBuilder
+                    {
+                        Title = "⚖️ Warn Notification",
+                        Description = $"You have recieved a warning in {Context.Guild.Name}",
+                        Color = ADMIN_COLOR,
+                    };
                     builder.AddField("Reason", reason);
-                    builder.Color = ADMIN_COLOR;
                     await badUser.SendMessageAsync("", false, builder.Build());
                 }
                 catch (HttpException)
@@ -392,9 +408,11 @@ namespace Floofbot.Modules
                 }
             }
 
-            builder = new EmbedBuilder();
-            builder.Title = (":shield: User Warned");
-            builder.Color = ADMIN_COLOR;
+            builder = new EmbedBuilder
+            {
+                Title = (":shield: User Warned"),
+                Color = ADMIN_COLOR
+            };
             builder.AddField("User ID", uid);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
@@ -406,7 +424,7 @@ namespace Floofbot.Modules
         [Summary("Add a moderation-style user note, give a specified reason")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task userNote(
+        public async Task UserNote(
             [Summary("user")] string user,
             [Summary("reason")][Remainder] string reason = "")
         {
@@ -425,8 +443,8 @@ namespace Floofbot.Modules
                 return;
             }
 
-            IUser badUser = resolveUser(user);
-            ulong uid = 0; // used if no resolved user
+            IUser badUser = ResolveUser(user);
+            ulong uid;
             if (badUser == null)
             {
                 if (Regex.IsMatch(user, @"\d{16,}"))
@@ -455,9 +473,11 @@ namespace Floofbot.Modules
             });
             _floofDB.SaveChanges();
 
-            builder = new EmbedBuilder();
-            builder.Title = (":pencil: User Note Added");
-            builder.Color = ADMIN_COLOR;
+            builder = new EmbedBuilder
+            {
+                Title = (":pencil: User Note Added"),
+                Color = ADMIN_COLOR
+            };
             builder.AddField("User ID", uid);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
@@ -473,7 +493,7 @@ namespace Floofbot.Modules
             [Summary("user")] string user)
         {
             string userId;
-            IUser badUser = resolveUser(user);
+            IUser badUser = ResolveUser(user);
             if (badUser == null)
             {
                 if (Regex.IsMatch(user, @"\d{16,}"))
@@ -508,9 +528,11 @@ namespace Floofbot.Modules
                 }
             }
 
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = (":shield: Messages Purged");
-            builder.Color = ADMIN_COLOR;
+            EmbedBuilder builder = new EmbedBuilder
+            {
+                Title = (":shield: Messages Purged"),
+                Color = ADMIN_COLOR
+            };
             builder.AddField("User ID", badUser.Id);
             builder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
@@ -521,7 +543,7 @@ namespace Floofbot.Modules
         [Alias("wl")]
         [Summary("Displays the warning log for a given user")]
         [RequireContext(ContextType.Guild)]
-        public async Task warnlog([Summary("user")] string user = "")
+        public async Task Warnlog([Summary("user")] string user = "")
         {
             SocketGuildUser selfUser = Context.Guild.GetUser(Context.Message.Author.Id); // get the guild user
             Embed embed;
@@ -539,7 +561,7 @@ namespace Floofbot.Modules
             {
                 if (selfUser.GuildPermissions.KickMembers) // want to view their own warnlog 
                 {
-                    IUser badUser = resolveUser(user);
+                    IUser badUser = ResolveUser(user);
                     if (badUser == null)
                         if (UInt64.TryParse(user, out ulong userid))
                             embed = GetWarnings(userid, false);
@@ -569,7 +591,7 @@ namespace Floofbot.Modules
         [Summary("Remove a user's warning or user notes")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task forgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
+        public async Task ForgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
         {
             await UpdateForgivenStatus("forgiven", type, badUser);
         }
@@ -579,7 +601,7 @@ namespace Floofbot.Modules
         [Summary("Unforgive a warning or user notes")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task unforgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
+        public async Task UnforgiveUser([Summary("warning/usernote")] string type = "", [Summary("user")] string badUser = "")
         {
             await UpdateForgivenStatus("unforgiven", type, badUser);
         }
@@ -590,7 +612,7 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task MuteUser([Summary("user")]string user, [Summary("Time")]string time = null)
         {
-            IUser badUser = resolveUser(user);
+            IUser badUser = ResolveUser(user);
             if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                 return;
@@ -678,10 +700,12 @@ namespace Floofbot.Modules
                             try
                             {
                                 //notify user that they were unmuted
-                                builder = new EmbedBuilder();
-                                builder.Title = "🔊  Unmute Notification";
-                                builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
-                                builder.Color = ADMIN_COLOR;
+                                builder = new EmbedBuilder
+                                {
+                                    Title = "🔊  Unmute Notification",
+                                    Description = $"Your Mute on {Context.Guild.Name} has expired",
+                                    Color = ADMIN_COLOR
+                                };
                                 await badUser.SendMessageAsync("", false, builder.Build());
                             }
                             catch (HttpException)
@@ -702,14 +726,16 @@ namespace Floofbot.Modules
             try
             {
                 //notify user that they were muted
-                builder = new EmbedBuilder();
-                builder.Title = "🔇  Mute Notification";
-                builder.Description = $"You have been muted on {Context.Guild.Name}";
+                builder = new EmbedBuilder
+                {
+                    Title = "🔇  Mute Notification",
+                    Description = $"You have been muted on {Context.Guild.Name}",
+                    Color = ADMIN_COLOR,
+                };
 
                 if (durationNotifyString != null)
                     builder.AddField("Duration", durationNotifyString);
 
-                builder.Color = ADMIN_COLOR;
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
             catch (HttpException)
@@ -742,7 +768,7 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task UnmuteUser([Summary("user")]string user)
         {
-            IUser badUser = resolveUser(user);
+            IUser badUser = ResolveUser(user);
             if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not find user \"{user}\"");
                 return;
@@ -777,10 +803,12 @@ namespace Floofbot.Modules
             try
             {
                 //notify user that they were unmuted
-                builder = new EmbedBuilder();
-                builder.Title = "🔊  Unmute Notification";
-                builder.Description = $"Your Mute on {Context.Guild.Name} has expired";
-                builder.Color = ADMIN_COLOR;
+                builder = new EmbedBuilder
+                {
+                    Title = "🔊  Unmute Notification",
+                    Description = $"Your Mute on {Context.Guild.Name} has expired",
+                    Color = ADMIN_COLOR
+                };
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
             catch (HttpException)
@@ -838,7 +866,7 @@ namespace Floofbot.Modules
                 await Context.Channel.SendMessageAsync("Something went wrong!");
             }
         }
-        private IUser resolveUser(string input)
+        private IUser ResolveUser(string input)
         {
             IUser user = null;
             //resolve userID or @mention
@@ -870,14 +898,14 @@ namespace Floofbot.Modules
         private async Task UpdateForgivenStatus(string function, string type, string badUser)
         {
             IQueryable warnings = null;
-            bool oldStatus = (function == "forgiven") ? false : true; // if we are forgiving them then their old status must be unforgiven
+            bool oldStatus = function != "forgiven"; // if we are forgiving them then their old status must be unforgiven
             if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(badUser) || (!type.ToLower().Equals("warning") && !type.ToLower().Equals("usernote"))) // invalid parameters
             {
                 Embed embed = CreateDescriptionEmbed($"💾 Usage: `{(function == "forgiven" ? "forgive" : "unforgive")} [warning/usernote] [user]`");
                 await SendEmbed(embed);
                 return;
             }
-            IUser user = resolveUser(badUser);
+            IUser user = ResolveUser(badUser);
 
             ulong uID;
             if (user != null)
@@ -917,8 +945,10 @@ namespace Floofbot.Modules
                     .OrderByDescending(x => x.DateAdded).Take(10);
             }
 
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Color = ADMIN_COLOR;
+            EmbedBuilder builder = new EmbedBuilder
+            {
+                Color = ADMIN_COLOR
+            };
             if (user == null) // no user, just id in database
                 builder.WithTitle($"{((type == "warnings") ? "Warnings" : "User Notes")} for {badUser}");
             else
@@ -1067,8 +1097,10 @@ namespace Floofbot.Modules
                 }
             }
 
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Color = ADMIN_COLOR;
+            EmbedBuilder builder = new EmbedBuilder
+            {
+                Color = ADMIN_COLOR
+            };
             int warningCount = 0;
             int userNoteCount = 0;
 
@@ -1087,12 +1119,12 @@ namespace Floofbot.Modules
                     foreach (Warning warning in formalWarnings)
                     {
                         var hyperLink = "";
-                        if (warning.warningUrl != null && Uri.IsWellFormedUriString(warning.warningUrl, UriKind.Absolute)) // make sure url is good
-                            hyperLink = $"[Jump To Warning]({warning.warningUrl})\n";
+                        if (warning.WarningUrl != null && Uri.IsWellFormedUriString(warning.WarningUrl, UriKind.Absolute)) // make sure url is good
+                            hyperLink = $"[Jump To Warning]({warning.WarningUrl})\n";
 
                         if (warning.Forgiven)
                         {
-                            IUser forgivenBy = resolveUser(warning.ForgivenBy.ToString());
+                            IUser forgivenBy = ResolveUser(warning.ForgivenBy.ToString());
                             var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
                             builder.AddField($"~~**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")} - {warning.Moderator}~~ {forgivenByText}", $"{hyperLink}```{warning.Reason}```");
                         }
@@ -1130,7 +1162,7 @@ namespace Floofbot.Modules
                     {
                         if (usernote.Forgiven)
                         {
-                            IUser forgivenBy = resolveUser(usernote.ForgivenBy.ToString());
+                            IUser forgivenBy = ResolveUser(usernote.ForgivenBy.ToString());
                             var forgivenByText = (forgivenBy == null) ? "" : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
                             builder.AddField($"~~**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}~~ {forgivenByText}", $"```{usernote.Reason}```");
 

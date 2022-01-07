@@ -14,7 +14,6 @@ namespace Floofbot.Services
 {
     public class EventHandlerService
     {
-
         private DiscordSocketClient _client;
         private WordFilterService _wordFilterService;
         private NicknameAlertService _nicknameAlertService;
@@ -28,7 +27,6 @@ namespace Floofbot.Services
 
         // rules gate config
         private Dictionary <string, string> rulesGateConfig = BotConfigFactory.Config.RulesGate;
-
 
         public EventHandlerService(DiscordSocketClient client)
         {
@@ -106,11 +104,13 @@ namespace Floofbot.Services
             if (badUserAutoban != null) // user is in the list to be autobanned
             {
                 //sends message to user
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.Title = "⚖️ Ban Notification";
-                builder.Description = $"You have been automatically banned from {user.Guild.Name}";
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Title = "⚖️ Ban Notification",
+                    Description = $"You have been automatically banned from {user.Guild.Name}",
+                    Color = ADMIN_COLOR,
+                };
                 builder.AddField("Reason", badUserAutoban.Reason);
-                builder.Color = ADMIN_COLOR;
                 await user.SendMessageAsync("", false, builder.Build());
                 await user.Guild.AddBanAsync(user.Id, 0, $"{badUserAutoban.ModUsername} -> {badUserAutoban.Reason} (autobanned on user join)");
 
@@ -214,7 +214,7 @@ namespace Floofbot.Services
                         return;
                     }
 
-                    bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), after.Content, channel.Guild.Id, after.Channel.Id);
+                    bool hasBadWord = _wordFilterService.HasFilteredWord(new FloofDataContext(), after.Content, channel.Guild.Id, after.Channel.Id);
                     if (hasBadWord)
                     {
                         await after.DeleteAsync();
@@ -253,7 +253,7 @@ namespace Floofbot.Services
             });
             return Task.CompletedTask;
         }
-        public Task MessageDeleted(Cacheable<IMessage, ulong> before, ISocketMessageChannel chan)
+        public Task MessageDeleted(Cacheable<IMessage, ulong> before, Cacheable<IMessageChannel, ulong> chan)
         {
             var _ = Task.Run(async () =>
             {
@@ -267,7 +267,7 @@ namespace Floofbot.Services
                     if (message.Author.IsBot)
                         return;
 
-                    var channel = chan as ITextChannel; // channel null, dm message?
+                    var channel = chan.Value as ITextChannel; // channel null, dm message?
                     if (channel == null)
                         return;
 
@@ -482,12 +482,13 @@ namespace Floofbot.Services
             });
             return Task.CompletedTask;
         }
-        public Task UserLeft(IGuildUser user)
+        public Task UserLeft(SocketGuild _guild, SocketUser socketUser)
         {
             var _ = Task.Run(async () =>
             {
                 try
                 {
+                    SocketGuildUser user = _guild.GetUser(socketUser.Id);
                     if (user.IsBot)
                         return;
 
@@ -547,7 +548,7 @@ namespace Floofbot.Services
 
                     if (before.Username != after.Username)
                     {
-                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Username, after.Guild.Id);
+                        List<string> badWords = _wordFilterService.FilteredWordsInName(new FloofDataContext(), after.Username, after.Guild.Id);
                         if (badWords != null)
                             await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
                     }
@@ -603,12 +604,13 @@ namespace Floofbot.Services
 
         }
 
-        public Task GuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
+        public Task GuildMemberUpdated(Cacheable<SocketGuildUser, ulong> _before, SocketGuildUser after)
         {
             var _ = Task.Run(async () =>
             {
                 try
                 {
+                    SocketGuildUser before = _before.Value;
                     if (before == null || after == null) // empty user params
                         return;
 
@@ -618,7 +620,7 @@ namespace Floofbot.Services
 
                     if (after.Nickname != null && (after.Nickname != before.Nickname))
                     {
-                        List<string> badWords = _wordFilterService.filteredWordsInName(new FloofDataContext(), after.Nickname, after.Guild.Id);
+                        List<string> badWords = _wordFilterService.FilteredWordsInName(new FloofDataContext(), after.Nickname, after.Guild.Id);
                         if (badWords != null)
                             await _nicknameAlertService.HandleBadNickname(after, after.Guild, badWords);
                     }

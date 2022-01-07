@@ -82,7 +82,7 @@ namespace Floofbot.Modules
             // assume if the record doesn't exist in the DB that we do not need admin permission
             TagConfig config = _floofDb.TagConfigs.AsQueryable()
                 .FirstOrDefault(config => config.ServerId == serverId);
-            return config == null ? false : config.TagUpdateRequiresAdmin;
+            return config != null && config.TagUpdateRequiresAdmin;
         }
 
         private bool UserHasTagUpdatePermissions(IGuildUser user)

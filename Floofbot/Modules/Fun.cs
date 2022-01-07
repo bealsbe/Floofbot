@@ -19,11 +19,13 @@ namespace Floofbot.Modules
         [Summary("Ask the Magic 8-Ball a question")]
         public async Task AskEightBall([Summary("question")][Remainder] string question)
         {
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = "Magic 8 Ball";
+            EmbedBuilder builder = new EmbedBuilder
+            {
+                Title = "Magic 8 Ball",
+                Color = EMBED_COLOR,
+            };
             builder.AddField("Question", question);
             builder.AddField("Answer", EightBall.GetRandomResponse());
-            builder.Color = EMBED_COLOR;
             await SendEmbed(builder.Build());
         }
 
@@ -63,11 +65,13 @@ namespace Floofbot.Modules
                 comicTitle = parsedJson.RootElement.GetProperty("safe_title").ToString();
             }
 
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = comicTitle;
+            EmbedBuilder builder = new EmbedBuilder
+            {
+                Title = comicTitle,
+                Color = EMBED_COLOR,
+            };
             builder.WithImageUrl(imgLink);
             builder.WithFooter(imgHoverText);
-            builder.Color = EMBED_COLOR;
             await SendEmbed(builder.Build());
         }
 
@@ -233,10 +237,12 @@ namespace Floofbot.Modules
             else
             {
                 MinesweeperBoard game = new MinesweeperBoard(height, width, bombs);
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.Title = ":bomb: Minesweeper";
-                builder.Color = EMBED_COLOR;
-                builder.Description = game.ToString();
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Title = ":bomb: Minesweeper",
+                    Color = EMBED_COLOR,
+                    Description = game.ToString()
+                };
                 await SendEmbed(builder.Build());
             }
         }

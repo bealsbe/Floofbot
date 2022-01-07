@@ -32,11 +32,11 @@ namespace Floofbot.Services
 
         // these ints hold the raid protection config parameters
         private static int maxMentionCount;
-        private static int forgivenDuration; 
+        private static int forgivenDuration;
         private static int durationForMaxMessages;
         private static int maxNumberOfPunishments;
         private static int botMessageDeletionDelay;
-        private static int removePunishedUserDelay; 
+        private static int removePunishedUserDelay;
         private static int maxNumberPunishedUsers;
         private static int maxNumberOfJoins;
         private static int userJoinsDelay;
@@ -97,13 +97,13 @@ namespace Floofbot.Services
                     userPunishmentCount[guildId].Remove(userId);
             }
         }
-        private async void punishedUsersTimeout(ulong guildId, SocketUser user)
+        private async void PunishedUsersTimeout(ulong guildId, SocketUser user)
         {
             await Task.Delay(removePunishedUserDelay);
             if (punishedUsers.ContainsKey(guildId) && punishedUsers[guildId].Contains(user))
                 punishedUsers[guildId].Remove(user);
         }
-        private async void userJoinTimeout(IGuild guild)
+        private async void UserJoinTimeout(IGuild guild)
         {
             await Task.Delay(userJoinsDelay);
             if (numberOfJoins.ContainsKey(guild) && numberOfJoins[guild] != 0)
@@ -112,7 +112,7 @@ namespace Floofbot.Services
                 if (numberOfJoins[guild] == 0)
                     numberOfJoins.Remove(guild);
             }
-                        
+
         }
         private async void UserMessageCountTimeout(ulong guildId, ulong userId)
         {
@@ -126,7 +126,7 @@ namespace Floofbot.Services
 
                 }
         }
-        private void ensureGuildInDictionaries(ulong guildId)
+        private void EnsureGuildInDictionaries(ulong guildId)
         {
             if (!userPunishmentCount.ContainsKey(guildId))
                 userPunishmentCount.Add(guildId, new Dictionary<ulong, int>());
@@ -137,38 +137,38 @@ namespace Floofbot.Services
             if (!lastUserMessageInGuild.ContainsKey(guildId))
                 lastUserMessageInGuild.Add(guildId, new Dictionary<ulong, SocketMessage>());
         }
-    private bool CheckMessageForFilteredWords(SocketMessage msg, ulong guildId)
-    {
-        bool hasBadWord = _wordFilterService.hasFilteredWord(new FloofDataContext(), msg.Content, guildId, msg.Channel.Id);
-
-        if (hasBadWord)
+        private bool CheckMessageForFilteredWords(SocketMessage msg, ulong guildId)
         {
-            // add a bad boye point for the user
-            if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
+            bool hasBadWord = _wordFilterService.HasFilteredWord(new FloofDataContext(), msg.Content, guildId, msg.Channel.Id);
+
+            if (hasBadWord)
             {
-                userPunishmentCount[guildId][msg.Author.Id] += 1;
+                // add a bad boye point for the user
+                if (userPunishmentCount[guildId].ContainsKey(msg.Author.Id))
+                {
+                    userPunishmentCount[guildId][msg.Author.Id] += 1;
+                }
+                else // they were a good boye but now they are not
+                {
+                    userPunishmentCount[guildId].Add(msg.Author.Id, 1);
+                }
+                // we run an async task to remove their point after the specified duration
+                UserPunishmentTimeout(guildId, msg.Author.Id);
+
+                SendMessageAndDelete($"{msg.Author.Mention} There was a filtered word in that message. Please be mindful of your language!", msg.Channel);
+
+                Log.Information("User ID " + msg.Author.Id + " triggered the word filter.");
+
+                // we return here because we only need to check for at least one match, doesnt matter if there are more
+                return true;
             }
-            else // they were a good boye but now they are not
+            else
             {
-                userPunishmentCount[guildId].Add(msg.Author.Id, 1);
+                return false;
             }
-            // we run an async task to remove their point after the specified duration
-            UserPunishmentTimeout(guildId, msg.Author.Id);
-
-            SendMessageAndDelete($"{msg.Author.Mention} There was a filtered word in that message. Please be mindful of your language!", msg.Channel);
-
-            Log.Information("User ID " + msg.Author.Id + " triggered the word filter.");
-
-            // we return here because we only need to check for at least one match, doesnt matter if there are more
-            return true;
-        }
-        else
-        {
-            return false;
-        }
 
         }
-    private bool CheckUserMessageCount(SocketMessage msg, ulong guildId)
+        private bool CheckUserMessageCount(SocketMessage msg, ulong guildId)
         {
             if (userMessageCount[guildId].ContainsKey(msg.Author.Id))
             {
@@ -230,11 +230,13 @@ namespace Floofbot.Services
                 try
                 {
                     //sends message to user
-                    EmbedBuilder builder = new EmbedBuilder();
-                    builder.Title = "⚖️ Ban Notification";
-                    builder.Description = $"You have been banned from {guild.Name}";
+                    EmbedBuilder builder = new EmbedBuilder
+                    {
+                        Title = "⚖️ Ban Notification",
+                        Description = $"You have been banned from {guild.Name}",
+                        Color = Discord.Color.Red,
+                    };
                     builder.AddField("Reason", reason);
-                    builder.Color = Discord.Color.Red;
                     await msg.Author.SendMessageAsync("", false, builder.Build());
                     await guild.AddBanAsync(msg.Author, 0, reason);
 
@@ -271,7 +273,7 @@ namespace Floofbot.Services
                 Log.Information("User ID " + msg.Author.Id + " triggered excess letter/phrase spam and received a warning.");
 
                 // we return here because we only need to check for at least one match, doesnt matter if there are more
-                return true;                    
+                return true;
             }
             return false;
 
@@ -359,7 +361,7 @@ namespace Floofbot.Services
             {
                 numberOfJoins.Add(guild, 1);
             }
-            userJoinTimeout(guild);
+            UserJoinTimeout(guild);
 
         }
         // return true is message triggered raid protection, false otherwise
@@ -387,7 +389,7 @@ namespace Floofbot.Services
             if (serverConfig.ExceptionRoleId != null)
             {
                 // returns null if exception role doe not exist anymore
-                var exceptionsRole = guild.GetRole((ulong)serverConfig.ExceptionRoleId); 
+                var exceptionsRole = guild.GetRole((ulong)serverConfig.ExceptionRoleId);
                 var guildUser = guild.GetUser(userMsg.Author.Id);
                 // role must exist and user must exist in server
                 if (exceptionsRole != null && guildUser != null)
@@ -407,7 +409,7 @@ namespace Floofbot.Services
             var banOffenders = serverConfig.BanOffenders;
 
             // ensure our dictionaries contain the guild
-            ensureGuildInDictionaries(guild.Id);
+            EnsureGuildInDictionaries(guild.Id);
             // now we run our checks. If any of them return true, we have a bad boy
 
             // checks for filtered words
@@ -436,7 +438,7 @@ namespace Floofbot.Services
                         userPunishmentCount[guild.Id].Remove(userMsg.Author.Id);
                         // add to the list of punished users
                         punishedUsers[guild.Id].Add(userMsg.Author);
-                        punishedUsersTimeout(guild.Id, userMsg.Author);
+                        PunishedUsersTimeout(guild.Id, userMsg.Author);
                         // decide if we need to notify the mods of a potential raid
                         if ((modRole != null) && (modChannel != null) && (punishedUsers.Count >= maxNumberPunishedUsers))
                             await NotifyModerators(modRole, modChannel, "Excessive amount of users punished in short time frame.");
@@ -449,7 +451,7 @@ namespace Floofbot.Services
                                 await guildUser.AddRoleAsync(mutedRole);
                                 await msg.Channel.SendMessageAsync(userMsg.Author.Mention + " you have received too many warnings. You are muted as a result.");
 
-                                if (modChannel != null) 
+                                if (modChannel != null)
                                 {
                                     var embed = new EmbedBuilder();
 
@@ -476,11 +478,13 @@ namespace Floofbot.Services
                             {
                                 string reason = "Raid Protection => Triggered too many bot responses";
                                 //sends message to user
-                                EmbedBuilder builder = new EmbedBuilder();
-                                builder.Title = "⚖️ Ban Notification";
-                                builder.Description = $"You have been banned from {guild.Name}";
+                                EmbedBuilder builder = new EmbedBuilder
+                                {
+                                    Title = "⚖️ Ban Notification",
+                                    Description = $"You have been banned from {guild.Name}",
+                                    Color = Discord.Color.Red,
+                                };
                                 builder.AddField("Reason", reason);
-                                builder.Color = Discord.Color.Red;
                                 await msg.Author.SendMessageAsync("", false, builder.Build());
                                 await guild.AddBanAsync(msg.Author, 0, reason);
                             }

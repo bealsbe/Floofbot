@@ -20,16 +20,22 @@
 -Full Paginater Customization</Description>
     <AssemblyVersion>2.0.3.1</AssemblyVersion>
     <FileVersion>2.0.3.1</FileVersion>
+    <PackageLicenseExpression>ISC</PackageLicenseExpression>
     
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
+    <NoWarn>1701;1702;NU5215</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;NU5215</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Commands" Version="2.3.0-dev-20201223.7" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.3.0-dev-20201223.7" />
+    <PackageReference Include="Discord.Net.Commands" Version="3.1.0" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.1.0" />
   </ItemGroup>
 
 </Project>

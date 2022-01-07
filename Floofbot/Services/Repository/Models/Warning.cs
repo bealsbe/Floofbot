@@ -15,6 +15,6 @@ namespace Floofbot.Services.Repository.Models
         public string Moderator { get; set; }
         public string Reason { get; set; }
         public ulong UserId { get; set; }
-        public string warningUrl { get; set; }
+        public string WarningUrl { get; set; }
     }
 }

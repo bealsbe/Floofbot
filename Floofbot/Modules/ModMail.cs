@@ -30,7 +30,7 @@ namespace Floofbot.Modules
         [Command("")]
         [Name("modmail <content>")]
         [Summary("Send a message to the moderators")]
-        public async Task sendModMail([Summary("Message Content")][Remainder] string content = "")
+        public async Task SendModMail([Summary("Message Content")][Remainder] string content = "")
         {
             try
             {

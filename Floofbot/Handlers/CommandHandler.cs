@@ -18,9 +18,9 @@ namespace Floofbot.Handlers
 {
     public class CommandHandler
     {
-        private DiscordSocketClient _client;
-        private CommandService _commands;
-        private IServiceProvider _services;
+        private readonly DiscordSocketClient _client;
+        private readonly CommandService _commands;
+        private readonly IServiceProvider _services;
 
         public CommandHandler(DiscordSocketClient client)
         {
@@ -43,9 +43,11 @@ namespace Floofbot.Handlers
                 .BuildServiceProvider();
         }
 
-        private Embed generateErrorEmbed(SocketUser user, IResult result, SocketUserMessage msg)
+        private Embed GenerateErrorEmbed(SocketUser user, IResult result, SocketUserMessage msg)
         {
+#pragma warning disable IDE0017 // Simplify object initialization
             EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+#pragma warning restore IDE0017 // Simplify object initialization
             author.Name = user.Username + "#" + user.Discriminator;
             if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                 author.IconUrl = user.GetAvatarUrl();
@@ -86,7 +88,7 @@ namespace Floofbot.Handlers
                 return;
 
 
-            Embed embed = generateErrorEmbed(userMsg.Author, result, userMsg);
+            Embed embed = GenerateErrorEmbed(userMsg.Author, result, userMsg);
             await errorLoggingChannel.SendMessageAsync("", false, embed);
             return;
         }

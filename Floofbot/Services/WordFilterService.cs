@@ -13,7 +13,7 @@ namespace Floofbot.Services
         List<FilteredWord> _filteredWords;
         DateTime _lastRefreshedTime;
 
-        public List<string> filteredWordsInName(FloofDataContext floofDb, string messageContent, ulong serverId) // names
+        public List<string> FilteredWordsInName(FloofDataContext floofDb, string messageContent, ulong serverId) // names
         {
             // return false if none of the serverIds match or filtering has been disabled for the server
             if (!floofDb.FilterConfigs.AsQueryable()
@@ -44,7 +44,7 @@ namespace Floofbot.Services
             else
                 return DetectedWords;
         }
-        public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId) // messages
+        public bool HasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId) // messages
         {
             // return false if none of the serverIds match or filtering has been disabled for the server
             if (!floofDb.FilterConfigs.AsQueryable()
