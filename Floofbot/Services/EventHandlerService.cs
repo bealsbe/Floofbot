@@ -253,8 +253,10 @@ namespace Floofbot.Services
             });
             return Task.CompletedTask;
         }
-        public Task MessageDeleted(Cacheable<IMessage, ulong> before, ISocketMessageChannel chan)
+        public Task MessageDeleted(Cacheable<IMessage, ulong> before, Cacheable<IMessageChannel, ulong> channel)
         {
+            IMessageChannel chan = channel.Value;
+
             var _ = Task.Run(async () =>
             {
                 try
@@ -482,8 +484,10 @@ namespace Floofbot.Services
             });
             return Task.CompletedTask;
         }
-        public Task UserLeft(IGuildUser user)
+        public Task UserLeft(SocketGuild guild, SocketUser sUser)
         {
+            IGuildUser user = guild.GetUser(sUser.Id);
+
             var _ = Task.Run(async () =>
             {
                 try
@@ -603,8 +607,10 @@ namespace Floofbot.Services
 
         }
 
-        public Task GuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
+        public Task GuildMemberUpdated(Cacheable<SocketGuildUser, ulong> _before, SocketGuildUser after)
         {
+            SocketGuildUser before = _before.Value;
+
             var _ = Task.Run(async () =>
             {
                 try
