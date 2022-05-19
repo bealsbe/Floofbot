@@ -358,6 +358,20 @@ namespace Floofbot
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+            
+        [Command("about")]
+        [Summary("Information about the bot")]
+        public async Task About()
+        {
+            EmbedBuilder embed = new EmbedBuilder();
+
+            uint colour = (uint)new Random().Next(0x1000000); // generate random color
+
+            embed.WithDescription(
+                    "This discord bot was created by bealsbe on github! (https://github.com/bealsbe/Floofbot)")
+                .WithColor(new Discord.Color(colour));
+
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
     }
 }
