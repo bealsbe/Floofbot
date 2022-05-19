@@ -340,7 +340,7 @@ namespace Floofbot
 
                 Mass lb = Mass.FromPounds(lbTmp);
                 double kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
-                
+
                 embedDesc += $"⚖️ {lb} is equal to {kg}Kg.\n";
             }
 
@@ -358,6 +358,7 @@ namespace Floofbot
             };
 
             await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
             
         [Command("about")]
         [Summary("Information about the bot")]
