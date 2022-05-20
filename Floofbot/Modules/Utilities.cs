@@ -9,6 +9,8 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Floofbot.Configs;
+using System.Text.RegularExpressions;
+using UnitsNet;
 
 namespace Floofbot
 {
@@ -177,7 +179,6 @@ namespace Floofbot
 
         }
 
-
         [RequireOwner]
         [Command("reloadconfig")]
         [Summary("Reloads the config file")]
@@ -255,6 +256,110 @@ namespace Floofbot
                 Trash = true
             }, true);
         }
+
+        [Command("convert")]
+        [Alias("conv")]
+        [Summary("Converts between Temperature, Length, and Mass units.")]
+        public async Task convert([Remainder] string input = "")
+        {
+            Regex fahReg = new Regex(@"\d+(?=f)", RegexOptions.IgnoreCase);
+            Regex celReg = new Regex(@"\d+(?=c)", RegexOptions.IgnoreCase);
+            Regex miReg = new Regex(@"\d+(?=mi)", RegexOptions.IgnoreCase);
+            Regex kmReg = new Regex(@"\d+(?=km)", RegexOptions.IgnoreCase);
+            Regex kgReg = new Regex(@"\d+(?=kg)", RegexOptions.IgnoreCase);
+            Regex lbReg = new Regex(@"\d+(?=lbs)", RegexOptions.IgnoreCase);
+            string embedDesc = "";
+            int okInt = 0; //This will be used to check for command success
+
+            if (fahReg.IsMatch(input))
+            {
+                okInt++;
+
+                double fahTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+(?=f)").Value);
+
+                Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
+                double cel = Math.Round(fah.DegreesCelsius, 2, MidpointRounding.ToEven);
+
+                embedDesc += $"🌡 {fah} is equal to {cel}°C.\n";
+            }
+
+            if (celReg.IsMatch(input))
+            {
+                okInt++;
+
+                double celTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+(?=c)").Value);
+
+                Temperature cel = Temperature.FromDegreesCelsius(celTmp);
+                double fah = Math.Round(cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
+
+                embedDesc += $"🌡 {cel} is equal to {fah}F.\n";
+            }
+
+            if (miReg.IsMatch(input))
+            {
+                okInt++;
+
+                double miTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=mi)").Value);
+
+                Length mi = Length.FromMiles(miTmp);
+                double km = Math.Round(mi.Kilometers, 3, MidpointRounding.ToEven);
+
+                embedDesc += $"📏 {mi} is equal to {km}Km.\n";
+            }
+
+            if (kmReg.IsMatch(input))
+            {
+                okInt++;
+
+                double kmTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=km)").Value);
+
+                Length km = Length.FromKilometers(kmTmp);
+                double mi = Math.Round(km.Miles, 3, MidpointRounding.ToEven);
+
+                embedDesc += $"📏 {km} is equal to {mi}mi.\n";
+            }
+
+            if (kgReg.IsMatch(input))
+            {
+                okInt++;
+
+                double kgTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=kg)").Value);
+
+
+                Mass kg = Mass.FromKilograms(kgTmp);
+                double lb = Math.Round(kg.Pounds, 3, MidpointRounding.ToEven);
+
+                embedDesc += $"⚖️ {kg} is equal to {lb}lbs.\n";
+            }
+
+            if (lbReg.IsMatch(input))
+            {
+                okInt++;
+
+                double lbTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=lbs)").Value);
+
+                Mass lb = Mass.FromPounds(lbTmp);
+                double kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
+
+                embedDesc += $"⚖️ {lb} is equal to {kg}Kg.\n";
+            }
+
+            if (okInt == 0)
+            {
+                embedDesc += $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lbs.";
+            }
+
+
+            EmbedBuilder builder = new EmbedBuilder()
+            {
+                Title = "Conversion",
+                Description = embedDesc,
+                Color = EMBED_COLOR
+            };
+
+            await Context.Channel.SendMessageAsync("", false, builder.Build());
+        }
+            
         [Command("about")]
         [Summary("Information about the bot")]
         public async Task About()
