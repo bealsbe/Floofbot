@@ -30,8 +30,9 @@ namespace Floofbot.Modules.Helpers
 
         public static string GetRandomResponse()
         {
-            Random random = new Random();
-            int randomNumber = random.Next(RESPONSES.Count);
+            var random = new Random();
+            var randomNumber = random.Next(RESPONSES.Count);
+            
             return RESPONSES[randomNumber];
         }
     }

@@ -17,11 +17,11 @@ namespace Floofbot.Configs
             [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
-                if (_config == null)
-                {
-                    _config = BotConfigParser.ParseFromFile(_filename);
-                    _token = _config.Token;
-                }
+                if (_config != null) return _config;
+                
+                _config = BotConfigParser.ParseFromFile(_filename);
+                _token = _config.Token;
+                
                 return _config;
             }
             [MethodImpl(MethodImplOptions.Synchronized)]
@@ -38,8 +38,9 @@ namespace Floofbot.Configs
 
         public static void Reinitialize()
         {
-            BotConfig config = BotConfigParser.ParseFromFile(_filename);
-            // sanity check to make sure the token was not changed upon reload
+            var config = BotConfigParser.ParseFromFile(_filename);
+            
+            // Sanity check to make sure the token was not changed upon reload
             if (config.Token == _token)
             {
                 _config = config;
@@ -50,7 +51,7 @@ namespace Floofbot.Configs
             }
         }
 
-        class BotConfigParser
+        private class BotConfigParser
         {
             public static BotConfig ParseFromFile(string filename)
             {
@@ -59,11 +60,13 @@ namespace Floofbot.Configs
                     var fileContents = new StringReader(File.ReadAllText(filename));
                     var deserializer = new Deserializer();
                     var config = deserializer.Deserialize<BotConfig>(fileContents);
+                    
                     return config;
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Log.Error(e.ToString());
+                    Log.Error(ex.ToString());
+                    
                     return new BotConfig();
                 }
             }
