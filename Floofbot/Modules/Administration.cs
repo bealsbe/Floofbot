@@ -200,7 +200,7 @@ namespace Floofbot.Modules
                 
                 for (int j = 0; j < 20; j++)
                 {
-                    var index = i * 20 + j;
+                    var index = (i * 20) + j;
                     
                     if (index < autoBans.Count)
                     {
@@ -660,7 +660,6 @@ namespace Floofbot.Modules
 
             // Check to see if the server exists within the "AdminConfig" Table
             if (!_floofDb.AdminConfig.AsQueryable().Any(x => x.ServerId == Context.Guild.Id)) {
-
                 // Create new mute role
                 muteRole = await CreateMuteRole();
 
@@ -722,7 +721,7 @@ namespace Floofbot.Modules
                 var ms = m.Groups["minutes"].Success ? int.Parse(m.Groups["minutes"].Value) : 0;
                 var ss = m.Groups["seconds"].Success ? int.Parse(m.Groups["seconds"].Value) : 0;
 
-                var seconds = dd * 86400 + hs * 60 * 60 + ms * 60 + ss;
+                var seconds = (dd * 86400) + (hs * 60 * 60) + (ms * 60) + ss;
 
                 if (seconds > 0) {
                     var duration = TimeSpan.FromSeconds(seconds);
@@ -774,7 +773,6 @@ namespace Floofbot.Modules
                     
                     return;
                 }
-
             }
             
             await Context.Channel.SendMessageAsync("", false, builder.Build());
@@ -892,7 +890,6 @@ namespace Floofbot.Modules
                 var builder = new EmbedBuilder {
                     Description = $"🔒  <#{textChannel.Id}> Locked",
                     Color = Color.Orange,
-
                 };
                 
                 foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages)) {
@@ -919,7 +916,6 @@ namespace Floofbot.Modules
                 var builder = new EmbedBuilder {
                     Description = $"🔓  <#{textChannel.Id}> Unlocked",
                     Color = Color.DarkGreen,
-
                 };
                 
                 foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages)) {
@@ -1085,7 +1081,6 @@ namespace Floofbot.Modules
                 {
                     if (type == "warning")
                     {
-
                         foreach (Warning w in warnings)
                         {
                             if (w.Id == warningId)
@@ -1282,7 +1277,6 @@ namespace Floofbot.Modules
                         : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
                     
                     builder.AddField($"~~**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}~~ {forgivenByText}", $"```{usernote.Reason}```");
-
                 }
                 else
                 {
