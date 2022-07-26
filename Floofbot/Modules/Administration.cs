@@ -1161,7 +1161,6 @@ namespace Floofbot.Modules
             }
             else // User notes are for mod view only
             {
-
                 formalWarnings = _floofDb.Warnings.AsQueryable()
                     .Where(u => u.UserId == uid && u.GuildId == Context.Guild.Id)
                     .OrderByDescending(x => x.DateAdded).Take(10);
