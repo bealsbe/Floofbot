@@ -51,7 +51,7 @@ namespace Floofbot.Modules
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iam [rolename]`", Color = GenerateColor() }.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder { Description = $"💾 Usage: `iam [rolename]`", Color = GenerateColor() }.Build());
                 
                 return;
             }
@@ -103,7 +103,7 @@ namespace Floofbot.Modules
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iamnot [rolename]`", Color = GenerateColor() }.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder { Description = $"💾 Usage: `iamnot [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
 

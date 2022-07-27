@@ -41,7 +41,7 @@ namespace Floofbot.Modules
                         Color = Color.Magenta
                     };
                     
-                    await Context.Message.Author.SendMessageAsync("", false, b.Build());
+                    await Context.Message.Author.SendMessageAsync(string.Empty, false, b.Build());
                 }
 
                 // Get values

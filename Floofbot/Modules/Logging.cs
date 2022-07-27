@@ -146,7 +146,7 @@ namespace Floofbot.Modules
                         Color = Color.Magenta
                     };
                     
-                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                    await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
                 }
             }
 
@@ -173,7 +173,7 @@ namespace Floofbot.Modules
                         Color = Color.Magenta
                     };
                     
-                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                    await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
                 }
             }
 

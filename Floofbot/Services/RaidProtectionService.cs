@@ -257,7 +257,7 @@ namespace Floofbot.Services
                     Color = Color.Red
                 }.AddField("Reason", reason);
                 
-                await msg.Author.SendMessageAsync("", false, builder.Build());
+                await msg.Author.SendMessageAsync(string.Empty, false, builder.Build());
                 
                 await guild.AddBanAsync(msg.Author, 0, reason);
 
@@ -512,7 +512,7 @@ namespace Floofbot.Services
                         if (Uri.IsWellFormedUriString(userMsg.Author.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(userMsg.Author.GetAvatarUrl());
 
-                        await modChannel.SendMessageAsync("", false, embed.Build());
+                        await modChannel.SendMessageAsync(string.Empty, false, embed.Build());
                     }
                 }
                 catch (Exception e)
@@ -534,7 +534,7 @@ namespace Floofbot.Services
                     Color = Color.Red
                 }.AddField("Reason", reason);
                 
-                await msg.Author.SendMessageAsync("", false, builder.Build());
+                await msg.Author.SendMessageAsync(string.Empty, false, builder.Build());
                 await guild.AddBanAsync(msg.Author, 0, reason);
             }
             catch (Exception e)

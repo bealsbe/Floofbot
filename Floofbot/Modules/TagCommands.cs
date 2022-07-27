@@ -115,7 +115,7 @@ namespace Floofbot.Modules
             if (!string.IsNullOrWhiteSpace(tagName) && !string.IsNullOrWhiteSpace(content))
             {
                 var rgx = new Regex("[^a-zA-Z0-9-]");
-                var processedTagName = rgx.Replace(tagName, "").ToLower();
+                var processedTagName = rgx.Replace(tagName, string.Empty).ToLower();
                 
                 if (string.IsNullOrEmpty(processedTagName))
                 {
@@ -179,7 +179,7 @@ namespace Floofbot.Modules
             if (!string.IsNullOrEmpty(tagName) && !string.IsNullOrEmpty(content))
             {
                 Regex rgx = new Regex("[^a-zA-Z0-9-]");
-                string processedTagName = rgx.Replace(tagName, "").ToLower();
+                string processedTagName = rgx.Replace(tagName, string.Empty).ToLower();
                 if (string.IsNullOrEmpty(processedTagName))
                 {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Invalid Tag name. " +
@@ -399,7 +399,7 @@ namespace Floofbot.Modules
 
         private async Task SendEmbed(Embed embed)
         {
-            await Context.Channel.SendMessageAsync("", false, embed);
+            await Context.Channel.SendMessageAsync(string.Empty, false, embed);
         }
     }
 }

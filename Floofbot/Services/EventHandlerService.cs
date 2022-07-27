@@ -119,7 +119,7 @@ namespace Floofbot.Services
                         Color = ADMIN_COLOR
                     }.AddField("Reason", badUserAutoban.Reason);
                     
-                    await user.SendMessageAsync("", false, builder.Build());
+                    await user.SendMessageAsync(string.Empty, false, builder.Build());
                     
                     await user.Guild.AddBanAsync(user.Id, 0,
                         $"{badUserAutoban.ModUsername} -> {badUserAutoban.Reason} (autobanned on user join)");
@@ -264,7 +264,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(after.Author.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(after.Author.GetAvatarUrl());
 
-                    await logChannel.SendMessageAsync("", false, embed.Build());
+                    await logChannel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -319,7 +319,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(message.Author.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(message.Author.GetAvatarUrl());
 
-                    await logChannel.SendMessageAsync("", false, embed.Build());
+                    await logChannel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -366,7 +366,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(before.Author.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(before.Author.GetAvatarUrl());
 
-                    await logChannel.SendMessageAsync("", false, embed.Build());
+                    await logChannel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -408,7 +408,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
 
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -446,7 +446,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
 
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -491,7 +491,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
 
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -541,7 +541,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
 
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -616,7 +616,7 @@ namespace Floofbot.Services
                     {
                         return;
                     }
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -730,7 +730,7 @@ namespace Floofbot.Services
                         return;
                     }
                     
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -769,7 +769,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
 
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -807,7 +807,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
 
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {
@@ -846,7 +846,7 @@ namespace Floofbot.Services
                     if (Uri.IsWellFormedUriString(user.GetAvatarUrl(), UriKind.Absolute))
                         embed.WithThumbnailUrl(user.GetAvatarUrl());
 
-                    await channel.SendMessageAsync("", false, embed.Build());
+                    await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
                 catch (Exception ex)
                 {

@@ -49,7 +49,7 @@ namespace Floofbot.Modules
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iamconfig add [rolename]`", Color = EMBED_COLOUR }.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder { Description = $"💾 Usage: `iamconfig add [rolename]`", Color = EMBED_COLOUR }.Build());
                 return;
             }
 
@@ -96,7 +96,7 @@ namespace Floofbot.Modules
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `iamconfig remove [rolename]`", Color = EMBED_COLOUR }.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder { Description = $"💾 Usage: `iamconfig remove [rolename]`", Color = EMBED_COLOUR }.Build());
                 return;
             }
 

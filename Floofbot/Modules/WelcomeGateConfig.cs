@@ -78,7 +78,7 @@ namespace Floofbot.Modules
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `welcomegateconfig [rolename]`", Color = GenerateColor() }.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder { Description = $"💾 Usage: `welcomegateconfig [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
 

@@ -219,7 +219,7 @@ namespace Floofbot.Modules
                         Color = EMBED_COLOR
                     };
 
-                    await Context.Channel.SendMessageAsync("", false, choiceEmbed.Build());
+                    await Context.Channel.SendMessageAsync(string.Empty, false, choiceEmbed.Build());
                     
                     return;
                 }
@@ -278,7 +278,7 @@ namespace Floofbot.Modules
 
         private async Task SendEmbed(Embed embed)
         {
-            await Context.Channel.SendMessageAsync("", false, embed);
+            await Context.Channel.SendMessageAsync(string.Empty, false, embed);
         }
     }
 }

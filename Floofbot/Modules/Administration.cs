@@ -77,7 +77,7 @@ namespace Floofbot.Modules
                     Color = ADMIN_COLOR
                 }.AddField("Reason", reason);
 
-                await badUser.SendMessageAsync("", false, builder.Build());
+                await badUser.SendMessageAsync(string.Empty, false, builder.Build());
             }
             catch (HttpException)
             {
@@ -157,7 +157,7 @@ namespace Floofbot.Modules
                     Color = ADMIN_COLOR
                 }.AddField("Reason", reason);
                 
-                await badUser.SendMessageAsync("", false, builder.Build());
+                await badUser.SendMessageAsync(string.Empty, false, builder.Build());
             }
             catch (HttpException)
             {
@@ -175,7 +175,7 @@ namespace Floofbot.Modules
             }.AddField("User ID", badUser.Id)
              .AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
             
-            await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, modEmbedBuilder.Build());
         }
 
         [Command("viewautobans")]
@@ -297,7 +297,7 @@ namespace Floofbot.Modules
                     Color = ADMIN_COLOR
                 }.AddField("Reason", reason);
                 
-                await badUser.SendMessageAsync("", false, builder.Build());
+                await badUser.SendMessageAsync(string.Empty, false, builder.Build());
             }
             catch (HttpException)
             {
@@ -314,7 +314,7 @@ namespace Floofbot.Modules
             }.AddField("User ID", badUser.Id)
              .AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
             
-            await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, kickBuilder.Build());
         }
 
         [Command("silentkick")]
@@ -344,7 +344,7 @@ namespace Floofbot.Modules
             }.AddField("User ID", badUser.Id)
              .AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
             
-            await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, kickBuilder.Build());
         }
 
         [Command("warn")]
@@ -364,7 +364,7 @@ namespace Floofbot.Modules
                     Color = Color.Magenta
                 };
                 
-                await Context.Channel.SendMessageAsync("", false, builder.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
                 
                 return;
             }
@@ -423,7 +423,7 @@ namespace Floofbot.Modules
                         Color = ADMIN_COLOR
                     }.AddField("Reason", reason);
                     
-                    await badUser.SendMessageAsync("", false, builder.Build());
+                    await badUser.SendMessageAsync(string.Empty, false, builder.Build());
                 }
                 catch (HttpException)
                 {
@@ -438,7 +438,7 @@ namespace Floofbot.Modules
             }.AddField("User ID", uid)
              .AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
         }
 
         [Command("usernote")]
@@ -458,7 +458,7 @@ namespace Floofbot.Modules
                     Color = Color.Magenta
                 };
                 
-                await Context.Channel.SendMessageAsync("", false, builder.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
                 
                 return;
             }
@@ -589,7 +589,7 @@ namespace Floofbot.Modules
                     if (embed == null)
                         return;
 
-                    await Context.Message.Author.SendMessageAsync("", false, embed);
+                    await Context.Message.Author.SendMessageAsync(string.Empty, false, embed);
 
                     return;
             }
@@ -619,7 +619,7 @@ namespace Floofbot.Modules
                 if (embed == null)
                     return;
                 
-                await Context.Channel.SendMessageAsync("", false, embed);
+                await Context.Channel.SendMessageAsync(string.Empty, false, embed);
                 
                 return;
             }
@@ -761,7 +761,7 @@ namespace Floofbot.Modules
                                     Color = ADMIN_COLOR
                                 };
                                 
-                                await badUser.SendMessageAsync("", false, builder.Build());
+                                await badUser.SendMessageAsync(string.Empty, false, builder.Build());
                             }
                             catch (HttpException)
                             {
@@ -778,7 +778,7 @@ namespace Floofbot.Modules
                 }
             }
             
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
             
             try
             {
@@ -862,7 +862,7 @@ namespace Floofbot.Modules
                 Color = ADMIN_COLOR
             };
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
             
             try
             {
@@ -874,7 +874,7 @@ namespace Floofbot.Modules
                     Color = ADMIN_COLOR
                 };
                 
-                await badUser.SendMessageAsync("", false, builder.Build());
+                await badUser.SendMessageAsync(string.Empty, false, builder.Build());
             }
             catch (HttpException)
             {
@@ -968,7 +968,7 @@ namespace Floofbot.Modules
 
         private async Task SendEmbed(Embed embed)
         {
-            await Context.Channel.SendMessageAsync("", false, embed);
+            await Context.Channel.SendMessageAsync(string.Empty, false, embed);
         }
         
         private async Task UpdateForgivenStatus(string function, string type, string badUser)

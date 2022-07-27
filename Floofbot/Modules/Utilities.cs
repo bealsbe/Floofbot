@@ -39,7 +39,7 @@ namespace Floofbot
                 Color = EMBED_COLOR
             };
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
         }
 
         [Command("userinfo")]
@@ -275,7 +275,7 @@ namespace Floofbot
             var kmReg = new Regex(@"\d+(?=km)", RegexOptions.IgnoreCase);
             var kgReg = new Regex(@"\d+(?=kg)", RegexOptions.IgnoreCase);
             var lbReg = new Regex(@"\d+(?=lbs)", RegexOptions.IgnoreCase);
-            var embedDesc = "";
+            var embedDesc = string.Empty;
             var okInt = 0; // This will be used to check for command success
 
             if (fahReg.IsMatch(input))

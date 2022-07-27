@@ -115,7 +115,7 @@ namespace Floofbot.Services
                                 Color = Color.DarkOrange
                             }.AddField("Reason", "Warned by BOT for an inappropriate name");
                             
-                            await badUser.SendMessageAsync("", false, builder.Build());
+                            await badUser.SendMessageAsync(string.Empty, false, builder.Build());
                             await channel.SendMessageAsync($"Got it! I warned {badUser.Username}#{badUser.Discriminator}!");
                         }
                     }
@@ -141,7 +141,7 @@ namespace Floofbot.Services
                             Color = Color.DarkOrange
                         }.AddField("Reason", "Banned by BOT for an inappropriate name");
 
-                        await badUser.SendMessageAsync("", false, builder.Build());
+                        await badUser.SendMessageAsync(string.Empty, false, builder.Build());
                         await badUser.Guild.AddBanAsync(badUser, 0, $"{moderator.Username}#{moderator.Discriminator} ({moderator.Id}) -> Inappropriate Name");
                         await channel.SendMessageAsync($"Got it! I banned {badUser.Username}#{badUser.Discriminator}!");
                     }
@@ -165,7 +165,7 @@ namespace Floofbot.Services
                             Color = Color.DarkOrange
                         }.AddField("Reason", "Kicked by BOT for an inappropriate name");
                         
-                        await badUser.SendMessageAsync("", false, builder.Build());
+                        await badUser.SendMessageAsync(string.Empty, false, builder.Build());
                         await badUser.KickAsync($"{badUser.Username}#{badUser.Discriminator} -> Inappropriate Name");
 
                         await channel.SendMessageAsync($"Got it! I kicked {badUser.Username}#{badUser.Discriminator}!");
@@ -182,7 +182,7 @@ namespace Floofbot.Services
                 {
                     try
                     {
-                        await badUser.Guild.GetUser(badUser.Id).ModifyAsync(user => user.Nickname = "");
+                        await badUser.Guild.GetUser(badUser.Id).ModifyAsync(user => user.Nickname = string.Empty);
                         await channel.SendMessageAsync($"Got it! I removed {badUser.Username}#{badUser.Discriminator}'s nickname!");
                     }
                     catch (Exception ex)

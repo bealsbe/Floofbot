@@ -122,7 +122,7 @@ namespace Floofbot.Modules
             }
             else
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `filter toggle channel/server`", Color = EMBED_COLOR }.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder { Description = $"💾 Usage: `filter toggle channel/server`", Color = EMBED_COLOR }.Build());
             }
         }
 

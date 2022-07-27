@@ -96,7 +96,7 @@ namespace Floofbot.Handlers
 
                 var embed = GenerateErrorEmbed(userMsg.Author, result, userMsg);
             
-                await errorLoggingChannel.SendMessageAsync("", false, embed);
+                await errorLoggingChannel.SendMessageAsync(string.Empty, false, embed);
             }
         }
         
