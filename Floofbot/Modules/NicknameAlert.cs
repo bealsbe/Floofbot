@@ -21,30 +21,34 @@ namespace Floofbot.Modules
             _floofDB = floofDB;
         }
 
-        private void CheckServerEntryExists(ulong server)
+        private async Task CheckServerEntryExistsAsync(ulong server)
         {
-            // checks if server exists in database and adds if not
+            // Checks if server exists in database and adds if not
             var serverConfig = _floofDB.NicknameAlertConfigs.Find(server);
-            if (serverConfig == null)
+
+            if (serverConfig != null) return;
+            
+            _floofDB.Add(new NicknameAlertConfig
             {
-                _floofDB.Add(new NicknameAlertConfig
-                {
-                    ServerId = server,
-                    Channel = 0,
-                    IsOn = false
-                }) ;
-                _floofDB.SaveChanges();
-            }
+                ServerId = server,
+                Channel = 0,
+                IsOn = false
+            });
+            
+            await _floofDB.SaveChangesAsync();
         }
 
         [Command("setchannel")] // update into a group
         [Summary("Sets the channel for the nickname alerts")]
         public async Task Channel([Summary("Channel (eg #alerts)")]Discord.IChannel channel)
         {
-            CheckServerEntryExists(Context.Guild.Id);
-            var ServerConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
-            ServerConfig.Channel = channel.Id;
-            _floofDB.SaveChanges();
+            await CheckServerEntryExistsAsync(Context.Guild.Id);
+            
+            var serverConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
+            serverConfig.Channel = channel.Id;
+            
+            await _floofDB.SaveChangesAsync();
+            
             await Context.Channel.SendMessageAsync("Channel updated! I will send nickname alerts to <#" + channel.Id + ">");
         }
 
@@ -52,24 +56,24 @@ namespace Floofbot.Modules
         [Summary("Toggles the nickname alerts")]
         public async Task Toggle()
         {
-
-            // try toggling
+            // Try toggling
             try
             {
-                CheckServerEntryExists(Context.Guild.Id);
-                // check the status of logger
-                var ServerConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
-                ServerConfig.IsOn = !ServerConfig.IsOn;
-                _floofDB.SaveChanges();
-                await Context.Channel.SendMessageAsync("Nickname Alerts " + (ServerConfig.IsOn ? "Enabled!" : "Disabled!"));
+                await CheckServerEntryExistsAsync(Context.Guild.Id);
+                
+                // Check the status of logger
+                var serverConfig = _floofDB.NicknameAlertConfigs.Find(Context.Guild.Id);
+                serverConfig.IsOn = !serverConfig.IsOn;
+                
+                await _floofDB.SaveChangesAsync();
+                
+                await Context.Channel.SendMessageAsync("Nickname Alerts " + (serverConfig.IsOn ? "Enabled!" : "Disabled!"));
             }
             catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
                 Log.Error("Error when trying to toggle the nickname alerts: " + ex);
-                return;
             }
         }
-
     }
 }

@@ -18,18 +18,21 @@ namespace Floofbot
     [Name("Utilities")]
     public class Utilities : InteractiveBase
     {
-        private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
+        private static readonly Color EMBED_COLOR = Color.Magenta;
 
         [Command("ping")]
         [Summary("Responds with the ping in milliseconds")]
         public async Task Ping()
         {
             var sw = Stopwatch.StartNew();
+            
             var msg = await Context.Channel.SendMessageAsync(":owl:").ConfigureAwait(false);
+            
             sw.Stop();
+            
             await msg.DeleteAsync();
 
-            EmbedBuilder builder = new EmbedBuilder()
+            var builder = new EmbedBuilder()
             {
                 Title = "Butts!",
                 Description = $"📶 Reply: `{(int)sw.Elapsed.TotalMilliseconds}ms`",
@@ -50,17 +53,17 @@ namespace Floofbot
             if (user == null)
                 return;
 
-            string avatar = "https://cdn.discordapp.com/attachments/440635657925165060/442039889475665930/Turqouise.jpg";
-
+            var avatar = "https://cdn.discordapp.com/attachments/440635657925165060/442039889475665930/Turqouise.jpg";
             // Get user's Discord joining date and time, in UTC
-            string discordJoin = user.CreatedAt.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
+            var discordJoin = user.CreatedAt.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
             // Get user's Guild joining date and time, in UTC
-            string guildJoin = user.JoinedAt?.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
+            var guildJoin = user.JoinedAt?.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
 
             if (user.AvatarId != null)
                 avatar = user.GetAvatarUrl(ImageFormat.Auto, 512);
 
-            string infostring = $"👥 **User info for {user.Mention}** \n";
+            var infostring = $"👥 **User info for {user.Mention}** \n";
+            
             infostring +=
                  $"**User** : {user.Nickname ?? user.Username} ({user.Username}#{user.Discriminator})\n" +
                  $"**ID** : {user.Id}\n" +
@@ -68,14 +71,14 @@ namespace Floofbot
                  $"**Guild Join Date** : {guildJoin}\n" +
                  $"**Status** : {user.Status}\n";
 
-            EmbedBuilder builder = new EmbedBuilder
+            var builder = new EmbedBuilder
             {
                 ThumbnailUrl = avatar,
                 Description = infostring,
                 Color = EMBED_COLOR
             };
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
         }
 
         [Command("avatar")]
@@ -84,18 +87,19 @@ namespace Floofbot
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Avatar([Remainder] IGuildUser user = null)
         {
-            if (user == null)
-                user = (IGuildUser)Context.User;
+            // If user is null, we assign Context.User to it
+            user ??= (IGuildUser) Context.User;
 
             var avatarUrl = user.GetAvatarUrl(ImageFormat.Auto, 512);
-            EmbedBuilder builder = new EmbedBuilder()
+            
+            var builder = new EmbedBuilder()
             {
                 Description = $"🖼️ **Avatar for:** {user.Mention}\n",
                 ImageUrl = avatarUrl,
                 Color = EMBED_COLOR
-
             };
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            
+            await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
         }
 
         [Command("embed")]
@@ -111,7 +115,8 @@ namespace Floofbot
                     Description = message,
                     Color = EMBED_COLOR
                 };
-                await Context.Channel.SendMessageAsync("", false, builder.Build());
+                
+                await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
                 await Context.Channel.DeleteMessageAsync(Context.Message.Id);
             }
             else
@@ -142,40 +147,39 @@ namespace Floofbot
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task ServerInfo()
         {
-            SocketGuild guild = Context.Guild;
+            var guild = Context.Guild;
 
             // Get Guild creation date and time, in UTC
-            string guildCreated = guild.CreatedAt.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
+            var guildCreated = guild.CreatedAt.ToUniversalTime().ToString("dd\\/MMM\\/yyyy \\a\\t H:MM \\U\\T\\C");
 
-            int numberTextChannels = guild.TextChannels.Count;
-            int numberVoiceChannels = guild.VoiceChannels.Count;
-            int daysOld = Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days;
-            string daysAgo = $" That's " + ((daysOld == 0) ? "today!" : (daysOld == 1) ? $"yesterday!" : $"{daysOld} days ago!");
-            string createdAt = $"Created {guildCreated}." + daysAgo;
-            int totalMembers = guild.MemberCount;
-            int onlineUsers = guild.Users.Where(mem => mem.Status == UserStatus.Online).Count();
-            int numberRoles = guild.Roles.Count;
-            int numberEmojis = guild.Emotes.Count;
-            uint colour = (uint)new Random().Next(0x1000000); // random hex
+            var numberTextChannels = guild.TextChannels.Count;
+            var numberVoiceChannels = guild.VoiceChannels.Count;
+            var daysOld = Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days;
+            var daysAgo = $" That's " + ((daysOld == 0) ? "today!" : (daysOld == 1) ? $"yesterday!" : $"{daysOld} days ago!");
+            var createdAt = $"Created {guildCreated}." + daysAgo;
+            var totalMembers = guild.MemberCount;
+            var onlineUsers = guild.Users.Count(mem => mem.Status == UserStatus.Online);
+            var numberRoles = guild.Roles.Count;
+            var numberEmojis = guild.Emotes.Count;
+            var colour = (uint)new Random().Next(0x1000000); // random hex
 
-            EmbedBuilder embed = new EmbedBuilder();
-
-            embed.WithDescription(createdAt)
-                 .WithColor(new Discord.Color(colour))
-                 .AddField("Users (Online/Total)", $"{onlineUsers}/{totalMembers}", true)
-                 .AddField("Text Channels", numberTextChannels, true)
-                 .AddField("Voice Channels", numberVoiceChannels, true)
-                 .AddField("Roles", numberRoles, true)
-                 .AddField("Emojis", numberEmojis, true)
-                 .AddField("Owner", $"{guild.Owner.Username}#{guild.Owner.Discriminator}", true)
-                 .WithFooter($"Server ID: {guild.Id}")
-                 .WithAuthor(guild.Name)
-                 .WithCurrentTimestamp();
+            var embed = new EmbedBuilder()
+                .WithDescription(createdAt)
+                .WithColor(new Color(colour))
+                .AddField("Users (Online/Total)", $"{onlineUsers}/{totalMembers}", true)
+                .AddField("Text Channels", numberTextChannels, true)
+                .AddField("Voice Channels", numberVoiceChannels, true)
+                .AddField("Roles", numberRoles, true)
+                .AddField("Emojis", numberEmojis, true)
+                .AddField("Owner", $"{guild.Owner.Username}#{guild.Owner.Discriminator}", true)
+                .WithFooter($"Server ID: {guild.Id}")
+                .WithAuthor(guild.Name)
+                .WithCurrentTimestamp();
 
             if (Uri.IsWellFormedUriString(guild.IconUrl, UriKind.Absolute))
                 embed.WithThumbnailUrl(guild.IconUrl);
 
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, embed.Build());
 
         }
 
@@ -198,6 +202,7 @@ namespace Floofbot
             {
                 await Context.Client.SetActivityAsync(BotConfigFactory.Config.Activity);
             }
+            
             await Context.Channel.SendMessageAsync("Config reloaded successfully");
         }
 
@@ -206,31 +211,32 @@ namespace Floofbot
         [RequireOwner]
         public async Task ServerList()
         {
-            List<SocketGuild> guilds = new List<SocketGuild>(Context.Client.Guilds);
-            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+            var guilds = new List<SocketGuild>(Context.Client.Guilds);
+            var pages = new List<PaginatedMessage.Page>();
 
-            foreach (SocketGuild g in guilds)
+            foreach (var g in guilds)
             {
-                List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
-
-                fields.Add(new EmbedFieldBuilder()
+                var fields = new List<EmbedFieldBuilder>
                 {
-                    Name = $"Owner",
-                    Value = $"{g.Owner.Username}#{g.Owner.Discriminator} | ``{g.Owner.Id}``",
-                    IsInline = false
-                });
-                fields.Add(new EmbedFieldBuilder()
-                {
-                    Name = $"Server ID",
-                    Value = g.Id,
-                    IsInline = false
-                });
-                fields.Add(new EmbedFieldBuilder()
-                {
-                    Name = $"Members",
-                    Value = g.MemberCount,
-                    IsInline = false
-                });
+                    new EmbedFieldBuilder()
+                    {
+                        Name = $"Owner",
+                        Value = $"{g.Owner.Username}#{g.Owner.Discriminator} | ``{g.Owner.Id}``",
+                        IsInline = false
+                    },
+                    new EmbedFieldBuilder()
+                    {
+                        Name = $"Server ID",
+                        Value = g.Id,
+                        IsInline = false
+                    },
+                    new EmbedFieldBuilder()
+                    {
+                        Name = $"Members",
+                        Value = g.MemberCount,
+                        IsInline = false
+                    }
+                };
 
                 pages.Add(new PaginatedMessage.Page
                 {
@@ -239,6 +245,7 @@ namespace Floofbot
                     ThumbnailUrl = (Uri.IsWellFormedUriString(g.IconUrl, UriKind.Absolute) ? g.IconUrl : null)
                 });
             }
+            
             var pager = new PaginatedMessage
             {
                 Pages = pages,
@@ -248,37 +255,38 @@ namespace Floofbot
                 Options = PaginatedAppearanceOptions.Default,
                 TimeStamp = DateTimeOffset.UtcNow
             };
+            
             await PagedReplyAsync(pager, new ReactionList
             {
                 Forward = true,
                 Backward = true,
                 Jump = true,
                 Trash = true
-            }, true);
+            });
         }
 
         [Command("convert")]
         [Alias("conv")]
         [Summary("Converts between Temperature, Length, and Mass units.")]
-        public async Task convert([Remainder] string input = "")
+        public async Task Convert([Remainder] string input = "")
         {
-            Regex fahReg = new Regex(@"\d+(?=f)", RegexOptions.IgnoreCase);
-            Regex celReg = new Regex(@"\d+(?=c)", RegexOptions.IgnoreCase);
-            Regex miReg = new Regex(@"\d+(?=mi)", RegexOptions.IgnoreCase);
-            Regex kmReg = new Regex(@"\d+(?=km)", RegexOptions.IgnoreCase);
-            Regex kgReg = new Regex(@"\d+(?=kg)", RegexOptions.IgnoreCase);
-            Regex lbReg = new Regex(@"\d+(?=lbs)", RegexOptions.IgnoreCase);
-            string embedDesc = "";
-            int okInt = 0; //This will be used to check for command success
+            var fahReg = new Regex(@"\d+(?=f)", RegexOptions.IgnoreCase);
+            var celReg = new Regex(@"\d+(?=c)", RegexOptions.IgnoreCase);
+            var miReg = new Regex(@"\d+(?=mi)", RegexOptions.IgnoreCase);
+            var kmReg = new Regex(@"\d+(?=km)", RegexOptions.IgnoreCase);
+            var kgReg = new Regex(@"\d+(?=kg)", RegexOptions.IgnoreCase);
+            var lbReg = new Regex(@"\d+(?=lbs)", RegexOptions.IgnoreCase);
+            var embedDesc = "";
+            var okInt = 0; // This will be used to check for command success
 
             if (fahReg.IsMatch(input))
             {
                 okInt++;
 
-                double fahTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+(?=f)").Value);
+                var fahTmp = System.Convert.ToDouble(Regex.Match(input, @"-?\d+(?=f)").Value);
 
-                Temperature fah = Temperature.FromDegreesFahrenheit(fahTmp);
-                double cel = Math.Round(fah.DegreesCelsius, 2, MidpointRounding.ToEven);
+                var fah = Temperature.FromDegreesFahrenheit(fahTmp);
+                var cel = Math.Round(fah.DegreesCelsius, 2, MidpointRounding.ToEven);
 
                 embedDesc += $"🌡 {fah} is equal to {cel}°C.\n";
             }
@@ -287,10 +295,10 @@ namespace Floofbot
             {
                 okInt++;
 
-                double celTmp = Convert.ToDouble(Regex.Match(input, @"-?\d+(?=c)").Value);
+                var celTmp = System.Convert.ToDouble(Regex.Match(input, @"-?\d+(?=c)").Value);
 
-                Temperature cel = Temperature.FromDegreesCelsius(celTmp);
-                double fah = Math.Round(cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
+                var cel = Temperature.FromDegreesCelsius(celTmp);
+                var fah = Math.Round(cel.DegreesFahrenheit, 2, MidpointRounding.ToEven);
 
                 embedDesc += $"🌡 {cel} is equal to {fah}F.\n";
             }
@@ -299,10 +307,10 @@ namespace Floofbot
             {
                 okInt++;
 
-                double miTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=mi)").Value);
+                var miTmp = System.Convert.ToDouble(Regex.Match(input, @"\d+(?=mi)").Value);
 
-                Length mi = Length.FromMiles(miTmp);
-                double km = Math.Round(mi.Kilometers, 3, MidpointRounding.ToEven);
+                var mi = Length.FromMiles(miTmp);
+                var km = Math.Round(mi.Kilometers, 3, MidpointRounding.ToEven);
 
                 embedDesc += $"📏 {mi} is equal to {km}Km.\n";
             }
@@ -311,10 +319,10 @@ namespace Floofbot
             {
                 okInt++;
 
-                double kmTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=km)").Value);
+                var kmTmp = System.Convert.ToDouble(Regex.Match(input, @"\d+(?=km)").Value);
 
-                Length km = Length.FromKilometers(kmTmp);
-                double mi = Math.Round(km.Miles, 3, MidpointRounding.ToEven);
+                var km = Length.FromKilometers(kmTmp);
+                var mi = Math.Round(km.Miles, 3, MidpointRounding.ToEven);
 
                 embedDesc += $"📏 {km} is equal to {mi}mi.\n";
             }
@@ -323,11 +331,10 @@ namespace Floofbot
             {
                 okInt++;
 
-                double kgTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=kg)").Value);
-
-
-                Mass kg = Mass.FromKilograms(kgTmp);
-                double lb = Math.Round(kg.Pounds, 3, MidpointRounding.ToEven);
+                var kgTmp = System.Convert.ToDouble(Regex.Match(input, @"\d+(?=kg)").Value);
+                
+                var kg = Mass.FromKilograms(kgTmp);
+                var lb = Math.Round(kg.Pounds, 3, MidpointRounding.ToEven);
 
                 embedDesc += $"⚖️ {kg} is equal to {lb}lbs.\n";
             }
@@ -336,10 +343,10 @@ namespace Floofbot
             {
                 okInt++;
 
-                double lbTmp = Convert.ToDouble(Regex.Match(input, @"\d+(?=lbs)").Value);
+                var lbTmp = System.Convert.ToDouble(Regex.Match(input, @"\d+(?=lbs)").Value);
 
-                Mass lb = Mass.FromPounds(lbTmp);
-                double kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
+                var lb = Mass.FromPounds(lbTmp);
+                var kg = Math.Round(lb.Kilograms, 3, MidpointRounding.ToEven);
 
                 embedDesc += $"⚖️ {lb} is equal to {kg}Kg.\n";
             }
@@ -350,29 +357,28 @@ namespace Floofbot
             }
 
 
-            EmbedBuilder builder = new EmbedBuilder()
+            var builder = new EmbedBuilder()
             {
                 Title = "Conversion",
                 Description = embedDesc,
                 Color = EMBED_COLOR
             };
 
-            await Context.Channel.SendMessageAsync("", false, builder.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
         }
             
         [Command("about")]
         [Summary("Information about the bot")]
         public async Task About()
         {
-            EmbedBuilder embed = new EmbedBuilder();
+            var embed = new EmbedBuilder();
 
-            uint colour = (uint)new Random().Next(0x1000000); // generate random color
+            var colour = (uint) new Random().Next(0x1000000); // Generate random color
 
-            embed.WithDescription(
-                    "This discord bot was created by bealsbe on github! (https://github.com/bealsbe/Floofbot)")
-                .WithColor(new Discord.Color(colour));
+            embed.WithDescription("This discord bot was created by bealsbe on github! (https://github.com/bealsbe/Floofbot)")
+                .WithColor(new Color(colour));
 
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Channel.SendMessageAsync(string.Empty, false, embed.Build());
         }
     }
 }

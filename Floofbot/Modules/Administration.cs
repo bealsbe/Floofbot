@@ -137,7 +137,7 @@ namespace Floofbot.Modules
                         Reason = reason
                     });
                     
-                    _floofDb.SaveChanges();
+                    await _floofDb.SaveChangesAsync();
                     
                     await Context.Channel.SendMessageAsync("⚠️ Could not find user, they will be banned next time they join the server!");
                     return;
@@ -249,7 +249,7 @@ namespace Floofbot.Modules
                 return;
             }
             
-            var user = _floofDb.BansOnJoin.AsQueryable().Where(u => u.UserID == Convert.ToUInt64(userId)).FirstOrDefault();
+            var user = _floofDb.BansOnJoin.AsQueryable().FirstOrDefault(u => u.UserID == Convert.ToUInt64(userId));
             
             if (user == null) // there are no auto bans!
             {
@@ -283,17 +283,20 @@ namespace Floofbot.Modules
             
             if (badUser == null) {
                 await Context.Channel.SendMessageAsync($"⚠️ Could not resolve user: \"{user}\"");
+                
                 return;
             }
             
             try
             {
                 //sends message to user
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.Title = "🥾 Kick Notification";
-                builder.Description = $"You have been Kicked from {Context.Guild.Name}";
-                builder.AddField("Reason", reason);
-                builder.Color = ADMIN_COLOR;
+                var builder = new EmbedBuilder
+                {
+                    Title = "🥾 Kick Notification",
+                    Description = $"You have been Kicked from {Context.Guild.Name}",
+                    Color = ADMIN_COLOR
+                }.AddField("Reason", reason);
+                
                 await badUser.SendMessageAsync("", false, builder.Build());
             }
             catch (HttpException)
@@ -1253,7 +1256,7 @@ namespace Floofbot.Modules
                         continue;
                     }
 
-                    builder.AddField($"**{warningCount + 1}**. {warning.DateAdded.ToString("yyyy MMMM dd")}", $"```{warning.Reason}```");
+                    builder.AddField($"**{warningCount + 1}**. {warning.DateAdded:yyyy MMMM dd}", $"```{warning.Reason}```");
                     warningCount++;
                 }
             }
@@ -1276,11 +1279,11 @@ namespace Floofbot.Modules
                         ? string.Empty 
                         : $"(forgiven by {forgivenBy.Username}#{forgivenBy.Discriminator})";
                     
-                    builder.AddField($"~~**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}~~ {forgivenByText}", $"```{usernote.Reason}```");
+                    builder.AddField($"~~**{userNoteCount + 1}**. {usernote.DateAdded:yyyy MMMM dd} - {usernote.Moderator}~~ {forgivenByText}", $"```{usernote.Reason}```");
                 }
                 else
                 {
-                    builder.AddField($"**{userNoteCount + 1}**. {usernote.DateAdded.ToString("yyyy MMMM dd")} - {usernote.Moderator}", $"```{usernote.Reason}```");
+                    builder.AddField($"**{userNoteCount + 1}**. {usernote.DateAdded:yyyy MMMM dd} - {usernote.Moderator}", $"```{usernote.Reason}```");
                     userNoteCount++;
                 }
             }

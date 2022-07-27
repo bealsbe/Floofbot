@@ -2,7 +2,6 @@
 using Discord;
 using System.Threading.Tasks;
 using Discord.Commands;
-using System.Text.RegularExpressions;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using System.Linq;
@@ -20,17 +19,20 @@ namespace Floofbot.Modules
     [RequireUserPermission(GuildPermission.BanMembers)]
     public class Filter : InteractiveBase
     {
-        private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
+        private static readonly Color EMBED_COLOR = Color.Magenta;
         private static readonly int WORDS_PER_PAGE = 50;
         private FloofDataContext _floofDb;
+        
         public Filter(FloofDataContext floofDb)
         {
             _floofDb = floofDb;
         }
-        private void CheckServerEntryExists(ulong server)
+        
+        private async Task CheckServerEntryExists(ulong server)
         {
-            // checks if server exists in database and adds if not
+            // Checks if server exists in database and adds if is not
             var serverConfig = _floofDb.FilterConfigs.Find(server);
+            
             if (serverConfig == null)
             {
                 _floofDb.Add(new FilterConfig
@@ -38,13 +40,16 @@ namespace Floofbot.Modules
                     ServerId = server,
                     IsOn = false
                 });
-                _floofDb.SaveChanges();
+                
+                await _floofDb.SaveChangesAsync();
             }
         }
+        
         private bool CheckWordEntryExists(string word, SocketGuild guild)
         {
-            // checks if a word exists in the filter db
-            bool wordEntry = _floofDb.FilteredWords.AsQueryable().Where(w => w.ServerId == guild.Id).Where(w => w.Word == word).Any();
+            // Checks if a word exists in the filter db
+            var wordEntry = _floofDb.FilteredWords.AsQueryable().Where(w => w.ServerId == guild.Id).Any(w => w.Word == word);
+            
             return wordEntry;
         }
 
@@ -54,32 +59,36 @@ namespace Floofbot.Modules
         {
             if (toggleType == "server")
             {
-                // try toggling
+                // Try toggling
                 try
                 {
-                    CheckServerEntryExists(Context.Guild.Id);
-                    // check the status of server filtering
-                    var ServerConfig = _floofDb.FilterConfigs.Find(Context.Guild.Id);
-                    ServerConfig.IsOn = !ServerConfig.IsOn;
-                    _floofDb.SaveChanges();
-                    await Context.Channel.SendMessageAsync("Server Filtering " + (ServerConfig.IsOn ? "Enabled!" : "Disabled!"));
+                    await CheckServerEntryExists(Context.Guild.Id);
+                    // Check the status of server filtering
+                    var serverConfig = _floofDb.FilterConfigs.Find(Context.Guild.Id);
+                    
+                    serverConfig.IsOn = !serverConfig.IsOn;
+                    
+                    await _floofDb.SaveChangesAsync();
+                    
+                    await Context.Channel.SendMessageAsync("Server Filtering " + (serverConfig.IsOn ? "Enabled!" : "Disabled!"));
                 }
                 catch (Exception ex)
                 {
                     await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                    
                     Serilog.Log.Error("Error when trying to toggle the server filtering: " + ex);
-                    return;
                 }
             }
             else if (toggleType == "channel")
             {
-                // try toggling
+                // Try toggling
                 try
                 {
-                    CheckServerEntryExists(Context.Guild.Id);
-                    // check the status of logger
-                    var channelData = _floofDb.FilterChannelWhitelists.Find(Context.Channel.Id);
-                    bool channelInDatabase = false;
+                    await CheckServerEntryExists(Context.Guild.Id);
+                    
+                    // Check the status of logger
+                    var channelData = await _floofDb.FilterChannelWhitelists.FindAsync(Context.Channel.Id);
+                    bool channelInDatabase;
 
                     if (channelData == null)
                     {
@@ -88,22 +97,27 @@ namespace Floofbot.Modules
                             ChannelId = Context.Channel.Id,
                             ServerId = Context.Guild.Id
                         });
-                        _floofDb.SaveChanges();
+                        
+                        await _floofDb.SaveChangesAsync();
+                        
                         channelInDatabase = true;
                     }
                     else
                     {
                         _floofDb.FilterChannelWhitelists.Remove(channelData);
-                        _floofDb.SaveChanges();
+                        
+                        await _floofDb.SaveChangesAsync();
+                        
                         channelInDatabase = false;
                     }
+                    
                     await Context.Channel.SendMessageAsync("Filtering For This Channel Is " + (!channelInDatabase ? "Enabled!" : "Disabled!"));
                 }
                 catch (Exception ex)
                 {
                     await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                    
                     Serilog.Log.Error("Error when trying to toggle the channel filtering: " + ex);
-                    return;
                 }
             }
             else
@@ -116,68 +130,75 @@ namespace Floofbot.Modules
         [Command("add")]
         public async Task AddFilteredWord([Summary("filtered word")][Remainder] string word)
         {
-            CheckServerEntryExists(Context.Guild.Id);
-            string newWord = word.ToLower();
-            bool wordAlreadyExists = CheckWordEntryExists(newWord, Context.Guild);
+            await CheckServerEntryExists(Context.Guild.Id);
+            
+            var newWord = word.ToLower();
+            var wordAlreadyExists = CheckWordEntryExists(newWord, Context.Guild);
 
             if (wordAlreadyExists)
             {
                 await Context.Channel.SendMessageAsync($"{word} is already being filtered!");
                 return;
             }
-            else
+
+            try
             {
-                try
+                _floofDb.Add(new FilteredWord
                 {
-                    _floofDb.Add(new FilteredWord
-                    {
-                        Word = newWord,
-                        ServerId = Context.Guild.Id
-                    });
-                    _floofDb.SaveChanges();
-                    await Context.Channel.SendMessageAsync($"{word} is now being filtered!");
-                }
-                catch (Exception ex)
-                {
-                    await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                    Serilog.Log.Error("Error when trying to add a filtered word: " + ex);
-                }
+                    Word = newWord,
+                    ServerId = Context.Guild.Id
+                });
+                
+                await _floofDb.SaveChangesAsync();
+                
+                await Context.Channel.SendMessageAsync($"{word} is now being filtered!");
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                
+                Serilog.Log.Error("Error when trying to add a filtered word: " + ex);
             }
         }
+        
         [Summary("Removed an existing filtered word")]
         [Command("remove")]
         public async Task RemoveFilteredWord([Summary("filtered word")][Remainder] string word)
         {
-            CheckServerEntryExists(Context.Guild.Id);
-            string oldWord = word.ToLower();
-            bool wordAlreadyExists = CheckWordEntryExists(oldWord, Context.Guild);
+            await CheckServerEntryExists(Context.Guild.Id);
+            
+            var oldWord = word.ToLower();
+            var wordAlreadyExists = CheckWordEntryExists(oldWord, Context.Guild);
 
             if (!wordAlreadyExists)
             {
                 await Context.Channel.SendMessageAsync($"{word} isn't being filtered!");
                 return;
             }
-            else
+
+            try
             {
-                try
-                {
-                    FilteredWord wordEntry = _floofDb.FilteredWords.AsQueryable().Where(w => w.ServerId == Context.Guild.Id).Where(w => w.Word == oldWord).First();
-                    _floofDb.Remove(wordEntry);
-                    _floofDb.SaveChanges();
-                    await Context.Channel.SendMessageAsync($"{word} is no longer being filtered!");
-                }
-                catch (Exception ex)
-                {
-                    await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                    Serilog.Log.Error("Error when trying to toggle the channel filtering: " + ex);
-                }
+                var wordEntry = _floofDb.FilteredWords.AsQueryable().Where(w => w.ServerId == Context.Guild.Id).First(w => w.Word == oldWord);
+                
+                _floofDb.Remove(wordEntry);
+                
+                await _floofDb.SaveChangesAsync();
+                
+                await Context.Channel.SendMessageAsync($"{word} is no longer being filtered!");
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                
+                Serilog.Log.Error("Error when trying to toggle the channel filtering: " + ex);
             }
         }
+        
         [Summary("Lists all filtered words")]
         [Command("list")]
         public async Task ListFilteredWords()
         {
-            List<FilteredWord> filteredWords = _floofDb.FilteredWords.AsQueryable()
+            var filteredWords = _floofDb.FilteredWords.AsQueryable()
                 .Where(x => x.ServerId == Context.Guild.Id)
                 .OrderBy(x => x.Id)
                 .ToList();
@@ -185,29 +206,34 @@ namespace Floofbot.Modules
             if (filteredWords.Count == 0)
             {
                 await Context.Channel.SendMessageAsync("No words have been filtered yet");
+                
                 return;
             }
 
-            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
-            int numPages = (int)Math.Ceiling((double)filteredWords.Count / WORDS_PER_PAGE);
-            int index;
+            var pages = new List<PaginatedMessage.Page>();
+            var numPages = (int)Math.Ceiling((double)filteredWords.Count / WORDS_PER_PAGE);
+            
             for (int i = 0; i < numPages; i++)
             {
-                string text = "```\n";
+                var text = "```\n";
+                
                 for (int j = 0; j < WORDS_PER_PAGE; j++)
                 {
-                    index = i * WORDS_PER_PAGE + j;
+                    var index = i * WORDS_PER_PAGE + j;
+                    
                     if (index < filteredWords.Count)
                     {
                         text += $"{index + 1}. {filteredWords[index].Word}\n";
                     }
                 }
+                
                 text += "\n```";
+                
                 pages.Add(new PaginatedMessage.Page
                 {
                     Description = text
                 });
-            };
+            }
 
             var pager = new PaginatedMessage
             {
@@ -218,6 +244,7 @@ namespace Floofbot.Modules
                 Options = PaginatedAppearanceOptions.Default,
                 TimeStamp = DateTimeOffset.UtcNow
             };
+            
             await PagedReplyAsync(pager, new ReactionList
             {
                 Forward = true,

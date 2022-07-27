@@ -17,10 +17,10 @@ namespace Floofbot.Modules
     [Name("Tag")]
     [Group("tag")]
     [RequireContext(ContextType.Guild)]
-    [RequireUserPermission(Discord.GuildPermission.AttachFiles)]
+    [RequireUserPermission(GuildPermission.AttachFiles)]
     public class TagCommands : InteractiveBase
     {
-        private static readonly Discord.Color EMBED_COLOR = Color.Magenta;
+        private static readonly Color EMBED_COLOR = Color.Magenta;
         private static readonly int TAGS_PER_PAGE = 20;
         private static readonly List<string> SUPPORTED_IMAGE_EXTENSIONS = new List<string>
         {
@@ -39,11 +39,11 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RequireAdmin([Summary("True/False")] string requireAdmin = "")
         {
-            TagConfig config = await _floofDb.TagConfigs.AsQueryable()
-                .Where(config => config.ServerId == Context.Guild.Id).FirstOrDefaultAsync();
+            var config = await _floofDb.TagConfigs.AsQueryable()
+                .Where(config => config.ServerId == Context.Guild.Id)
+                .FirstOrDefaultAsync();
 
-            bool parsedRequireAdmin;
-            if (!bool.TryParse(requireAdmin, out parsedRequireAdmin))
+            if (!bool.TryParse(requireAdmin, out var parsedRequireAdmin))
             {
                 await SendEmbed(CreateDescriptionEmbed($"Usage: `.tag requireadmin True/False`"));
                 return;
@@ -63,31 +63,37 @@ namespace Floofbot.Modules
                 {
                     config.TagUpdateRequiresAdmin = parsedRequireAdmin;
                 }
+                
                 await _floofDb.SaveChangesAsync();
-                string message = "Adding/removing tags now " +
+                
+                var message = "Adding/removing tags now " +
                     (parsedRequireAdmin ? "requires" : "does not require") +
                     " admin permission.";
+                
                 await Context.Channel.SendMessageAsync(message);
             }
             catch (DbUpdateException e)
             {
-                string message = "Error when configuring permissions for adding/removing tags.";
+                var message = "Error when configuring permissions for adding/removing tags.";
                 await Context.Channel.SendMessageAsync(message);
+                
                 Log.Error(message + Environment.NewLine + e);
             }
         }
 
         private bool GetTagUpdateRequiresAdmin(ulong serverId)
         {
-            // assume if the record doesn't exist in the DB that we do not need admin permission
-            TagConfig config = _floofDb.TagConfigs.AsQueryable()
+            // Assume if the record doesn't exist in the DB that we do not need admin permission
+            var config = _floofDb.TagConfigs.AsQueryable()
                 .FirstOrDefault(config => config.ServerId == serverId);
-            return config == null ? false : config.TagUpdateRequiresAdmin;
+            
+            return config?.TagUpdateRequiresAdmin ?? false;
         }
 
         private bool UserHasTagUpdatePermissions(IGuildUser user)
         {
-            bool requireAdminPermissions = GetTagUpdateRequiresAdmin(Context.Guild.Id);
+            var requireAdminPermissions = GetTagUpdateRequiresAdmin(Context.Guild.Id);
+            
             return !requireAdminPermissions || user.GuildPermissions.BanMembers;
         }
 
@@ -98,29 +104,34 @@ namespace Floofbot.Modules
             [Summary("Tag name")] string tagName = null,
             [Summary("Tag content")][Remainder] string content = null)
         {
-            IGuildUser user = (IGuildUser)Context.Message.Author;
+            var user = (IGuildUser) Context.Message.Author;
+            
             if (!UserHasTagUpdatePermissions(user))
             {
                 await Context.Channel.SendMessageAsync("You do not have the permission to add tags.");
                 return;
             }
 
-            if (!string.IsNullOrEmpty(tagName) && !string.IsNullOrEmpty(content))
+            if (!string.IsNullOrWhiteSpace(tagName) && !string.IsNullOrWhiteSpace(content))
             {
-                Regex rgx = new Regex("[^a-zA-Z0-9-]");
-                string processedTagName = rgx.Replace(tagName, "").ToLower();
+                var rgx = new Regex("[^a-zA-Z0-9-]");
+                var processedTagName = rgx.Replace(tagName, "").ToLower();
+                
                 if (string.IsNullOrEmpty(processedTagName))
                 {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Invalid Tag name. " +
                         "Tag must contain characters within [A-Za-z0-9-]."));
+                    
                     return;
                 }
 
-                bool tagExists = _floofDb.Tags.AsQueryable()
+                var tagExists = _floofDb.Tags.AsQueryable()
                     .Any(tag => tag.TagName == processedTagName && tag.ServerId == Context.Guild.Id);
+                
                 if (tagExists)
                 {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{processedTagName}` already exists"));
+                    
                     return;
                 }
 
@@ -133,7 +144,9 @@ namespace Floofbot.Modules
                         UserId = Context.User.Id,
                         TagContent = content
                     });
-                    _floofDb.SaveChanges();
+                    
+                    await _floofDb.SaveChangesAsync();
+                    
                     await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{processedTagName}`"));
                 }
                 catch (DbUpdateException e)
@@ -155,7 +168,8 @@ namespace Floofbot.Modules
             [Summary("Tag name")] string tagName = null,
             [Summary("Tag content")][Remainder] string content = null)
         {
-            IGuildUser user = (IGuildUser)Context.Message.Author;
+            var user = (IGuildUser)Context.Message.Author;
+            
             if (!UserHasTagUpdatePermissions(user))
             {
                 await Context.Channel.SendMessageAsync("You do not have the permission to update tags.");
@@ -173,13 +187,15 @@ namespace Floofbot.Modules
                     return;
                 }
 
-                Tag tag = _floofDb.Tags.AsQueryable()
-                    .Where(tag => tag.TagName == processedTagName && tag.ServerId == Context.Guild.Id)
-                    .FirstOrDefault();
+                var tag = await _floofDb.Tags
+                    .AsQueryable()
+                    .FirstOrDefaultAsync(tag => tag.TagName == processedTagName && tag.ServerId == Context.Guild.Id);
+                
                 if (tag == null)
                 {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Tag `{processedTagName}` does not exist. " +
                         "Please use the `tag add` command"));
+                    
                     return;
                 }
 
@@ -187,7 +203,9 @@ namespace Floofbot.Modules
                 {
                     tag.UserId = Context.User.Id;
                     tag.TagContent = content;
-                    _floofDb.SaveChanges();
+                    
+                    await _floofDb.SaveChangesAsync();
+                    
                     await SendEmbed(CreateDescriptionEmbed($"💾 Updated Tag `{processedTagName}`"));
                 }
                 catch (DbUpdateException e)
@@ -206,7 +224,7 @@ namespace Floofbot.Modules
         [Summary("Lists all tags on the server, optionally filtering by keywords")]
         public async Task ListTags([Summary("Keywords to use")][Remainder] string keywords = null)
         {
-            List<Tag> tags = _floofDb.Tags.AsQueryable()
+            var tags = _floofDb.Tags.AsQueryable()
                 .Where(x => x.ServerId == Context.Guild.Id)
                 .OrderBy(x => x.TagName)
                 .ToList();
@@ -217,7 +235,7 @@ namespace Floofbot.Modules
                 return;
             }
 
-            // filter tags by keywords if applicable
+            // Filter tags by keywords if applicable
             if (!string.IsNullOrEmpty(keywords))
             {
                 keywords = keywords.ToLower();
@@ -230,23 +248,26 @@ namespace Floofbot.Modules
                 return;
             }
 
-            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
-            int numPages = (int)Math.Ceiling((double)tags.Count / TAGS_PER_PAGE);
-            int tagIndex;
-            string actualName;
+            var pages = new List<PaginatedMessage.Page>();
+            var numPages = (int)Math.Ceiling((double)tags.Count / TAGS_PER_PAGE);
+
             for (int i = 0; i < numPages; i++)
             {
-                string text = "```\n";
+                var text = "```\n";
+                
                 for (int j = 0; j < TAGS_PER_PAGE; j++)
                 {
-                    tagIndex = i * TAGS_PER_PAGE + j;
-                    if (tagIndex < tags.Count)
-                    {
-                        actualName = tags[tagIndex].TagName.Split(":")[0];
-                        text += $"{tagIndex + 1}. {actualName}\n";
-                    }
+                    var tagIndex = i * TAGS_PER_PAGE + j;
+
+                    if (tagIndex >= tags.Count) continue;
+                    
+                    var actualName = tags[tagIndex].TagName.Split(":")[0];
+                    
+                    text += $"{tagIndex + 1}. {actualName}\n";
                 }
+                
                 text += "\n```";
+                
                 pages.Add(new PaginatedMessage.Page
                 {
                     Description = text
@@ -262,6 +283,7 @@ namespace Floofbot.Modules
                 Options = PaginatedAppearanceOptions.Default,
                 TimeStamp = DateTimeOffset.UtcNow
             };
+            
             await PagedReplyAsync(pager, new ReactionList
             {
                 Forward = true,
@@ -276,7 +298,8 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.AttachFiles)]
         public async Task Remove([Summary("Tag name")] string tag = null)
         {
-            IGuildUser user = (IGuildUser)Context.Message.Author;
+            var user = (IGuildUser)Context.Message.Author;
+            
             if (!UserHasTagUpdatePermissions(user))
             {
                 await Context.Channel.SendMessageAsync("You do not have the permission to remove tags.");
@@ -285,8 +308,9 @@ namespace Floofbot.Modules
 
             if (!string.IsNullOrEmpty(tag))
             {
-                string tagName = tag.ToLower();
-                Tag tagToRemove = _floofDb.Tags.FirstOrDefault(x => x.TagName == tagName && x.ServerId == Context.Guild.Id);
+                var tagName = tag.ToLower();
+                var tagToRemove = _floofDb.Tags.FirstOrDefault(x => x.TagName == tagName && x.ServerId == Context.Guild.Id);
+                
                 if (tagToRemove != null)
                 {
                     try
@@ -321,20 +345,21 @@ namespace Floofbot.Modules
             if (!string.IsNullOrEmpty(tagName))
             {
                 tagName = tagName.ToLower();
-                Tag selectedTag = _floofDb.Tags.AsQueryable().FirstOrDefault(x => x.TagName == tagName && x.ServerId == Context.Guild.Id);
+                var selectedTag = _floofDb.Tags.AsQueryable().FirstOrDefault(x => x.TagName == tagName && x.ServerId == Context.Guild.Id);
 
                 if (selectedTag != null)
                 {
-                    string mentionlessTagContent = selectedTag.TagContent.Replace("@", "[at]");
+                    var mentionlessTagContent = selectedTag.TagContent.Replace("@", "[at]");
 
-                    bool isImage = false;
+                    var isImage = false;
+                    
                     if (Uri.IsWellFormedUriString(mentionlessTagContent, UriKind.RelativeOrAbsolute))
                     {
                         string ext = mentionlessTagContent.Split('.').Last().ToLower();
                         isImage = SUPPORTED_IMAGE_EXTENSIONS.Contains(ext);
                     }
 
-                    // tag found, so post it
+                    // Tag found, so post it
                     if (isImage)
                     {
                         EmbedBuilder builder = new EmbedBuilder()
@@ -352,25 +377,24 @@ namespace Floofbot.Modules
                 }
                 else
                 {
-                    // tag not found
+                    // Tag not found
                     await SendEmbed(CreateDescriptionEmbed($"💾 Could not find Tag: `{tagName}`"));
                 }
             }
             else
             {
-                // no tag given
+                // No tag given
                 await SendEmbed(CreateDescriptionEmbed($"💾 Usage: `tag [name]`"));
             }
         }
 
         private Embed CreateDescriptionEmbed(string description)
         {
-            EmbedBuilder builder = new EmbedBuilder
+            return new EmbedBuilder
             {
                 Description = description,
                 Color = EMBED_COLOR
-            };
-            return builder.Build();
+            }.Build();
         }
 
         private async Task SendEmbed(Embed embed)

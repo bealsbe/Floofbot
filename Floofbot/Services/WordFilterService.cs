@@ -13,7 +13,7 @@ namespace Floofbot.Services
         List<FilteredWord> _filteredWords;
         DateTime _lastRefreshedTime;
 
-        public List<string> filteredWordsInName(FloofDataContext floofDb, string messageContent, ulong serverId) // names
+        public List<string> FilteredWordsInName(FloofDataContext floofDb, string messageContent, ulong serverId) // names
         {
             // return false if none of the serverIds match or filtering has been disabled for the server
             if (!floofDb.FilterConfigs.AsQueryable()
@@ -22,7 +22,8 @@ namespace Floofbot.Services
                 return null;
             }
 
-            DateTime currentTime = DateTime.Now;
+            var currentTime = DateTime.Now;
+            
             if (_lastRefreshedTime == null || currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
             {
                 _filteredWords = floofDb.FilteredWords.AsQueryable()
@@ -30,21 +31,20 @@ namespace Floofbot.Services
                 _lastRefreshedTime = currentTime;
             }
 
-            List<string> DetectedWords = new List<string>();
+            var detectedWords = new List<string>();
 
             foreach (var filteredWord in _filteredWords)
             {
                 if (messageContent.ToLower().Contains(filteredWord.Word.ToLower()))
                 {
-                    DetectedWords.Add(filteredWord.Word);
+                    detectedWords.Add(filteredWord.Word);
                 }
             }
-            if (DetectedWords.Count() == 0)
-                return null;
-            else
-                return DetectedWords;
+            
+            return !detectedWords.Any() ? null : detectedWords;
         }
-        public bool hasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId) // messages
+        
+        public bool HasFilteredWord(FloofDataContext floofDb, string messageContent, ulong serverId, ulong channelId) // messages
         {
             // return false if none of the serverIds match or filtering has been disabled for the server
             if (!floofDb.FilterConfigs.AsQueryable()
@@ -60,17 +60,19 @@ namespace Floofbot.Services
                 return false;
             }
 
-            DateTime currentTime = DateTime.Now;
+            var currentTime = DateTime.Now;
+            
             if (_lastRefreshedTime == null || currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
             {
                 _filteredWords = floofDb.FilteredWords.AsQueryable()
                     .Where(x => x.ServerId == serverId).ToList();
+                
                 _lastRefreshedTime = currentTime;
             }
 
             foreach (var filteredWord in _filteredWords)
             {
-                Regex r = new Regex(@$"\b({Regex.Escape(filteredWord.Word)})\b",
+                var r = new Regex(@$"\b({Regex.Escape(filteredWord.Word)})\b",
                     RegexOptions.IgnoreCase | RegexOptions.Singleline);
                 if (r.IsMatch(messageContent))
                 {
@@ -80,5 +82,4 @@ namespace Floofbot.Services
             return false;
         }
     }
-
 }
