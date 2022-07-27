@@ -41,7 +41,6 @@ namespace Floofbot.Services
                     Log.Error("An exception occured when trying to add roles for the welcome gate: " + ex);
                 }
             }
-            
         }
     }
 }
