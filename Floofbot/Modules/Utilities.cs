@@ -180,7 +180,6 @@ namespace Floofbot
                 embed.WithThumbnailUrl(guild.IconUrl);
 
             await Context.Channel.SendMessageAsync(string.Empty, false, embed.Build());
-
         }
 
         [RequireOwner]

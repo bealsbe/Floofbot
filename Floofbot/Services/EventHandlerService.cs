@@ -26,8 +26,7 @@ namespace Floofbot.Services
 
         // Rules gate config
         private Dictionary <string, string> _rulesGateConfig = BotConfigFactory.Config.RulesGate;
-
-
+        
         public EventHandlerService(DiscordSocketClient clientParam)
         {
             // We don't need a global private variable if we ONLY use it in this method!
@@ -298,8 +297,7 @@ namespace Floofbot.Services
 
                     if (IsToggled(channel.Guild) == false) // not toggled on
                         return;
-
-
+                    
                     var logChannel = await GetChannel(channel.Guild, "MessageDeletedChannel");
                     
                     if (logChannel == null)
@@ -455,8 +453,8 @@ namespace Floofbot.Services
                     Log.Error("Error with the user unbanned event handler: " + ex);
                 }
             });
+            
             return Task.CompletedTask;
-
         }
 
         private Task UserJoined(IGuildUser user)
@@ -599,7 +597,6 @@ namespace Floofbot.Services
 
                         if (Uri.IsWellFormedUriString(after.GetAvatarUrl(), UriKind.Absolute))
                             embed.WithThumbnailUrl(after.GetAvatarUrl());
-
                     }
                     else if (before.AvatarId != after.AvatarId)
                     {
@@ -641,8 +638,7 @@ namespace Floofbot.Services
 
                     if (after.IsBot)
                         return;
-
-
+                    
                     if (after.Nickname != null && after.Nickname != before.Nickname)
                     {
                         var badWords = _wordFilterService.FilteredWordsInName(new FloofDataContext(), after.Nickname, after.Guild.Id);
