@@ -72,12 +72,12 @@ namespace Floofbot.Modules
                 
                 await Context.Channel.SendMessageAsync(message);
             }
-            catch (DbUpdateException e)
+            catch (DbUpdateException ex)
             {
                 var message = "Error when configuring permissions for adding/removing tags.";
                 await Context.Channel.SendMessageAsync(message);
                 
-                Log.Error(message + Environment.NewLine + e);
+                Log.Error(message + Environment.NewLine + ex);
             }
         }
 
@@ -149,10 +149,10 @@ namespace Floofbot.Modules
                     
                     await SendEmbed(CreateDescriptionEmbed($"💾 Added Tag `{processedTagName}`"));
                 }
-                catch (DbUpdateException e)
+                catch (DbUpdateException ex)
                 {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Unable to add Tag `{processedTagName}`"));
-                    Log.Error(e.ToString());
+                    Log.Error(ex.ToString());
                 }
             }
             else
@@ -208,10 +208,10 @@ namespace Floofbot.Modules
                     
                     await SendEmbed(CreateDescriptionEmbed($"💾 Updated Tag `{processedTagName}`"));
                 }
-                catch (DbUpdateException e)
+                catch (DbUpdateException ex)
                 {
                     await SendEmbed(CreateDescriptionEmbed($"💾 Unable to update Tag `{processedTagName}`"));
-                    Log.Error(e.ToString());
+                    Log.Error(ex.ToString());
                 }
             }
             else

@@ -263,9 +263,9 @@ namespace Floofbot.Services
 
                 await NotifyModerators(modRole, modChannel, " I have banned a user for mentioning " + msg.MentionedUsers.Count() + " members");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Error("Error banning user for mass mention: " + e);
+                Log.Error("Error banning user for mass mention: " + ex);
             }
             
             Log.Information("User ID " + msg.Author.Id + " triggered excess mention spam and was banned.");
@@ -515,9 +515,9 @@ namespace Floofbot.Services
                         await modChannel.SendMessageAsync(string.Empty, false, embed.Build());
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Log.Error("Unable to mute user for raid protection: " + e);
+                    Log.Error("Unable to mute user for raid protection: " + ex);
                 }
 
                 return true;
@@ -537,9 +537,9 @@ namespace Floofbot.Services
                 await msg.Author.SendMessageAsync(string.Empty, false, builder.Build());
                 await guild.AddBanAsync(msg.Author, 0, reason);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Error("Unable to ban user for raid protection: " + e);
+                Log.Error("Unable to ban user for raid protection: " + ex);
             }
 
             return false; // dont need to delete message as the ban already handled that

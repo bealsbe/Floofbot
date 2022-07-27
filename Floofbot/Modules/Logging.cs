@@ -108,11 +108,11 @@ namespace Floofbot.Modules
                     
                     return true;
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
                     var errorMsg = $"Error: Unable to link {channelType} to <#{channelId}>";
                     
-                    Log.Error(errorMsg + Environment.NewLine + e);
+                    Log.Error(errorMsg + Environment.NewLine + ex);
                     
                     return false;
                 }
