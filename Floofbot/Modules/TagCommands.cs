@@ -257,7 +257,7 @@ namespace Floofbot.Modules
                 
                 for (int j = 0; j < TAGS_PER_PAGE; j++)
                 {
-                    var tagIndex = i * TAGS_PER_PAGE + j;
+                    var tagIndex = (i * TAGS_PER_PAGE) + j;
 
                     if (tagIndex >= tags.Count) continue;
                     

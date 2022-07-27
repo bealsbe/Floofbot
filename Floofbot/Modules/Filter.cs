@@ -219,7 +219,7 @@ namespace Floofbot.Modules
                 
                 for (int j = 0; j < WORDS_PER_PAGE; j++)
                 {
-                    var index = i * WORDS_PER_PAGE + j;
+                    var index = (i * WORDS_PER_PAGE) + j;
                     
                     if (index < filteredWords.Count)
                     {
