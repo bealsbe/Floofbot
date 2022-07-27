@@ -272,7 +272,7 @@ namespace Floofbot.Modules
                 {
                     Description = text
                 });
-            };
+            }
 
             var pager = new PaginatedMessage
             {

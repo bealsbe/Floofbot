@@ -126,20 +126,19 @@ namespace Floofbot.Services
             
             if (numberOfJoins[guild] == 0)
                 numberOfJoins.Remove(guild);
-
         }
         
         private async void UserMessageCountTimeout(ulong guildId, ulong userId)
         {
             await Task.Delay(durationForMaxMessages);
-            if (userMessageCount.ContainsKey(guildId) && userMessageCount[guildId].ContainsKey(userId))
-                if (userMessageCount[guildId][userId] != 0)
-                {
-                    userMessageCount[guildId][userId] -= 1;
-                    if (userMessageCount[guildId][userId] == 0)
-                        userMessageCount[guildId].Remove(userId);
-
-                }
+            if (!userMessageCount.ContainsKey(guildId) || !userMessageCount[guildId].ContainsKey(userId)) return;
+            
+            if (userMessageCount[guildId][userId] == 0) return;
+                
+            userMessageCount[guildId][userId] -= 1;
+                
+            if (userMessageCount[guildId][userId] == 0)
+                userMessageCount[guildId].Remove(userId);
         }
         
         private void EnsureGuildInDictionaries(ulong guildId)

@@ -354,8 +354,7 @@ namespace Floofbot
             {
                 embedDesc += $"No unit has been entered, or it was not recognized. Available units are mi<->km, °C<->F, and kg<->lbs.";
             }
-
-
+            
             var builder = new EmbedBuilder()
             {
                 Title = "Conversion",
