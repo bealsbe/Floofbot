@@ -8,25 +8,27 @@ class RandomResponseGenerator
 {
     public static string GenerateResponse(SocketUserMessage userMessage)
     {
-
         // System messages (e.x. pin notifications)
         if (userMessage == null)
         {
             return string.Empty;
         }
 
-        List<BotRandomResponse> responses = BotConfigFactory.Config.RandomResponses;
+        var responses = BotConfigFactory.Config.RandomResponses;
+        
         if (responses == null || responses.Count == 0)
         {
             return string.Empty;
         }
 
-        Random rand = new Random();
-        double val = rand.NextDouble();
+        var rand = new Random();
+        var val = rand.NextDouble();
+        
         foreach (var response in responses)
         {
-            Regex requiredInput = new Regex(response.Input, RegexOptions.IgnoreCase);
-            Match match = requiredInput.Match(userMessage.Content);
+            var requiredInput = new Regex(response.Input, RegexOptions.IgnoreCase);
+            var match = requiredInput.Match(userMessage.Content);
+            
             if (match.Success && val < response.Probability)
             {
                 if (match.Groups.Count == 1) {
@@ -34,14 +36,17 @@ class RandomResponseGenerator
                     return response.Response;
                 }
 
-                List<string> matchedValues = new List<string>(match.Groups.Count - 1);
+                var matchedValues = new List<string>(match.Groups.Count - 1);
+                
                 for (int i = 1; i < match.Groups.Count; i++) 
                 {
                     matchedValues.Add(match.Groups[i].Value);
                 }
+                
                 return string.Format(response.Response, matchedValues.ToArray());
             }
         }
+        
         return string.Empty;
     }
 }

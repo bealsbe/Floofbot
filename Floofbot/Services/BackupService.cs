@@ -9,7 +9,8 @@ namespace Floofbot.Services
 {
     class BackupService
     {
-        private TimeSpan backupTime = new TimeSpan(2, 0, 0);
+        private TimeSpan _backupTime = new TimeSpan(2, 0, 0);
+        
         public void Start()
         {
             if (string.IsNullOrEmpty(BotConfigFactory.Config.BackupOutputPath) || string.IsNullOrEmpty(BotConfigFactory.Config.BackupScript))
@@ -17,24 +18,27 @@ namespace Floofbot.Services
                 Log.Error("Backups not properly configured in the config file. Backups will not be taken for this session.");
                 return;
             }
-            else
-            {
-                Log.Information("Automatic backups enabled! Backups will be saved to " + BotConfigFactory.Config.BackupOutputPath + " at " + backupTime);
-            }
+
+            Log.Information("Automatic backups enabled! Backups will be saved to " + BotConfigFactory.Config.BackupOutputPath + " at " + _backupTime);
 
             RunBackups();
         }
-        public async void RunBackups()
+
+        private async void RunBackups()
         {
             while (true)
             {
-                double targetDelay = backupTime.TotalSeconds - DateTime.UtcNow.TimeOfDay.TotalSeconds;
+                var targetDelay = _backupTime.TotalSeconds - DateTime.UtcNow.TimeOfDay.TotalSeconds;
+                
                 if (targetDelay < 0)
                 {
                     targetDelay += 86400;
                 }
+                
                 await Task.Delay((int)targetDelay * 1000);
-                System.Diagnostics.Process backupProcess = new System.Diagnostics.Process();
+                
+                var backupProcess = new System.Diagnostics.Process();
+                
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     backupProcess.StartInfo.FileName = "powershell.exe";
@@ -53,16 +57,22 @@ namespace Floofbot.Services
                                                     + BotConfigFactory.Config.DbPath + " "
                                                     + BotConfigFactory.Config.BackupOutputPath + " "
                                                     + BotConfigFactory.Config.NumberOfBackups; //arguments
+                
                 backupProcess.StartInfo.UseShellExecute = false;
                 backupProcess.StartInfo.RedirectStandardOutput = true;
                 backupProcess.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                 backupProcess.StartInfo.CreateNoWindow = true; //not diplay a windows
+                
                 try
                 {
                     backupProcess.Start();
-                    string output = backupProcess.StandardOutput.ReadToEnd(); //The output result
+                    
+                    var output = await backupProcess.StandardOutput.ReadToEndAsync(); //The output result
+                    
                     backupProcess.WaitForExit();
+                    
                     Log.Information(output);
+                    
                     if (backupProcess.ExitCode != 0)
                     {
                         Log.Error("Backup script failed. Process returned exit code " + backupProcess.ExitCode);

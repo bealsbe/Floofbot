@@ -10,19 +10,23 @@ using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Floofbot.Services
 {
     class UserRoleRetentionService
     {
         FloofDataContext _floofDb;
+        
         public UserRoleRetentionService(FloofDataContext floofDb)
         {
             _floofDb = floofDb;
         }
+        
         public async Task LogUserRoles(IGuildUser user)
         {
-            string userRoles = string.Join(",", user.RoleIds);
+            var userRoles = string.Join(",", user.RoleIds);
+            
             await RemoveUserRoleLog(user);
 
             _floofDb.UserRolesLists.Add(new UserRolesList{
@@ -31,63 +35,64 @@ namespace Floofbot.Services
                 UserID = user.Id,
                 UTCTimestamp = DateTime.Now
             });
+            
             await _floofDb.SaveChangesAsync();
         }
-        public async Task RemoveUserRoleLog(IGuildUser user)
+
+        private async Task RemoveUserRoleLog(IGuildUser user)
         {
             // clear old roles in db with new ones if they exist
-            if (_floofDb.UserRolesLists.AsQueryable().Where(x => x.ServerId == user.Guild.Id && x.UserID == user.Id).Any())
+            if (_floofDb.UserRolesLists.AsQueryable().Any(x => x.ServerId == user.Guild.Id && x.UserID == user.Id))
             {
-                var oldUserRoles = _floofDb.UserRolesLists.AsQueryable().Where(x => x.ServerId == user.Guild.Id && x.UserID == user.Id).FirstOrDefault();
+                var oldUserRoles = await _floofDb.UserRolesLists.AsQueryable().FirstOrDefaultAsync(x => x.ServerId == user.Guild.Id && x.UserID == user.Id);
+                
                 _floofDb.UserRolesLists.Remove(oldUserRoles);
+                
                 await _floofDb.SaveChangesAsync();
             }
         }
-        public string GetUserRoles(IGuildUser user)
+
+        private string GetUserRoles(IGuildUser user)
         {
-            if (_floofDb.UserRolesLists.AsQueryable().Where(x => x.ServerId == user.Guild.Id && x.UserID == user.Id).Any())
+            if (_floofDb.UserRolesLists.AsQueryable().Any(x => x.ServerId == user.Guild.Id && x.UserID == user.Id))
             {
-                var userRoles = _floofDb.UserRolesLists.AsQueryable().Where(x => x.ServerId == user.Guild.Id && x.UserID == user.Id).FirstOrDefault();
+                var userRoles = _floofDb.UserRolesLists.AsQueryable().FirstOrDefault(x => x.ServerId == user.Guild.Id && x.UserID == user.Id);
+               
                 return userRoles.ListOfRoleIds;
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
+        
         public async Task RestoreUserRoles(IGuildUser user)
         {
             var oldUserRoles = GetUserRoles(user);
 
-            if (oldUserRoles != null) // user actually had old roles
+            if (oldUserRoles != null) // User actually had old roles
             {
                 var oldUserRolesList = oldUserRoles.Split(",");
 
-                // restore each role 1 by 1
-                foreach (string roleId in oldUserRolesList)
+                // Restore each role 1 by 1
+                foreach (var roleId in oldUserRolesList)
                 {
-                    IRole role = user.Guild.GetRole(Convert.ToUInt64(roleId));
+                    var role = user.Guild.GetRole(Convert.ToUInt64(roleId));
 
                     if (role == null) // role does not exist
                     {
                         Log.Error("Unable to return role ID " + roleId + " to user ID " + user.Id + " as it does not exist anymore!");
                         continue;
                     }
-                    else if (role.Name == "@everyone")
-                    {
+
+                    if (role.Name == "@everyone")
                         continue;
-                    }
-                    else
+
+                    try
                     {
-                        try
-                        {
-                            await user.AddRoleAsync(role);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Information("Cannot return the role ID " + role.Id + " to user ID " + user.Id + ". Error: " + ex.ToString());
-                            continue; // try add next role
-                        }
+                        await user.AddRoleAsync(role);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Information("Cannot return the role ID " + role.Id + " to user ID " + user.Id + ". Error: " + e);
                     }
                 }
             }

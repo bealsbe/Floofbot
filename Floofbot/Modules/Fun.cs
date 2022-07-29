@@ -12,18 +12,20 @@ namespace Floofbot.Modules
     [Name("Fun")]
     public class Fun : ModuleBase<SocketCommandContext>
     {
-        private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;
-        private static Random rand = new Random();
+        private static readonly Color EMBED_COLOR = Color.DarkOrange;
+        private static Random _random = new Random();
 
         [Command("8ball")]
         [Summary("Ask the Magic 8-Ball a question")]
         public async Task AskEightBall([Summary("question")][Remainder] string question)
         {
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = "Magic 8 Ball";
-            builder.AddField("Question", question);
-            builder.AddField("Answer", EightBall.GetRandomResponse());
-            builder.Color = EMBED_COLOR;
+            var builder = new EmbedBuilder
+            {
+                Title = "Magic 8 Ball",
+                Color = EMBED_COLOR
+            }.AddField("Question", question)
+             .AddField("Answer", EightBall.GetRandomResponse());
+            
             await SendEmbed(builder.Build());
         }
 
@@ -31,14 +33,15 @@ namespace Floofbot.Modules
         [Summary("Get an xkcd comic by ID. If no ID given, get the latest one.")]
         public async Task XKCD([Summary("Comic ID")] string comicId = "")
         {
-            int parsedComicId;
-            if ((!int.TryParse(comicId, out parsedComicId) || parsedComicId <= 0) && !String.IsNullOrEmpty(comicId))
+            if ((!int.TryParse(comicId, out var parsedComicId) || parsedComicId <= 0) && !String.IsNullOrEmpty(comicId))
             {
                 await Context.Channel.SendMessageAsync("Comic ID must be a positive integer less than or equal to " + Int32.MaxValue + ".");
+                
                 return;
             }
 
-            string json;
+            var json = string.Empty;
+            
             if (parsedComicId == 0)
             {
                 json = await ApiFetcher.RequestSiteContentAsString("https://xkcd.com/info.0.json");
@@ -51,23 +54,28 @@ namespace Floofbot.Modules
             if (string.IsNullOrEmpty(json))
             {
                 await Context.Channel.SendMessageAsync("404 Not Found");
+                
                 return;
             }
+            
             string imgLink;
             string imgHoverText;
             string comicTitle;
-            using (JsonDocument parsedJson = JsonDocument.Parse(json))
+            
+            using (var parsedJson = JsonDocument.Parse(json))
             {
                 imgLink = parsedJson.RootElement.GetProperty("img").ToString();
                 imgHoverText = parsedJson.RootElement.GetProperty("alt").ToString();
                 comicTitle = parsedJson.RootElement.GetProperty("safe_title").ToString();
             }
 
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Title = comicTitle;
-            builder.WithImageUrl(imgLink);
-            builder.WithFooter(imgHoverText);
-            builder.Color = EMBED_COLOR;
+            var builder = new EmbedBuilder
+            {
+                Title = comicTitle,
+                Color = EMBED_COLOR
+            }.WithImageUrl(imgLink)
+             .WithFooter(imgHoverText);
+            
             await SendEmbed(builder.Build());
         }
 
@@ -77,7 +85,8 @@ namespace Floofbot.Modules
         {
             try
             {
-                Dice dice = Dice.FromString(diceStr);
+                var dice = Dice.FromString(diceStr);
+                
                 await Context.Channel.SendMessageAsync(string.Join(" ", dice.GenerateRolls()));
             }
             catch (ArgumentException e)
@@ -93,7 +102,8 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat fact")]
         public async Task RequestCatFact()
         {
-            string fact = await ApiFetcher.RequestStringFromApi("https://catfact.ninja/fact", "fact");
+            var fact = await ApiFetcher.RequestStringFromApi("https://catfact.ninja/fact", "fact");
+            
             if (!string.IsNullOrEmpty(fact))
             {
                 await Context.Channel.SendMessageAsync(fact);
@@ -108,7 +118,8 @@ namespace Floofbot.Modules
         [Summary("Responds with a random fox fact")]
         public async Task RequestFoxFact()
         {
-            string fact = await ApiFetcher.RequestStringFromApi("https://some-random-api.ml/facts/fox", "fact");
+            var fact = await ApiFetcher.RequestStringFromApi("https://some-random-api.ml/facts/fox", "fact");
+            
             if (!string.IsNullOrEmpty(fact))
             {
                 await Context.Channel.SendMessageAsync(fact);
@@ -123,7 +134,8 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat")]
         public async Task RequestCat()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
+            var fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
+            
             if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
             {
                 await SendAnimalEmbed(":cat:", fileUrl);
@@ -138,7 +150,8 @@ namespace Floofbot.Modules
         [Summary("Responds with a random dog")]
         public async Task RequestDog()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
+            var fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
+            
             if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
             {
                 await SendAnimalEmbed(":dog:", fileUrl);
@@ -153,7 +166,8 @@ namespace Floofbot.Modules
         [Summary("Responds with a random fox")]
         public async Task RequestFox()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+            var fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+            
             if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
             {
                 await SendAnimalEmbed(":fox:", fileUrl);
@@ -168,7 +182,8 @@ namespace Floofbot.Modules
         [Summary("Responds with a random birb")]
         public async Task RequestBirb()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
+            var fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
+            
             if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Relative))
             {
                 fileUrl = "https://random.birb.pw/img/" + fileUrl;
@@ -186,31 +201,38 @@ namespace Floofbot.Modules
         {
             if (!string.IsNullOrEmpty(choices))
             {
-                string[] splitChoices = choices.Split(";")
+                var splitChoices = choices.Split(";")
                     .Select(choice => choice.Trim())
                     .Where(choice => !string.IsNullOrEmpty(choice)).ToArray();
+                
                 if (splitChoices.Length == 1)
                 {
                     await Context.Channel.SendMessageAsync("You need to give me more than one choice!");
+                    
                     return;
                 }
-                else if (splitChoices.Length != 0)
+
+                if (splitChoices.Length != 0)
                 {
-                    EmbedBuilder choiceEmbed = new EmbedBuilder(){
-                        Description = "Chosen choice: " + splitChoices[rand.Next(splitChoices.Length)],
+                    var choiceEmbed = new EmbedBuilder(){
+                        Description = "Chosen choice: " + splitChoices[_random.Next(splitChoices.Length)],
                         Color = EMBED_COLOR
                     };
 
-                    await Context.Channel.SendMessageAsync("", false, choiceEmbed.Build());
+                    await Context.Channel.SendMessageAsync(string.Empty, false, choiceEmbed.Build());
+                    
                     return;
                 }
             }
-            string usageString = "Not enough options were provided, or all options were whitespace.\n" +
+            
+            var usageString = "Not enough options were provided, or all options were whitespace.\n" +
                 "Example usage: `.choice choiceA; choiceB; choiceC`";
-            EmbedBuilder builder = new EmbedBuilder {
+            
+            var builder = new EmbedBuilder {
                 Description = usageString,
                 Color = EMBED_COLOR
             };
+            
             await SendEmbed(builder.Build());
         }
 
@@ -232,27 +254,31 @@ namespace Floofbot.Modules
             }
             else
             {
-                MinesweeperBoard game = new MinesweeperBoard(height, width, bombs);
-                EmbedBuilder builder = new EmbedBuilder();
-                builder.Title = ":bomb: Minesweeper";
-                builder.Color = EMBED_COLOR;
-                builder.Description = game.ToString();
+                var game = new MinesweeperBoard(height, width, bombs);
+                var builder = new EmbedBuilder
+                {
+                    Title = ":bomb: Minesweeper",
+                    Color = EMBED_COLOR,
+                    Description = game.ToString()
+                };
+                
                 await SendEmbed(builder.Build());
             }
         }
 
         private async Task SendAnimalEmbed(string title, string fileUrl)
         {
-            EmbedBuilder builder = new EmbedBuilder()
+            var builder = new EmbedBuilder()
                 .WithTitle(title)
                 .WithColor(EMBED_COLOR)
                 .WithImageUrl(fileUrl);
+            
             await SendEmbed(builder.Build());
         }
 
         private async Task SendEmbed(Embed embed)
         {
-            await Context.Channel.SendMessageAsync("", false, embed);
+            await Context.Channel.SendMessageAsync(string.Empty, false, embed);
         }
     }
 }

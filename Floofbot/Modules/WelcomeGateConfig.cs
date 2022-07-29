@@ -23,101 +23,104 @@ namespace Floofbot.Modules
         {
             _floofDB = floofDB;
         }
-        private WelcomeGate GetServerConfig(ulong server)
+        
+        private async Task<WelcomeGate> GetServerConfigAsync(ulong server)
         {
-            // checks if server exists in database and adds if not
+            // Checks if server exists in database and adds if not
             var serverConfig = _floofDB.WelcomeGateConfigs.Find(server);
-            if (serverConfig == null)
+
+            if (serverConfig != null) return serverConfig;
+            
+            _floofDB.Add(new WelcomeGate
             {
-                _floofDB.Add(new WelcomeGate
-                {
-                    GuildID = server,
-                    Toggle = false,
-                    RoleId = null
-                }) ;
-                _floofDB.SaveChanges();
-                return _floofDB.WelcomeGateConfigs.Find(server);
-            }
-            else
-            {
-                return serverConfig;
-            }
+                GuildID = server,
+                Toggle = false,
+                RoleId = null
+            }) ;
+                
+            await _floofDB.SaveChangesAsync();
+                
+            return await _floofDB.WelcomeGateConfigs.FindAsync(server);
+
         }
-        private Discord.Color GenerateColor()
+        
+        private Color GenerateColor()
         {
-            return new Discord.Color((uint)new Random().Next(0x1000000));
+            return new Color((uint)new Random().Next(0x1000000));
         }
 
         [Command("toggle")]
         [Summary("Toggles the welcome gate role assignment")]
         public async Task Toggle()
         {
-
-            // try toggling
+            // Try toggling
             try
             {
-                // check the status of logger
-                var ServerConfig = GetServerConfig(Context.Guild.Id);
+                // Check the status of logger
+                var serverConfig = await GetServerConfigAsync(Context.Guild.Id);
 
-                ServerConfig.Toggle = !ServerConfig.Toggle;
-                _floofDB.SaveChanges();
-                await Context.Channel.SendMessageAsync("Welcome gate role assignment " + (ServerConfig.Toggle ? "Enabled!" : "Disabled!"));
+                serverConfig.Toggle = !serverConfig.Toggle;
+                
+                await _floofDB.SaveChangesAsync();
+                
+                await Context.Channel.SendMessageAsync("Welcome gate role assignment " + (serverConfig.Toggle ? "Enabled!" : "Disabled!"));
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to toggle welcome gate role assignment: " + ex);
-                return;
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
+                Log.Error("Error when trying to toggle welcome gate role assignment: " + e);
             }
         }
+        
         [Command("role")]
         [Summary("The role to add to the user")]
         public async Task SetRole(string roleName = null)
         {
             if (roleName == null)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder { Description = $"💾 Usage: `welcomegateconfig [rolename]`", Color = GenerateColor() }.Build());
+                await Context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder { Description = $"💾 Usage: `welcomegateconfig [rolename]`", Color = GenerateColor() }.Build());
                 return;
             }
 
-            var ServerConfig = GetServerConfig(Context.Guild.Id);
-            bool roleFound = false;
+            var serverConfig = await GetServerConfigAsync(Context.Guild.Id);
+            var roleFound = false;
             ulong? roleId = null;
+            
             try
             {
                 foreach (SocketRole r in Context.Guild.Roles)
                 {
-                    if (r.Name.ToLower() == roleName.ToLower())
+                    if (r.Name.ToLower() != roleName.ToLower()) continue;
+                    
+                    if (roleFound == false) // Ok we found 1 role thats GOOD
                     {
-                        if (roleFound == false) // ok we found 1 role thats GOOD
-                        {
-                            roleFound = true;
-                            roleId = r.Id;
-                        }
-                        else // there is more than 1 role with the same name!
-                        {
-                            await Context.Channel.SendMessageAsync("More than one role exists with that name! Not sure what to do! Please resolve this. Aborting..");
-                            return;
-                        }
+                        roleFound = true;
+                        roleId = r.Id;
+                    }
+                    else // There is more than 1 role with the same name!
+                    {
+                        await Context.Channel.SendMessageAsync("More than one role exists with that name! Not sure what to do! Please resolve this. Aborting..");
+                        return;
                     }
                 }
 
                 if (roleFound)
                 {
-                    ServerConfig.RoleId = roleId;
-                    _floofDB.SaveChanges();
+                    serverConfig.RoleId = roleId;
+                    
+                    await _floofDB.SaveChangesAsync();
+                    
                     await Context.Channel.SendMessageAsync("Role set!");
                 }
                 else
                 {
                     await Context.Channel.SendMessageAsync("Unable to find that role. Role not set.");
-                    return;
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to set the welcome gate role: " + ex);
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
+                Log.Error("Error when trying to set the welcome gate role: " + e);
             }
         }
     }

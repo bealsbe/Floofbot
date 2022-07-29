@@ -24,7 +24,7 @@ namespace Discord.Addons.Interactive
             SingleUsePerUser = singleUsePerUser;
             ExpiresAfterUse = expiresAfterUse;
             ReactorIDs = new List<ulong>();
-            Text = text ?? "";
+            Text = text ?? string.Empty;
             Embed = embed;
             Timeout = timeout;
             TimeoutCallback = timeoutCallback;

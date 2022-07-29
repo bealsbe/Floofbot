@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Floofbot.Services.Repository
 {
-    public partial class FloofDataContext : DbContext
+    public class FloofDataContext : DbContext
     {
         public FloofDataContext()
         {
@@ -32,12 +32,12 @@ namespace Floofbot.Services.Repository
         public virtual DbSet<RaidProtectionConfig> RaidProtectionConfigs { get; set; }
         public virtual DbSet<UserRolesList> UserRolesLists { get; set; }
         public virtual DbSet<WelcomeGate> WelcomeGateConfigs { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlite("DataSource=" + BotConfigFactory.Config.DbPath);
-            }
+            if (optionsBuilder.IsConfigured) return;
+            
+            optionsBuilder.UseSqlite("DataSource=" + BotConfigFactory.Config.DbPath);
         }
     }
 }
