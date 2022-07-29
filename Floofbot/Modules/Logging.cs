@@ -108,11 +108,11 @@ namespace Floofbot.Modules
                     
                     return true;
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
                     var errorMsg = $"Error: Unable to link {channelType} to <#{channelId}>";
                     
-                    Log.Error(errorMsg + Environment.NewLine + ex);
+                    Log.Error(errorMsg + Environment.NewLine + e);
                     
                     return false;
                 }
@@ -194,11 +194,11 @@ namespace Floofbot.Modules
                     
                     await _floofDB.SaveChangesAsync();
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                    await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
                     
-                    Log.Error("Error when trying to toggle the event logger: " + ex);
+                    Log.Error("Error when trying to toggle the event logger: " + e);
                 }
             }
         }

@@ -55,9 +55,9 @@ namespace Floofbot.Modules.Helpers
                 {
                     return jsonDocument.RootElement.GetProperty(key).ToString();
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error(e.Message);
                     
                     return string.Empty;
                 }
@@ -70,9 +70,9 @@ namespace Floofbot.Modules.Helpers
             {
                 return await HTTP_CLIENT.GetStringAsync(apiUrl);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Log.Error(ex.Message);
+                Log.Error(e.Message);
                 
                 return string.Empty;
             }

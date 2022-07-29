@@ -84,11 +84,11 @@ namespace Floofbot.Modules
                 
                 await Context.Channel.SendMessageAsync("Modmail " + (serverConfig.IsEnabled ? "Enabled!" : "Disabled!"));
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
                 
-                Log.Error("Error when trying to toggle the modmail: " + ex);
+                Log.Error("Error when trying to toggle the modmail: " + e);
             }
         }
         [Command("modrole")]
@@ -136,11 +136,11 @@ namespace Floofbot.Modules
                     await Context.Channel.SendMessageAsync("Unable to find that role. Role not set.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
                 
-                Log.Error("Error when trying to set the modmail mod role: " + ex);
+                Log.Error("Error when trying to set the modmail mod role: " + e);
             }
         }
     }

@@ -69,10 +69,10 @@ namespace Floofbot.Modules
                 
                 await Context.Channel.SendMessageAsync("Nickname Alerts " + (serverConfig.IsOn ? "Enabled!" : "Disabled!"));
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to toggle the nickname alerts: " + ex);
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
+                Log.Error("Error when trying to toggle the nickname alerts: " + e);
             }
         }
     }

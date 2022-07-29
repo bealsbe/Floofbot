@@ -45,7 +45,7 @@ namespace Floofbot.Modules
                     if (_floofDb.BansOnJoin.AsQueryable().Any(u => u.UserID == Convert.ToUInt64(userId))) // user is already going to be banned when they join
                     {
                         await Context.Channel.SendMessageAsync("⚠️ Cannot find user - they are already going to be banned when they join!");
-                        
+
                         return;
                     }
 
@@ -1122,9 +1122,9 @@ namespace Floofbot.Modules
 
                 await Context.Channel.SendMessageAsync("Invalid input, please provide a valid number. Aborting..");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync(ex.ToString());
+                await Context.Channel.SendMessageAsync(e.ToString());
             }
         }
         

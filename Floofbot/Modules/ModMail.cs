@@ -87,9 +87,9 @@ namespace Floofbot.Modules
                 
                 await channel.SendMessageAsync(messageContent, false, builder.Build());
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync(ex.ToString());
+                await Context.Channel.SendMessageAsync(e.ToString());
             }
         }
     }

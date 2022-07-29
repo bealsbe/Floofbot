@@ -72,11 +72,11 @@ namespace Floofbot.Modules
                     
                     await Context.Channel.SendMessageAsync("Server Filtering " + (serverConfig.IsOn ? "Enabled!" : "Disabled!"));
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                    await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
                     
-                    Serilog.Log.Error("Error when trying to toggle the server filtering: " + ex);
+                    Serilog.Log.Error("Error when trying to toggle the server filtering: " + e);
                 }
             }
             else if (toggleType == "channel")
@@ -113,11 +113,11 @@ namespace Floofbot.Modules
                     
                     await Context.Channel.SendMessageAsync("Filtering For This Channel Is " + (!channelInDatabase ? "Enabled!" : "Disabled!"));
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                    await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
                     
-                    Serilog.Log.Error("Error when trying to toggle the channel filtering: " + ex);
+                    Serilog.Log.Error("Error when trying to toggle the channel filtering: " + e);
                 }
             }
             else
@@ -153,11 +153,11 @@ namespace Floofbot.Modules
                 
                 await Context.Channel.SendMessageAsync($"{word} is now being filtered!");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
                 
-                Serilog.Log.Error("Error when trying to add a filtered word: " + ex);
+                Serilog.Log.Error("Error when trying to add a filtered word: " + e);
             }
         }
         
@@ -186,11 +186,11 @@ namespace Floofbot.Modules
                 
                 await Context.Channel.SendMessageAsync($"{word} is no longer being filtered!");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
                 
-                Serilog.Log.Error("Error when trying to toggle the channel filtering: " + ex);
+                Serilog.Log.Error("Error when trying to toggle the channel filtering: " + e);
             }
         }
         

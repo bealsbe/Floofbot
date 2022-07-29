@@ -65,10 +65,10 @@ namespace Floofbot.Modules
                 
                 await Context.Channel.SendMessageAsync("Welcome gate role assignment " + (serverConfig.Toggle ? "Enabled!" : "Disabled!"));
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to toggle welcome gate role assignment: " + ex);
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
+                Log.Error("Error when trying to toggle welcome gate role assignment: " + e);
             }
         }
         
@@ -117,10 +117,10 @@ namespace Floofbot.Modules
                     await Context.Channel.SendMessageAsync("Unable to find that role. Role not set.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured: " + ex.Message);
-                Log.Error("Error when trying to set the welcome gate role: " + ex);
+                await Context.Channel.SendMessageAsync("An error occured: " + e.Message);
+                Log.Error("Error when trying to set the welcome gate role: " + e);
             }
         }
     }

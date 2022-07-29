@@ -71,9 +71,9 @@ namespace Floofbot
                 await _client.LoginAsync(TokenType.Bot, token);
                 await _client.StartAsync();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Log.Error(ex.Message);
+                Log.Error(e.Message);
                 Console.WriteLine("Press any key to exit");
                 Console.ReadKey();
                 Environment.Exit(1);

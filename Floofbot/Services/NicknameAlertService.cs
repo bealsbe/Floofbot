@@ -119,10 +119,10 @@ namespace Floofbot.Services
                             await channel.SendMessageAsync($"Got it! I warned {badUser.Username}#{badUser.Discriminator}!");
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception e)
                     {
                         await channel.SendMessageAsync("Unable to warn user. Do I have the permissions?");
-                        Log.Error("Unable to warn user for bad name: " + ex);
+                        Log.Error("Unable to warn user for bad name: " + e);
                     }
                     
                     _alertMessageIdsDic.Remove(msg.Id);
@@ -145,10 +145,10 @@ namespace Floofbot.Services
                         await badUser.Guild.AddBanAsync(badUser, 0, $"{moderator.Username}#{moderator.Discriminator} ({moderator.Id}) -> Inappropriate Name");
                         await channel.SendMessageAsync($"Got it! I banned {badUser.Username}#{badUser.Discriminator}!");
                     }
-                    catch (Exception ex)
+                    catch (Exception e)
                     {
                         await channel.SendMessageAsync("Unable to ban user. Do I have the permissions?");
-                        Log.Error("Unable to ban user for bad name: " + ex);
+                        Log.Error("Unable to ban user for bad name: " + e);
                     }
                     
                     _alertMessageIdsDic.Remove(msg.Id);
@@ -170,10 +170,10 @@ namespace Floofbot.Services
 
                         await channel.SendMessageAsync($"Got it! I kicked {badUser.Username}#{badUser.Discriminator}!");
                     }
-                    catch (Exception ex)
+                    catch (Exception e)
                     {
                         await channel.SendMessageAsync("Unable to kick user. Do I have the permissions?");
-                        Log.Error("Unable to kick user for bad name: " + ex);
+                        Log.Error("Unable to kick user for bad name: " + e);
                     }
                     
                     _alertMessageIdsDic.Remove(msg.Id);
@@ -185,10 +185,10 @@ namespace Floofbot.Services
                         await badUser.Guild.GetUser(badUser.Id).ModifyAsync(user => user.Nickname = string.Empty);
                         await channel.SendMessageAsync($"Got it! I removed {badUser.Username}#{badUser.Discriminator}'s nickname!");
                     }
-                    catch (Exception ex)
+                    catch (Exception e)
                     {
                         await channel.SendMessageAsync("Unable to remove their nickname. Do I have the permissions?");
-                        Log.Error("Unable to remove nickname for bad name: " + ex);
+                        Log.Error("Unable to remove nickname for bad name: " + e);
                     }
                     _alertMessageIdsDic.Remove(msg.Id);
                 }

@@ -83,9 +83,9 @@ namespace Floofbot.Services
                     Log.Error("The backup script file could not be found. Backup not successful.");
                     return;
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Fatal("Exception occured when trying to backup the the database: " + ex);
+                    Log.Fatal("Exception occured when trying to backup the the database: " + e);
                 }
 
                 // Safety sleep to ensure backups only run once per day

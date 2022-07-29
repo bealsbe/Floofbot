@@ -90,10 +90,10 @@ namespace Floofbot.Modules
                 await usr.AddRoleAsync(role, new RequestOptions { AuditLogReason = "User assigned themselves the role" });
                 await Context.Channel.SendMessageAsync($"You now have the '{role.Name}' role.");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 await Context.Channel.SendMessageAsync("Unable to give you that role. I may not have the permissions.");
-                Log.Error("Error trying to add a role onto a user: " + ex);
+                Log.Error("Error trying to add a role onto a user: " + e);
             }
         }
 
@@ -140,11 +140,11 @@ namespace Floofbot.Modules
                     
                     return;
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
                     await Context.Channel.SendMessageAsync("Unable to remove that role. I may not have the permissions.");
                     
-                    Log.Error("Error trying to remove a role from a user: " + ex);
+                    Log.Error("Error trying to remove a role from a user: " + e);
                     
                     return;
                 }

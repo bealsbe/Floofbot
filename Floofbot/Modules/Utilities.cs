@@ -191,9 +191,9 @@ namespace Floofbot
             {
                 BotConfigFactory.Reinitialize();
             }
-            catch (InvalidDataException ex)
+            catch (InvalidDataException e)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await Context.Channel.SendMessageAsync(e.Message);
                 return;
             }
 

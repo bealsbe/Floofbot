@@ -36,9 +36,9 @@ namespace Floofbot.Services
 
                     await after.AddRoleAsync(userRole);
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("An exception occured when trying to add roles for the welcome gate: " + ex);
+                    Log.Error("An exception occured when trying to add roles for the welcome gate: " + e);
                 }
             }
         }

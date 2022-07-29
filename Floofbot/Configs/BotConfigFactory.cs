@@ -63,9 +63,9 @@ namespace Floofbot.Configs
                     
                     return config;
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error(ex.ToString());
+                    Log.Error(e.ToString());
                     
                     return new BotConfig();
                 }

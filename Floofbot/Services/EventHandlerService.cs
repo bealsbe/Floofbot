@@ -130,9 +130,9 @@ namespace Floofbot.Services
                         
                         await floofDb.SaveChangesAsync();
                     }
-                    catch (Exception ex) // db error
+                    catch (Exception e) // db error
                     {
-                        Log.Error("Error with the auto ban on join system: " + ex);
+                        Log.Error("Error with the auto ban on join system: " + e);
                     }
                 }
             }
@@ -192,9 +192,9 @@ namespace Floofbot.Services
                         await msg.Channel.SendMessageAsync(randomResponse);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the on message event handler: " + ex);
+                    Log.Error("Error with the on message event handler: " + e);
                 }
             });
             return Task.CompletedTask;
@@ -266,9 +266,9 @@ namespace Floofbot.Services
 
                     await logChannel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the message updated event handler: " + ex);
+                    Log.Error("Error with the message updated event handler: " + e);
                 }
             });
             
@@ -321,9 +321,9 @@ namespace Floofbot.Services
 
                     await logChannel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the message deleted event handler: " + ex);
+                    Log.Error("Error with the message deleted event handler: " + e);
                 }
             });
             
@@ -368,9 +368,9 @@ namespace Floofbot.Services
 
                     await logChannel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the message deleted by bot event handler: " + ex);
+                    Log.Error("Error with the message deleted by bot event handler: " + e);
                 }
             });
             
@@ -410,9 +410,9 @@ namespace Floofbot.Services
 
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the user banned event handler: " + ex);
+                    Log.Error("Error with the user banned event handler: " + e);
                 }
             });
             
@@ -448,9 +448,9 @@ namespace Floofbot.Services
 
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the user unbanned event handler: " + ex);
+                    Log.Error("Error with the user unbanned event handler: " + e);
                 }
             });
             
@@ -493,9 +493,9 @@ namespace Floofbot.Services
 
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the user joined event handler: " + ex);
+                    Log.Error("Error with the user joined event handler: " + e);
                 }
             });
             
@@ -543,9 +543,9 @@ namespace Floofbot.Services
 
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the user left event handler: " + ex);
+                    Log.Error("Error with the user left event handler: " + e);
                 }
             });
             
@@ -618,9 +618,9 @@ namespace Floofbot.Services
                     }
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the user updated event handler: " + ex);
+                    Log.Error("Error with the user updated event handler: " + e);
                 }
             });
             
@@ -732,9 +732,9 @@ namespace Floofbot.Services
                     
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the guild member updated event handler: " + ex);
+                    Log.Error("Error with the guild member updated event handler: " + e);
                 }
             });
             
@@ -771,9 +771,9 @@ namespace Floofbot.Services
 
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the user kicked event handler: " + ex);
+                    Log.Error("Error with the user kicked event handler: " + e);
                 }
             });
             
@@ -809,9 +809,9 @@ namespace Floofbot.Services
 
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the user muted event handler: " + ex);
+                    Log.Error("Error with the user muted event handler: " + e);
                 }
             });
             
@@ -848,9 +848,9 @@ namespace Floofbot.Services
 
                     await channel.SendMessageAsync(string.Empty, false, embed.Build());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Log.Error("Error with the user unmuted event handler: " + ex);
+                    Log.Error("Error with the user unmuted event handler: " + e);
                 }
             });
             

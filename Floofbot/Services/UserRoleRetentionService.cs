@@ -90,9 +90,9 @@ namespace Floofbot.Services
                     {
                         await user.AddRoleAsync(role);
                     }
-                    catch (Exception ex)
+                    catch (Exception e)
                     {
-                        Log.Information("Cannot return the role ID " + role.Id + " to user ID " + user.Id + ". Error: " + ex);
+                        Log.Information("Cannot return the role ID " + role.Id + " to user ID " + user.Id + ". Error: " + e);
                     }
                 }
             }

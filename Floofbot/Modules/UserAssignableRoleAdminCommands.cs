@@ -82,11 +82,11 @@ namespace Floofbot.Modules
                 
                 await Context.Channel.SendMessageAsync($"{role.Name} ({role.Id}) can now be joined by users!");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 await Context.Channel.SendMessageAsync("An error occured when trying to add that role.");
                 
-                Log.Error("Error when trying to add a joinable role: " + ex);
+                Log.Error("Error when trying to add a joinable role: " + e);
             }
         }
 
@@ -126,10 +126,10 @@ namespace Floofbot.Modules
                 
                 await Context.Channel.SendMessageAsync($"{role.Name} ({role.Id}) can no longer be joined!");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Context.Channel.SendMessageAsync("An error occured when trying to remove that role: " + ex.Message);
-                Log.Error("Error when trying to remove a joinable role " + ex);
+                await Context.Channel.SendMessageAsync("An error occured when trying to remove that role: " + e.Message);
+                Log.Error("Error when trying to remove a joinable role " + e);
             }
         }
     }
