@@ -43,17 +43,17 @@ namespace Floofbot.Services
 
             // event handlers
             _client.MessageUpdated += MessageUpdated;
-            _client.MessageDeleted += MessageDeleted;
+            //_client.MessageDeleted += MessageDeleted;
             _client.UserBanned += UserBanned;
             _client.UserUnbanned += UserUnbanned;
             _client.UserJoined += UserJoined;
-            _client.UserLeft += UserLeft;
-            _client.GuildMemberUpdated += GuildMemberUpdated;
-            _client.GuildMemberUpdated += _welcomeGateService.HandleWelcomeGate; // welcome gate handler
+            //_client.UserLeft += UserLeft;
+            //_client.GuildMemberUpdated += GuildMemberUpdated;
+            //_client.GuildMemberUpdated += _welcomeGateService.HandleWelcomeGate; // welcome gate handler
             _client.UserUpdated += UserUpdated;
             _client.MessageReceived += OnMessage;
             _client.MessageReceived += RulesGate; // rfurry rules gate
-            _client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
+            //_client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
 
             // a list of announcement channels for auto publishing
             announcementChannels = BotConfigFactory.Config.AnnouncementChannels;
