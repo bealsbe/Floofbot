@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Floofbot", "Floofbot\Floofbot.csproj", "{317F8AA1-0386-44AF-A1D2-3A607AD638E2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Discord.Addons.Interactive", "Discord.Addons.Interactive\Discord.Addons.Interactive.csproj", "{C02E4E4F-0B2B-478B-8E5D-8BEA7D451163}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		{317F8AA1-0386-44AF-A1D2-3A607AD638E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{317F8AA1-0386-44AF-A1D2-3A607AD638E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{317F8AA1-0386-44AF-A1D2-3A607AD638E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C02E4E4F-0B2B-478B-8E5D-8BEA7D451163}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C02E4E4F-0B2B-478B-8E5D-8BEA7D451163}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C02E4E4F-0B2B-478B-8E5D-8BEA7D451163}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C02E4E4F-0B2B-478B-8E5D-8BEA7D451163}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
