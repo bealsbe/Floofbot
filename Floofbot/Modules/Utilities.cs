@@ -241,12 +241,12 @@ namespace Floofbot
             }
             var pager = new PaginatedMessage
             {
-                Pages = pages,
+                Pages = (IEnumerable<object>)pages,
                 Color = Color.DarkGreen,
                 Content = "Here are a list of servers that I am in!",
-                FooterOverride = null,
+                //FooterOverride = null,
                 Options = PaginatedAppearanceOptions.Default,
-                TimeStamp = DateTimeOffset.UtcNow
+                //TimeStamp = DateTimeOffset.UtcNow
             };
             await PagedReplyAsync(pager, new ReactionList
             {

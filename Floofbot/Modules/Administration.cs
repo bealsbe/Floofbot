@@ -204,12 +204,12 @@ namespace Floofbot.Modules
 
             var pager = new PaginatedMessage
             {
-                Pages = pages,
+                Pages = (IEnumerable<object>)pages,
                 Color = ADMIN_COLOR,
                 Content = Context.User.Mention,
-                FooterOverride = null,
+                //FooterOverride = null,
                 Options = PaginatedAppearanceOptions.Default,
-                TimeStamp = DateTimeOffset.UtcNow
+                //TimeStamp = DateTimeOffset.UtcNow
             };
             await PagedReplyAsync(pager, new ReactionList
             {
