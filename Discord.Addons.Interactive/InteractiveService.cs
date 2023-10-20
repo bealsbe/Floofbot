@@ -262,7 +262,6 @@
                 socketClient.ReactionAdded -= HandleReactionAsync;
             }
         }
-
         /// <summary>
         /// Handles messages for NextMessageAsync
         /// </summary>
