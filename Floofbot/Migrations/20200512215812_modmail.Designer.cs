@@ -10,7 +10,7 @@ namespace Floofbot.Migrations
 {
     [DbContext(typeof(FloofDataContext))]
     [Migration("20200512215812_modmail")]
-    partial class modmail
+    partial class Modmail
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -269,3 +269,6 @@ __pycache__/
 
 Floofbot/config.yaml
 /Floofbot/floofData.db
+/Floofbot/config.yaml.sample
+/Floofbot/config.yaml
+/Floofbot/app.config

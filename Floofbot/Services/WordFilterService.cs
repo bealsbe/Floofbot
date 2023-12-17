@@ -23,7 +23,7 @@ namespace Floofbot.Services
             }
 
             DateTime currentTime = DateTime.Now;
-            if (_lastRefreshedTime == null || currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
+            if (currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
             {
                 _filteredWords = floofDb.FilteredWords.AsQueryable()
                     .Where(x => x.ServerId == serverId).ToList();
@@ -61,7 +61,7 @@ namespace Floofbot.Services
             }
 
             DateTime currentTime = DateTime.Now;
-            if (_lastRefreshedTime == null || currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
+            if (currentTime.Subtract(_lastRefreshedTime).TotalMinutes >= 30)
             {
                 _filteredWords = floofDb.FilteredWords.AsQueryable()
                     .Where(x => x.ServerId == serverId).ToList();

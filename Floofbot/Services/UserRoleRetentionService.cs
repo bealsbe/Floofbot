@@ -7,6 +7,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,6 +58,7 @@ namespace Floofbot.Services
         }
         public async Task RestoreUserRoles(IGuildUser user)
         {
+ 
             var oldUserRoles = GetUserRoles(user);
 
             if (oldUserRoles != null) // user actually had old roles
