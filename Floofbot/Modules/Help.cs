@@ -66,11 +66,13 @@ namespace Floofbot.Modules
                 }
                 if (fields.Count > 0) // don't show empty pages
                 {
+                    string strCmdAliases = string.Join(", ", module.Aliases.ToList());
+                    string cmdAliases = (strCmdAliases != "") ? $"Command Usage: {strCmdAliases}\n\n" : "";
                     pages.Add(new PaginatedMessage.Page
                     {
-                        Author = new EmbedAuthorBuilder { Name = module.Name },
+                        Author = new EmbedAuthorBuilder { Name = module.Name},
                         Fields = new List<EmbedFieldBuilder>(fields),
-                        Description = module.Summary ?? "No module description available"
+                        Description = cmdAliases + (module.Summary ?? $"No module description available")
                     });
                     fields.Clear();
                 }
@@ -113,10 +115,10 @@ namespace Floofbot.Modules
                     }
                     pages.Add(new PaginatedMessage.Page
                     {
-                        Author = new EmbedAuthorBuilder { Name = cmd.Name },
+                        Title = "Command Aliases: " + String.Join(", ", cmd.Aliases.ToList()),
                         Fields = new List<EmbedFieldBuilder>(fields),
                         Description = cmd.Summary ?? "No command description available"
-                    });
+                    }); 
                     fields.Clear();
                 }
             }

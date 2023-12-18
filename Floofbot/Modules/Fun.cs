@@ -123,14 +123,22 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat")]
         public async Task RequestCat()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+            try
             {
-                await SendAnimalEmbed(":cat:", fileUrl);
+                string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
+                if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+                {
+                    await SendAnimalEmbed(":cat:", fileUrl);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
+                }
             }
-            else
+            catch
             {
                 await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
+                return;
             }
         }
 
@@ -138,14 +146,22 @@ namespace Floofbot.Modules
         [Summary("Responds with a random dog")]
         public async Task RequestDog()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+            try
             {
-                await SendAnimalEmbed(":dog:", fileUrl);
+                string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
+                if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+                {
+                    await SendAnimalEmbed(":dog:", fileUrl);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
+                }
             }
-            else
+            catch
             {
                 await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
+                return;
             }
         }
 
@@ -153,14 +169,22 @@ namespace Floofbot.Modules
         [Summary("Responds with a random fox")]
         public async Task RequestFox()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+            try
             {
-                await SendAnimalEmbed(":fox:", fileUrl);
+                string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+                if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+                {
+                    await SendAnimalEmbed(":fox:", fileUrl);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
+                }
             }
-            else
+            catch
             {
                 await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
+                return;
             }
         }
 
@@ -168,15 +192,23 @@ namespace Floofbot.Modules
         [Summary("Responds with a random birb")]
         public async Task RequestBirb()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Relative))
+            try
             {
-                fileUrl = "https://random.birb.pw/img/" + fileUrl;
-                await SendAnimalEmbed(":bird:", fileUrl);
+                string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
+                if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Relative))
+                {
+                    fileUrl = "https://random.birb.pw/img/" + fileUrl;
+                    await SendAnimalEmbed(":bird:", fileUrl);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
+                }
             }
-            else
+            catch
             {
                 await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
+                return;
             }
         }
 

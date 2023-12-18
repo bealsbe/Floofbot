@@ -155,7 +155,7 @@ namespace Floofbot.Services
             // we run an async task to remove their point after the specified duration
             UserPunishmentTimeout(guildId, msg.Author.Id);
 
-            SendMessageAndDelete($"{msg.Author.Mention} There was a filtered word in that message. Please be mindful of your language!", msg.Channel);
+            SendMessageAndDelete($"{msg.Author.Mention} I detected a filtered word in that message and have automatically deleted it.", msg.Channel);
 
             Log.Information("User ID " + msg.Author.Id + " triggered the word filter.");
 
