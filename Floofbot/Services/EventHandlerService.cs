@@ -54,6 +54,8 @@ namespace Floofbot.Services
             _client.MessageReceived += OnMessage;
             _client.MessageReceived += RulesGate; // rfurry rules gate
             _client.ReactionAdded += _nicknameAlertService.OnReactionAdded;
+            _client.ThreadCreated += NewThread;
+            _client.ThreadUpdated += UpdatedThread;
 
             // a list of announcement channels for auto publishing
             announcementChannels = BotConfigFactory.Config.AnnouncementChannels;
@@ -145,6 +147,21 @@ namespace Floofbot.Services
                 var user = (IGuildUser)msg.Author;
                 await user.AddRoleAsync(user.Guild.GetRole(readRulesRoleId));
                 await userMsg.DeleteAsync();
+            }
+        }
+        public async Task NewThread(SocketThreadChannel thread)
+        {
+            await thread.JoinAsync();
+            return;
+        }
+        public async Task UpdatedThread(Cacheable<SocketThreadChannel, ulong> channel, SocketThreadChannel thread)
+        {
+            if (thread != null)
+            {
+                if (thread.HasJoined != true)
+                {
+                    await thread.JoinAsync();
+                }
             }
         }
         public Task OnMessage(SocketMessage msg)
