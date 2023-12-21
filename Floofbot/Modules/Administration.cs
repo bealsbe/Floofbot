@@ -180,7 +180,6 @@ namespace Floofbot.Modules
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task pruneBanUser(
             [Summary("user")] string user,
-            [Summary("Number Of Days To Prune")] int pruneDays = 0,
             [Summary("reason")][Remainder] string reason = "No Reason Provided")
         {
             IUser badUser = resolveUser(user);
@@ -240,18 +239,25 @@ namespace Floofbot.Modules
             {
                 await Context.Channel.SendMessageAsync("⚠️ | Unable to DM user to notify them of their ban!");
             }
+            try
+            {
+                //bans the user
+                await Context.Guild.AddBanAsync(badUser.Id, 7, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}"); // default 7 days prune
 
-            //bans the user
-            await Context.Guild.AddBanAsync(badUser.Id, pruneDays, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
-
-            EmbedBuilder modEmbedBuilder = new EmbedBuilder();
-            modEmbedBuilder = new EmbedBuilder();
-            modEmbedBuilder.Title = (":shield: User Banned");
-            modEmbedBuilder.Color = ADMIN_COLOR;
-            modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
-            modEmbedBuilder.AddField("User ID", badUser.Id);
-            modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
-            await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
+                EmbedBuilder modEmbedBuilder = new EmbedBuilder();
+                modEmbedBuilder = new EmbedBuilder();
+                modEmbedBuilder.Title = (":shield: User Banned");
+                modEmbedBuilder.Color = ADMIN_COLOR;
+                modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+                modEmbedBuilder.AddField("User ID", badUser.Id);
+                modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+                await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
+            }
+            catch
+            {
+                await Context.Channel.SendMessageAsync("⚠️ | Sorry, I was unable to ban that user!");
+                return;
+            }
         }
 
         [Command("viewautobans")]
