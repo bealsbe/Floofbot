@@ -129,7 +129,6 @@ namespace Floofbot.Handlers
             {
                 prefix = BotConfigFactory.Config.Prefix;
             }
-
             bool hasValidPrefix = msg.HasMentionPrefix(_client.CurrentUser, ref argPos) || msg.HasStringPrefix(prefix, ref argPos);
             string strippedCommandName = msg.Content.Substring(argPos).Split()[0];
             bool hasValidStart = !string.IsNullOrEmpty(strippedCommandName) && Regex.IsMatch(strippedCommandName, @"^[0-9]?[a-z]+\??$", RegexOptions.IgnoreCase);

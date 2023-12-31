@@ -31,7 +31,7 @@ namespace Floofbot
             string token = BotConfigFactory.Config.Token;
             if (string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("Error: the Token field in app.config must contain a valid Discord bot token.");
+                Console.WriteLine("Error: the Token field in config.yaml must contain a valid Discord bot token.");
                 Environment.Exit(1);
             }
             await new Program().MainAsync(token);
@@ -62,8 +62,10 @@ namespace Floofbot
                   new DiscordSocketConfig()
                   {
                       LogLevel = LogSeverity.Info,
-                      MessageCacheSize = 1000
-                  });
+                      MessageCacheSize = 1000,
+                      AlwaysDownloadUsers = true,
+                      GatewayIntents = GatewayIntents.All
+                  }) ;
 
             try
             {

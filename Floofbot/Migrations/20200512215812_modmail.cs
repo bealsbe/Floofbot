@@ -2,7 +2,7 @@
 
 namespace Floofbot.Migrations
 {
-    public partial class modmail : Migration
+    public partial class Modmail : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

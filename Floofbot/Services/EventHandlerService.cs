@@ -253,8 +253,9 @@ namespace Floofbot.Services
             });
             return Task.CompletedTask;
         }
-        public Task MessageDeleted(Cacheable<IMessage, ulong> before, ISocketMessageChannel chan)
+        public Task MessageDeleted(Cacheable<IMessage, ulong> before, Cacheable<IMessageChannel, ulong>  channel)
         {
+            IMessageChannel chan = channel.Value;
             var _ = Task.Run(async () =>
             {
                 try
@@ -267,15 +268,17 @@ namespace Floofbot.Services
                     if (message.Author.IsBot)
                         return;
 
-                    var channel = chan as ITextChannel; // channel null, dm message?
-                    if (channel == null)
+                    if (chan == null)
                         return;
 
-                    if ((IsToggled(channel.Guild)) == false) // not toggled on
+                    IGuildChannel messageChannel = message.Channel as IGuildChannel;
+                    IGuild guild = messageChannel.Guild;
+
+                    if ((IsToggled(guild)) == false) // not toggled on
                         return;
 
 
-                    Discord.ITextChannel logChannel = await GetChannel(channel.Guild, "MessageDeletedChannel");
+                    Discord.ITextChannel logChannel = await GetChannel(guild, "MessageDeletedChannel");
                     if (logChannel == null)
                         return;
 
@@ -283,7 +286,7 @@ namespace Floofbot.Services
 
                     embed.WithTitle($"⚠️ Message Deleted | {message.Author.Username}#{message.Author.Discriminator}")
                          .WithColor(Color.Gold)
-                         .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {channel.Mention}!")
+                         .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {MentionUtils.MentionChannel(chan.Id)}!")
                          .WithCurrentTimestamp()
                          .WithFooter($"user_message_deleted user_messagelog {message.Author.Id}");
                     if (message.Content.Length > 0)
@@ -437,8 +440,10 @@ namespace Floofbot.Services
             return Task.CompletedTask;
 
         }
-        public Task UserJoined(IGuildUser user)
+        public Task UserJoined(SocketGuildUser sUser)
         {
+            SocketGuild guild = sUser.Guild;
+            IGuildUser user = guild.GetUser(sUser.Id);
             var _ = Task.Run(async () =>
             {
                 try
@@ -482,7 +487,7 @@ namespace Floofbot.Services
             });
             return Task.CompletedTask;
         }
-        public Task UserLeft(IGuildUser user)
+        public Task UserLeft(SocketGuild guild, SocketUser user)
         {
             var _ = Task.Run(async () =>
             {
@@ -491,12 +496,11 @@ namespace Floofbot.Services
                     if (user.IsBot)
                         return;
 
-                    await _userRoleRetentionService.LogUserRoles(user);
 
-                    if ((IsToggled(user.Guild)) == false)
+                    if ((IsToggled(guild)) == false)
                         return;
 
-                    Discord.ITextChannel channel = await GetChannel(user.Guild, "UserLeftChannel");
+                    Discord.ITextChannel channel = await GetChannel(guild, "UserLeftChannel");
                     if (channel == null)
                         return;
 
@@ -504,14 +508,6 @@ namespace Floofbot.Services
                     embed.WithTitle($"❌ User Left | {user.Username}#{user.Discriminator}")
                          .WithColor(Color.Red)
                          .WithDescription($"{user.Mention} | ``{user.Id}``");
-                    if (user.JoinedAt != null)
-                    {
-                        DateTimeOffset userJoined = ((DateTimeOffset)user.JoinedAt);
-                        TimeSpan interval = DateTime.UtcNow - userJoined.DateTime;
-                        string day_word = interval.Days == 1 ? "day" : "days";
-                        embed.AddField("Joined Server", userJoined.ToString("ddd, dd MMM yyyy"), true);
-                        embed.AddField("Time at Server", $"{interval.Days} {day_word}", true);
-                    }
                     embed.WithFooter($"user_leave user_joinlog {user.Id}")
                          .WithCurrentTimestamp();
 
@@ -603,8 +599,9 @@ namespace Floofbot.Services
 
         }
 
-        public Task GuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
+        public Task GuildMemberUpdated(Cacheable<SocketGuildUser, ulong>  _before, SocketGuildUser after)
         {
+            SocketGuildUser before = _before.Value;
             var _ = Task.Run(async () =>
             {
                 try
@@ -656,6 +653,8 @@ namespace Floofbot.Services
                     }
                     else if (before.Roles.Count != after.Roles.Count)
                     {
+                        await _userRoleRetentionService.LogUserRoles(before as IGuildUser);
+
                         List<SocketRole> beforeRoles = new List<SocketRole>(before.Roles);
                         List<SocketRole> afterRoles = new List<SocketRole>(after.Roles);
                         List<SocketRole> roleDifference = new List<SocketRole>();

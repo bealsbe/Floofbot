@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using Floofbot.Services.Repository;
 using Floofbot.Services.Repository.Models;
 using Serilog;
@@ -14,8 +15,9 @@ namespace Floofbot.Services
         {
             _floofDb = floofDb;
         }
-        public async Task HandleWelcomeGate(SocketGuildUser before, SocketGuildUser after)
+        public async Task HandleWelcomeGate(Cacheable<SocketGuildUser, ulong> _before, SocketGuildUser after)
         {
+            SocketGuildUser before = _before.Value;
             if (before.IsPending == after.IsPending) // no welcome gate change
                 return;
             FloofDataContext floofDb = new FloofDataContext();
