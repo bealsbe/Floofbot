@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Floofbot.Modules.Helpers;
+using Serilog;
 using System;
 using System.Linq;
 using System.Text.Json;
@@ -93,14 +94,23 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat fact")]
         public async Task RequestCatFact()
         {
-            string fact = await ApiFetcher.RequestStringFromApi("https://catfact.ninja/fact", "fact");
-            if (!string.IsNullOrEmpty(fact))
+            try
             {
-                await Context.Channel.SendMessageAsync(fact);
+                string fact = await ApiFetcher.RequestStringFromApi("https://catfact.ninja/fact", "fact");
+                if (!string.IsNullOrEmpty(fact))
+                {
+                    await Context.Channel.SendMessageAsync(fact);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
+                }
             }
-            else
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
+                Log.Error(ex.ToString());
+                return;
             }
         }
 
@@ -108,14 +118,23 @@ namespace Floofbot.Modules
         [Summary("Responds with a random fox fact")]
         public async Task RequestFoxFact()
         {
-            string fact = await ApiFetcher.RequestStringFromApi("https://some-random-api.ml/facts/fox", "fact");
-            if (!string.IsNullOrEmpty(fact))
+            try
             {
-                await Context.Channel.SendMessageAsync(fact);
+                string fact = await ApiFetcher.RequestStringFromApi("https://some-random-api.ml/facts/fox", "fact");
+                if (!string.IsNullOrEmpty(fact))
+                {
+                    await Context.Channel.SendMessageAsync(fact);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The foxfact command is currently unavailable.");
+                }
             }
-            else
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The foxfact command is currently unavailable.");
+                Log.Error(ex.ToString());
+                return;
             }
         }
 
@@ -123,14 +142,23 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat")]
         public async Task RequestCat()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+            try
             {
-                await SendAnimalEmbed(":cat:", fileUrl);
+                string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
+                if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+                {
+                    await SendAnimalEmbed(":cat:", fileUrl);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
+                await Context.Channel.SendMessageAsync("The cat command is currently unavailable");
+                Log.Error(ex.ToString());
+                return;
             }
         }
 
@@ -138,14 +166,23 @@ namespace Floofbot.Modules
         [Summary("Responds with a random dog")]
         public async Task RequestDog()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+            try
             {
-                await SendAnimalEmbed(":dog:", fileUrl);
+                string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
+                if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+                {
+                    await SendAnimalEmbed(":dog:", fileUrl);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
+                }
             }
-            else
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
+                Log.Error(ex.ToString());
+                return;
             }
         }
 
@@ -153,14 +190,23 @@ namespace Floofbot.Modules
         [Summary("Responds with a random fox")]
         public async Task RequestFox()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+            try
             {
-                await SendAnimalEmbed(":fox:", fileUrl);
+                string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+                if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Absolute))
+                {
+                    await SendAnimalEmbed(":fox:", fileUrl);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
+                }
             }
-            else
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
+                Log.Error(ex.ToString());
+                return;
             }
         }
 
@@ -168,15 +214,24 @@ namespace Floofbot.Modules
         [Summary("Responds with a random birb")]
         public async Task RequestBirb()
         {
-            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
-            if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Relative))
+            try
             {
-                fileUrl = "https://random.birb.pw/img/" + fileUrl;
-                await SendAnimalEmbed(":bird:", fileUrl);
+                string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
+                if (!string.IsNullOrEmpty(fileUrl) && Uri.IsWellFormedUriString(fileUrl, UriKind.Relative))
+                {
+                    fileUrl = "https://random.birb.pw/img/" + fileUrl;
+                    await SendAnimalEmbed(":bird:", fileUrl);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
+                }
             }
-            else
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
+                Log.Error(ex.ToString());
+                return;
             }
         }
 

@@ -155,7 +155,7 @@ namespace Floofbot.Services
             // we run an async task to remove their point after the specified duration
             UserPunishmentTimeout(guildId, msg.Author.Id);
 
-            SendMessageAndDelete($"{msg.Author.Mention} There was a filtered word in that message. Please be mindful of your language!", msg.Channel);
+            SendMessageAndDelete($"{msg.Author.Mention} I detected a filtered word in that message and have automatically deleted it.", msg.Channel);
 
             Log.Information("User ID " + msg.Author.Id + " triggered the word filter.");
 
@@ -302,6 +302,16 @@ namespace Floofbot.Services
             }
             return false;
         }
+        private bool CheckFALinks(SocketMessage msg, ulong guildId) // filter out if not sfw domain but no muting
+        {
+            var regex = "(?<!sfw\\.)(furaffinity.net)";
+            if (Regex.IsMatch(msg.Content, regex))
+            {
+                msg.Channel.SendMessageAsync(msg.Author.Mention + " please use the sfw furaffinity domain (sfw.furaffinity.net) for all FA URLs!");
+                return true;
+            }
+            return false;
+        }
         private bool CheckEmojiSpam(SocketMessage msg, ulong guildId)
         {
             // check for repeated custom and normal emojis. 
@@ -422,9 +432,13 @@ namespace Floofbot.Services
             bool userSpammedInviteLink = CheckInviteLinks(userMsg, guild.Id);
             // check for spammed emojis
             bool userSpammedEmojis = CheckEmojiSpam(userMsg, guild.Id);
+            // check for FA links without sfw domain
+            bool userWrongFALink = CheckFALinks(userMsg, guild.Id);
 
             if (spammedMentions)
                 return false; // user already banned
+            if (userWrongFALink)
+                return true; // user already informed to use sfw domain so finished
             if (filteredWord || userSpammedMessages || userSpammedLetters || userSpammedInviteLink || userSpammedEmojis)
             {
                 if (userPunishmentCount[guild.Id].ContainsKey(userMsg.Author.Id))
