@@ -94,14 +94,23 @@ namespace Floofbot.Modules
         [Summary("Responds with a random cat fact")]
         public async Task RequestCatFact()
         {
-            string fact = await ApiFetcher.RequestStringFromApi("https://catfact.ninja/fact", "fact");
-            if (!string.IsNullOrEmpty(fact))
+            try
             {
-                await Context.Channel.SendMessageAsync(fact);
+                string fact = await ApiFetcher.RequestStringFromApi("https://catfact.ninja/fact", "fact");
+                if (!string.IsNullOrEmpty(fact))
+                {
+                    await Context.Channel.SendMessageAsync(fact);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
+                }
             }
-            else
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
+                Log.Error(ex.ToString());
+                return;
             }
         }
 
@@ -109,14 +118,23 @@ namespace Floofbot.Modules
         [Summary("Responds with a random fox fact")]
         public async Task RequestFoxFact()
         {
-            string fact = await ApiFetcher.RequestStringFromApi("https://some-random-api.ml/facts/fox", "fact");
-            if (!string.IsNullOrEmpty(fact))
+            try
             {
-                await Context.Channel.SendMessageAsync(fact);
+                string fact = await ApiFetcher.RequestStringFromApi("https://some-random-api.ml/facts/fox", "fact");
+                if (!string.IsNullOrEmpty(fact))
+                {
+                    await Context.Channel.SendMessageAsync(fact);
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("The foxfact command is currently unavailable.");
+                }
             }
-            else
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The foxfact command is currently unavailable.");
+                Log.Error(ex.ToString());
+                return;
             }
         }
 
@@ -163,7 +181,7 @@ namespace Floofbot.Modules
             catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
-                Log.Error(ex.ToString());
+                Log.Error(ex.ToString())
                 return;
             }
         }
@@ -184,9 +202,10 @@ namespace Floofbot.Modules
                     await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
+                Log.Error(ex.ToString());
                 return;
             }
         }
@@ -208,9 +227,10 @@ namespace Floofbot.Modules
                     await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
+                Log.Error(ex.ToString());
                 return;
             }
         }
