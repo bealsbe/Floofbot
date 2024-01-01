@@ -181,7 +181,7 @@ namespace Floofbot.Modules
             catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
-                Log.Error(ex.ToString())
+                Log.Error(ex.ToString());
                 return;
             }
         }
