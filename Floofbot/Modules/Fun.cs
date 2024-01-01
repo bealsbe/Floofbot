@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Floofbot.Modules.Helpers;
+using Serilog;
 using System;
 using System.Linq;
 using System.Text.Json;
@@ -135,9 +136,10 @@ namespace Floofbot.Modules
                     await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
+                await Context.Channel.SendMessageAsync("The cat command is currently unavailable");
+                Log.Error(ex.ToString());
                 return;
             }
         }
@@ -158,9 +160,10 @@ namespace Floofbot.Modules
                     await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
+                Log.Error(ex.ToString());
                 return;
             }
         }
