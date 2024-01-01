@@ -99,21 +99,20 @@ namespace Floofbot.Modules
             {
                 //bans the user
                 await Context.Guild.AddBanAsync(badUser.Id, 0, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}");
-
-                EmbedBuilder modEmbedBuilder = new EmbedBuilder();
-                modEmbedBuilder = new EmbedBuilder();
-                modEmbedBuilder.Title = (":shield: User Banned");
-                modEmbedBuilder.Color = ADMIN_COLOR;
-                modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
-                modEmbedBuilder.AddField("User ID", badUser.Id);
-                modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
-                await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
             }
-            catch 
+            catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync("⚠️ | Unable to ban the user! Check my permissions.");
+                await Context.Channel.SendMessageAsync("Command unable to be performed sucessfully: " + ex.ToString());
+                return;
             }
-
+            EmbedBuilder modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder.Title = (":shield: User Banned");
+            modEmbedBuilder.Color = ADMIN_COLOR;
+            modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            modEmbedBuilder.AddField("User ID", badUser.Id);
+            modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
         }
 
         [Command("unban")]
@@ -155,22 +154,20 @@ namespace Floofbot.Modules
             try
             {
                 await Context.Guild.RemoveBanAsync(userId); // unban user
-
-                EmbedBuilder modEmbedBuilder = new EmbedBuilder();
-                modEmbedBuilder = new EmbedBuilder();
-                modEmbedBuilder.Title = (":shield: User Unbanned");
-                modEmbedBuilder.Color = ADMIN_COLOR;
-                modEmbedBuilder.Description = $"{userId} has been unbanned from {Context.Guild.Name}";
-                modEmbedBuilder.AddField("User ID", userId);
-                modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
-                await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
             }
-            catch
+            catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync("⚠️ Unable to unban user! Please check that they are actually banned from the server.");
+                await Context.Channel.SendMessageAsync("Command unable to be performed sucessfully: " + ex.ToString());
                 return;
             }
-
+            EmbedBuilder modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder.Title = (":shield: User Unbanned");
+            modEmbedBuilder.Color = ADMIN_COLOR;
+            modEmbedBuilder.Description = $"{userId} has been unbanned from {Context.Guild.Name}";
+            modEmbedBuilder.AddField("User ID", userId);
+            modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
         }
 
         [Command("pruneban")]
@@ -243,21 +240,20 @@ namespace Floofbot.Modules
             {
                 //bans the user
                 await Context.Guild.AddBanAsync(badUser.Id, 7, $"{Context.User.Username}#{Context.User.Discriminator} -> {reason}"); // default 7 days prune
-
-                EmbedBuilder modEmbedBuilder = new EmbedBuilder();
-                modEmbedBuilder = new EmbedBuilder();
-                modEmbedBuilder.Title = (":shield: User Banned");
-                modEmbedBuilder.Color = ADMIN_COLOR;
-                modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
-                modEmbedBuilder.AddField("User ID", badUser.Id);
-                modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
-                await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
             }
-            catch
+            catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync("⚠️ | Sorry, I was unable to ban that user!");
+                await Context.Channel.SendMessageAsync("Command unable to be performed sucessfully: " + ex.ToString());
                 return;
             }
+            EmbedBuilder modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder = new EmbedBuilder();
+            modEmbedBuilder.Title = (":shield: User Banned");
+            modEmbedBuilder.Color = ADMIN_COLOR;
+            modEmbedBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been banned from {Context.Guild.Name}";
+            modEmbedBuilder.AddField("User ID", badUser.Id);
+            modEmbedBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
+            await Context.Channel.SendMessageAsync("", false, modEmbedBuilder.Build());
         }
 
         [Command("viewautobans")]
@@ -435,19 +431,19 @@ namespace Floofbot.Modules
             {
                 //kicks users
                 await Context.Guild.GetUser(badUser.Id).KickAsync(reason);
-                EmbedBuilder kickBuilder = new EmbedBuilder();
+            }
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync("Command unable to be performed sucessfully: " + ex.ToString());
+                return;
+            }
+            EmbedBuilder kickBuilder = new EmbedBuilder();
                 kickBuilder.Title = ("🥾 User Silently Kicked");
                 kickBuilder.Color = ADMIN_COLOR;
                 kickBuilder.Description = $"{badUser.Username}#{badUser.Discriminator} has been silently kicked from {Context.Guild.Name}";
                 kickBuilder.AddField("User ID", badUser.Id);
                 kickBuilder.AddField("Moderator", $"{Context.User.Username}#{Context.User.Discriminator}");
                 await Context.Channel.SendMessageAsync("", false, kickBuilder.Build());
-            }
-            catch
-            {
-                await Context.Channel.SendMessageAsync("⚠️ | Unable to kick user! Check my permissions.");
-                return;
-            }
         }
 
         [Command("warn")]
@@ -1210,7 +1206,7 @@ namespace Floofbot.Modules
             }
             catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync(ex.ToString());
+                await Context.Channel.SendMessageAsync("Command unable to be performed sucessfully: " + ex.ToString());
             }
         }
         private async Task SetWarningForgivenStatus(Warning w, bool status, ulong forgivenBy)

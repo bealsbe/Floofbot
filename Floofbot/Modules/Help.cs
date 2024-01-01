@@ -118,7 +118,7 @@ namespace Floofbot.Modules
                         Title = "Command Aliases: " + String.Join(", ", cmd.Aliases.ToList()),
                         Fields = new List<EmbedFieldBuilder>(fields),
                         Description = cmd.Summary ?? "No command description available"
-                    }); 
+                    });
                     fields.Clear();
                 }
             }
