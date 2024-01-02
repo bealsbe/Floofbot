@@ -13,6 +13,7 @@ RUN mkdir data
 # Copy files
 COPY Floofbot/Scripts/LinuxDBBackup.sh .
 COPY artifacts/linux-musl-x64/Floofbot .
+COPY artifacts/linux-musl-x64/libe_sqlite3.so .
 
 # Fix for running in a container
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1

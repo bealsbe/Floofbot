@@ -22,7 +22,7 @@ jobs:
 
     - name: Build Windows binary
       run: dotnet publish --runtime win-x64 --configuration Release --output artifacts/win-x64 /p:PublishSingleFile=true Floofbot/Floofbot.csproj
-    - run: zip -j artifacts/win-x64/Floofbot_win-x64.zip artifacts/win-x64/Floofbot.exe
+    - run: zip -j artifacts/win-x64/Floofbot_win-x64.zip artifacts/win-x64/Floofbot.exe artifacts/win-x64/e_sqlite3.dll
     - uses: actions/upload-artifact@v2
       with:
         name: build_artifacts
@@ -30,7 +30,7 @@ jobs:
     
     - name: Build Linux binary (full)
       run: dotnet publish --runtime linux-x64 --configuration Release --output artifacts/linux-x64 /p:PublishSingleFile=true Floofbot/Floofbot.csproj
-    - run: tar -czf artifacts/linux-x64/Floofbot_linux-x64.tar.gz -C artifacts/linux-x64 Floofbot
+    - run: tar -czf artifacts/linux-x64/Floofbot_linux-x64.tar.gz -C artifacts/linux-x64 Floofbot libe_sqlite3.so
     - uses: actions/upload-artifact@v2
       with:
         name: build_artifacts
@@ -38,7 +38,7 @@ jobs:
 
     - name: Build Linux binary (musl)
       run: dotnet publish --runtime linux-musl-x64 --configuration Release --output artifacts/linux-musl-x64 /p:PublishSingleFile=true Floofbot/Floofbot.csproj
-    - run: tar -czf artifacts/linux-musl-x64/Floofbot_linux-musl-x64.tar.gz -C artifacts/linux-musl-x64 Floofbot
+    - run: tar -czf artifacts/linux-musl-x64/Floofbot_linux-musl-x64.tar.gz -C artifacts/linux-musl-x64 Floofbot libe_sqlite3.so
     - uses: actions/upload-artifact@v2
       with:
         name: build_artifacts
