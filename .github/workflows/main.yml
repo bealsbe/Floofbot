@@ -23,31 +23,31 @@ jobs:
     - name: Build Windows binary
       run: dotnet publish --runtime win-x64 --configuration Release --output artifacts/win-x64 /p:PublishSingleFile=true Floofbot/Floofbot.csproj
     - run: zip -j artifacts/win-x64/Floofbot_win-x64.zip artifacts/win-x64/Floofbot.exe artifacts/win-x64/e_sqlite3.dll
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
-        name: build_artifacts
+        name: build_artifacts-windows
         path: artifacts/win-x64/Floofbot_win-x64.zip
     
     - name: Build Linux binary (full)
       run: dotnet publish --runtime linux-x64 --configuration Release --output artifacts/linux-x64 /p:PublishSingleFile=true Floofbot/Floofbot.csproj
     - run: tar -czf artifacts/linux-x64/Floofbot_linux-x64.tar.gz -C artifacts/linux-x64 Floofbot libe_sqlite3.so
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
-        name: build_artifacts
+        name: build_artifacts-linux
         path: artifacts/linux-x64/Floofbot_linux-x64.tar.gz
 
     - name: Build Linux binary (musl)
       run: dotnet publish --runtime linux-musl-x64 --configuration Release --output artifacts/linux-musl-x64 /p:PublishSingleFile=true Floofbot/Floofbot.csproj
     - run: tar -czf artifacts/linux-musl-x64/Floofbot_linux-musl-x64.tar.gz -C artifacts/linux-musl-x64 Floofbot libe_sqlite3.so
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
-        name: build_artifacts
+        name: build_artifacts-linux-musl
         path: artifacts/linux-musl-x64/Floofbot_linux-musl-x64.tar.gz
         
     - name: Upload sample config
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: build_artifacts
+        name: build_artifacts-config
         path: Floofbot/config.yaml.sample
 
   ## Pulls build artifacts and creates a new release from them
@@ -68,66 +68,29 @@ jobs:
         curl --silent https://api.github.com/repos/${{ github.repository }}/releases/latest | python3 -c
         "import sys, json, datetime;
         cur_version = json.load(sys.stdin).get('name', '0.0.0.0').rsplit('.', 1);
-        new_version = datetime.datetime.utcnow().strftime('%Y.%m.%d'), -1;
+        new_version = datetime.datetime.now(datetime.UTC).strftime('%Y.%m.%d'), -1;
         base, patch = new_version if new_version[0] != cur_version[0] else cur_version;
         print('::set-env name=NEW_VERSION::{0}\n::set-output name=new_version::{0}'.format(f'{base}.{int(patch) + 1}'))"
 
     - name: Download built artifacts
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4
       with:
-        name: build_artifacts
+        pattern: build_artifacts-*
+        merge-multiple: true
 
     - name: Create release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
+        name: ${{ env.NEW_VERSION }}
         tag_name: ${{ env.NEW_VERSION }}
-        release_name: ${{ env.NEW_VERSION }}
         body: "This release includes changes from the following commits:\n\n${{ join(github.event.commits.*.url, '\n') }}"
         draft: false
         prerelease: false
-
-    - name: Upload release assets (Windows)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Floofbot_win-x64.zip
-        asset_name: Floofbot_win-x64.zip
-        asset_content_type: application/zip
-
-    - name: Upload release assets (Linux)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Floofbot_linux-x64.tar.gz
-        asset_name: Floofbot_linux-x64.tar.gz
-        asset_content_type: application/gzip
-
-    - name: Upload release assets (Linux musl)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Floofbot_linux-musl-x64.tar.gz
-        asset_name: Floofbot_linux-musl-x64.tar.gz
-        asset_content_type: application/gzip
-
-    - name: Upload release assets (config file)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: config.yaml.sample
-        asset_name: config.yaml.sample
-        asset_content_type: text/plain
+        files: |
+          Floofbot_win-x64.zip
+          Floofbot_linux-x64.tar.gz
+          Floofbot_linux-musl-x64.tar.gz
+          config.yaml.sample
 
   ## Uploads a new Docker image of the build. Requires the release step for the version variable
   release_image:
@@ -139,9 +102,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Download built artifacts
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4
       with:
-        name: build_artifacts
+        name: build_artifacts-linux-musl
 
     - name: Extract build binary
       shell: bash
