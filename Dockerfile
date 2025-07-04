@@ -4,7 +4,7 @@
 FROM alpine:latest
 
 # Dependencies and curl for custom backup scripts
-RUN apk add --no-cache libintl libstdc++ curl
+RUN apk add --no-cache libintl libstdc++ curl icu-libs icu-data-full
 
 # Set and add working directory
 WORKDIR /root/
