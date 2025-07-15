@@ -249,7 +249,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"⚠️ Message Edited | {after.Author.Username}#{after.Author.Discriminator}")
+                    embed.WithTitle($"⚠️ Message Edited | {after.Author.Username}")
                          .WithColor(Color.DarkGrey)
                          .WithDescription($"{after.Author.Mention} ({after.Author.Id}) has edited their message in {channel.Mention}!")
                          .AddField("Before", messageBefore.Content, true)
@@ -301,7 +301,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"⚠️ Message Deleted | {message.Author.Username}#{message.Author.Discriminator}")
+                    embed.WithTitle($"⚠️ Message Deleted | {message.Author.Username}")
                          .WithColor(Color.Gold)
                          .WithDescription($"{message.Author.Mention} ({message.Author.Id}) has had their message deleted in {MentionUtils.MentionChannel(chan.Id)}!")
                          .WithCurrentTimestamp()
@@ -353,7 +353,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"⚠️ Message Deleted By Bot | {before.Author.Username}#{before.Author.Discriminator}")
+                    embed.WithTitle($"⚠️ Message Deleted By Bot | {before.Author.Username}")
                          .WithColor(Color.Gold)
                          .WithDescription($"{before.Author.Mention} ({before.Author.Id}) has had their message deleted in {channel.Mention}!")
                          .AddField("Content", before.Content)
@@ -394,7 +394,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"🔨 User Banned | {user.Username}#{user.Discriminator}")
+                    embed.WithTitle($"🔨 User Banned | {user.Username}")
                          .WithColor(Color.Red)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .WithFooter($"user_banned user_banlog {user.Id}")
@@ -437,7 +437,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"♻️ User Unbanned | {user.Username}#{user.Discriminator}")
+                    embed.WithTitle($"♻️ User Unbanned | {user.Username}")
                          .WithColor(Color.Gold)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .WithFooter($"user_unbanned user_banlog {user.Id}")
@@ -483,7 +483,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"✅ User Joined | {user.Username}#{user.Discriminator}")
+                    embed.WithTitle($"✅ User Joined | {user.Username}")
                          .WithColor(Color.Green)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .AddField("Joined Server", user.JoinedAt?.ToString("ddd, dd MMM yyyy"), true)
@@ -522,7 +522,7 @@ namespace Floofbot.Services
                         return;
 
                     var embed = new EmbedBuilder();
-                    embed.WithTitle($"❌ User Left | {user.Username}#{user.Discriminator}")
+                    embed.WithTitle($"❌ User Left | {user.Username}")
                          .WithColor(Color.Red)
                          .WithDescription($"{user.Mention} | ``{user.Id}``");
                     embed.WithFooter($"user_leave user_joinlog {user.Id}")
@@ -576,7 +576,7 @@ namespace Floofbot.Services
 
                     if (before.Username != after.Username)
                     {
-                        embed.WithTitle($"👥 Username Changed | {after.Username}#{after.Discriminator}")
+                        embed.WithTitle($"👥 Username Changed | {after.Username}")
                              .WithColor(Color.Purple)
                              .WithDescription($"{after.Mention} | ``{after.Id}``")
                              .AddField("Old Username", before.Username, true)
@@ -590,7 +590,7 @@ namespace Floofbot.Services
                     }
                     else if (before.AvatarId != after.AvatarId)
                     {
-                        embed.WithTitle($"🖼️ Avatar Changed | {after.Username}#{after.Discriminator}")
+                        embed.WithTitle($"🖼️ Avatar Changed | {after.Username}")
                              .WithColor(Color.Purple)
                              .WithDescription($"{after.Mention} | ``{after.Id}``")
                              .WithFooter($"user_avatar_change {after.Id}")
@@ -648,7 +648,7 @@ namespace Floofbot.Services
 
                     if (before.Nickname != after.Nickname)
                     {
-                        embed.WithTitle($"👥 Nickname Changed | {after.Username}#{after.Discriminator}")
+                        embed.WithTitle($"👥 Nickname Changed | {after.Username}")
                              .WithColor(Color.Purple)
                              .WithDescription($"{after.Mention} | ``{after.Id}``")
                              .WithFooter($"user_nickname_change user_namelog {after.Id}")
@@ -679,7 +679,7 @@ namespace Floofbot.Services
                         if (before.Roles.Count > after.Roles.Count) // roles removed
                         {
                             roleDifference = beforeRoles.Except(afterRoles).ToList();
-                            embed.WithTitle($"❗ Roles Removed | {after.Username}#{after.Discriminator}")
+                            embed.WithTitle($"❗ Roles Removed | {after.Username}")
                                  .WithColor(Color.Orange)
                                  .WithDescription($"{after.Mention} | ``{after.Id}``")
                                  .WithFooter($"user_roles_removed user_rolelog {after.Id}")
@@ -696,7 +696,7 @@ namespace Floofbot.Services
                         else if (before.Roles.Count < after.Roles.Count) // roles added
                         {
                             roleDifference = afterRoles.Except(beforeRoles).ToList();
-                            embed.WithTitle($"❗ Roles Added | {after.Username}#{after.Discriminator}")
+                            embed.WithTitle($"❗ Roles Added | {after.Username}")
                                  .WithColor(Color.Orange)
                                  .WithDescription($"{after.Mention} | ``{after.Id}``")
                                  .WithFooter($"user_roles_added user_rolelog {after.Id}")
@@ -742,7 +742,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"👢 User Kicked | {user.Username}#{user.Discriminator}")
+                    embed.WithTitle($"👢 User Kicked | {user.Username}")
                          .WithColor(Color.Red)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .AddField("Kicked By", kicker.Mention)
@@ -780,7 +780,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"🔇 User Muted | {user.Username}#{user.Discriminator}")
+                    embed.WithTitle($"🔇 User Muted | {user.Username}")
                          .WithColor(Color.Teal)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .AddField("Muted By", muter.Mention)
@@ -819,7 +819,7 @@ namespace Floofbot.Services
 
                     var embed = new EmbedBuilder();
 
-                    embed.WithTitle($"🔊 User Unmuted | {user.Username}#{user.Discriminator}")
+                    embed.WithTitle($"🔊 User Unmuted | {user.Username}")
                          .WithColor(Color.Teal)
                          .WithDescription($"{user.Mention} | ``{user.Id}``")
                          .AddField("Unmuted By", unmuter.Mention)
