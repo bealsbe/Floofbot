@@ -157,7 +157,7 @@ namespace Floofbot.Modules
             }
             catch (HttpException)
             {
-                await Context.Channel.SendMessageAsync("⚠️ Command unable to be performed - user not be found!");
+                await Context.Channel.SendMessageAsync("⚠️ Command unable to be performed - ban entry not be found!");
                 return;
             }
             catch (Exception ex)
