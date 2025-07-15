@@ -155,9 +155,14 @@ namespace Floofbot.Modules
             {
                 await Context.Guild.RemoveBanAsync(userId); // unban user
             }
+            catch (HttpException)
+            {
+                await Context.Channel.SendMessageAsync("⚠️ Command unable to be performed - user not be found!");
+                return;
+            }
             catch (Exception ex)
             {
-                await Context.Channel.SendMessageAsync("Command unable to be performed sucessfully: " + ex.ToString());
+                await Context.Channel.SendMessageAsync("⚠️ Command unable to be performed sucessfully. User may not be found?" + ex.ToString());
                 return;
             }
             EmbedBuilder modEmbedBuilder = new EmbedBuilder();
