@@ -60,6 +60,7 @@ namespace Floofbot.Services
         {
  
             var oldUserRoles = GetUserRoles(user);
+            Console.WriteLine(oldUserRoles.ToString());
 
             if (oldUserRoles != null) // user actually had old roles
             {
