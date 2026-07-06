@@ -64,7 +64,7 @@ namespace Floofbot
                       LogLevel = LogSeverity.Info,
                       MessageCacheSize = 1000,
                       AlwaysDownloadUsers = true,
-                      GatewayIntents = GatewayIntents.All
+                      GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers | GatewayIntents.MessageContent
                   }) ;
 
             try
